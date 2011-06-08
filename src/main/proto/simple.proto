@@ -1,0 +1,10 @@
+/**
+ * 
+ * @author Konrad Malawski
+ */
+
+option java_package = "";
+
+message Wiadomosc {
+
+}
