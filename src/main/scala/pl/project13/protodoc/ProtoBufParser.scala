@@ -1,5 +1,6 @@
 package pl.project13.protodoc
 
+import model.ProtoMessage
 import scala.util.parsing.combinator._
 
 /**
@@ -38,13 +39,20 @@ object ProtoBufParser extends RegexParsers {
                   | "bytes"
   )
 
-  def field = (
-        opt(modifier) ~ protoType ~ ID ~ "=" ~ integerValue ~ ";"
-    )
+  def field = enumField | messageField
 
-  def integerValue: Parser[Int] = ("[1-9][0-9]*".r) ^^ {
-    s => s.toInt
-  }
+  // enums
+  def enumField = "enum" ~ ID ~ "{" ~ (enumValue *) ~ "}"
+
+  def enumValue = ID ~ "=" ~ NUM ~ ";"
+
+  // fields
+  def messageField = opt(modifier) ~ protoType ~ ID ~ "=" ~ integerValue ~ opt(defaultValue) ~ ";"
+
+  def defaultValue = "[" ~ "default" ~ "=" ~ (ID | NUM) ~ "]"
+
+  // field values
+  def integerValue: Parser[Int] = ("[1-9][0-9]*".r) ^^ { s => s.toInt }
 
   def booleanValue: Parser[Boolean] = ("true" | "false") ^^ { s => s.toBoolean }
 

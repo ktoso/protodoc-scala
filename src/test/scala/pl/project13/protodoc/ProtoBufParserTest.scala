@@ -20,4 +20,21 @@ class ProtoBufParserTest extends FlatSpec with ShouldMatchers {
 
     println(result)
   }
+
+  "Parser" should "parse single message with enum" in {
+    val result: Any = ProtoBufParser.parse("""
+    message Wiadomosc {
+      string name = 1;
+
+      enum Type {
+        EMAIL = 1;
+        SMS = 2;
+      }
+    }
+    """)
+
+    result
+
+    println(result)
+  }
 }
