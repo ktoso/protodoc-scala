@@ -5,18 +5,28 @@ import java.lang.UnsupportedOperationException
 /**
  *
  */
-abstract class ProtoMessageField(fieldName: String, defaultValue: Any = null)
+abstract class ProtoMessageField(val fieldName: String,
+                                 val defaultValue: Any = null)
 
 /**
  * Represent an Int property
  */
-class IntProtoMessageField(fieldName: String, defaultValue: Any)
+case class IntProtoMessageField(override val fieldName: String,
+                           override val defaultValue: Any = null)
   extends ProtoMessageField(fieldName, defaultValue)
 
 /**
  * Represent an Double property
  */
-class DoubleProtoMessageField(fieldName: String, defaultValue: Any)
+case class DoubleProtoMessageField(override val fieldName: String,
+                              override val defaultValue: Any = null)
+  extends ProtoMessageField(fieldName, defaultValue)
+
+/**
+ * Represent an String property
+ */
+case class StringProtoMessageField(override val fieldName: String,
+                              override val defaultValue: Any = null)
   extends ProtoMessageField(fieldName, defaultValue)
 
 /**
@@ -30,8 +40,11 @@ object ProtoMessageField {
       println("Found an int field")
       new IntProtoMessageField(fieldName, defaultValue)
     case "double" =>
-      println("Found an double field")
+      println("Found a double field")
       new DoubleProtoMessageField(fieldName, defaultValue)
+    case "string" =>
+      println("Found a string field")
+      new StringProtoMessageField(fieldName, defaultValue)
     case unknownType =>
       throw new UnsupportedOperationException("Unknown field type encountered: " + unknownType)
   }

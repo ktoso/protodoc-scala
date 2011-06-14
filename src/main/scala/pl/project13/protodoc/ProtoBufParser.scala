@@ -7,7 +7,7 @@ import java.util.EnumSet
 /**
  * @author Konrad Malawski
  */
-object ProtoBufParser extends RegexParsers {
+object ProtoBufParser extends RegexParsers with ParserConversions {
 
   def ID = """[a-zA-Z]([a-zA-Z0-9]|_[a-zA-Z0-9])*""".r
   def NUM = """[1-9][0-9]*""".r
@@ -18,9 +18,22 @@ object ProtoBufParser extends RegexParsers {
    */
   protected override val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
 
-  def message = "message" ~ ID ~ "{" ~ (field *) ~ "}" ^^ {
-    case m ~ id ~ p1 ~ fields ~ p2 =>
-    Console.println("Parsing message '%s'".format(id))
+  def message: Parser[_ <: ProtoMessage] = "message" ~ ID ~ "{" ~ rep(enumField | messageField ) ~ "}" ^^ {
+    case m ~ id ~ p1 ~ allFields ~ p2 =>
+    Console.println("Parsed message '%s' + allFields = %s".format(id, allFields.toString))
+
+    val messageFields = allFields.filter(_.isInstanceOf[ProtoMessageField]).map(_.asInstanceOf[ProtoMessageField])
+    val enums = allFields.filter(_.isInstanceOf[ProtoEnumTypeField]).map(_.asInstanceOf[ProtoEnumTypeField])
+    val innerMessages = List()
+
+    Console.println("has " + messageFields.size + " message fields")
+    Console.println("has " + enums.size + " enumeration types")
+
+    new ProtoMessage(messageName = id ,
+                     packageName = "plz.change.me.im.not.real",
+                     fields = messageFields,
+                     enums = enums,
+                     innerMessages = innerMessages)
   }
 
   def modifier = "optional" | "required" | "repeated"
