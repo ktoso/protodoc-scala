@@ -20,20 +20,16 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
 
   def message: Parser[_ <: ProtoMessage] = "message" ~ ID ~ "{" ~ rep(enumField | messageField ) ~ "}" ^^ {
     case m ~ id ~ p1 ~ allFields ~ p2 =>
-    Console.println("Parsed message '%s' + allFields = %s".format(id, allFields.toString))
 
-    val messageFields = allFields.filter(_.isInstanceOf[ProtoMessageField]).map(_.asInstanceOf[ProtoMessageField])
-    val enums = allFields.filter(_.isInstanceOf[ProtoEnumTypeField]).map(_.asInstanceOf[ProtoEnumTypeField])
-    val innerMessages = List()
+      Console.println("Parsed message '%s'".format(id))
+      Console.println(" fields: " + list2typedMessageFieldList(allFields))
+      Console.println(" enums: " + list2typedEnumTypeList(allFields))
 
-    Console.println("has " + messageFields.size + " message fields")
-    Console.println("has " + enums.size + " enumeration types")
-
-    new ProtoMessage(messageName = id ,
-                     packageName = "plz.change.me.im.not.real",
-                     fields = messageFields,
-                     enums = enums,
-                     innerMessages = innerMessages)
+      new ProtoMessage(messageName = id ,
+                       packageName = "plz.change.me.im.not.real",
+                       fields = allFields /*will be implicitly filtered*/,
+                       enums = allFields /*will be implicitly filtered*/,
+                       innerMessages = List())    // todo this is a stub
   }
 
   def modifier = "optional" | "required" | "repeated"
@@ -70,11 +66,13 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
   def enumValue: Parser[ProtoEnumValue] = ID ~ "=" ~ NUM ~ ";" ^^ { case id ~ eq ~ num ~ end => ProtoEnumValue(id) }
 
   // fields
-  def messageField = opt(modifier) ~ protoType ~ ID ~ "=" ~ integerValue ~ opt(defaultValue) ~ ";" ^^^ {
-                          ProtoMessageField.toTypedField(fieldName = "mojeFajnePole",
-                                                         typeName = "int",
-                                                         defaultValue = null)
-                        }
+  def messageField = opt(modifier) ~ protoType ~ ID ~ "=" ~ integerValue ~ opt(defaultValue) ~ ";" ^^ {
+    case mod ~ pType ~ id ~ eq ~ intVal ~ defaultVal ~ end =>
+    Console.println("parsing message field '" + id + "'...")
+
+    // todo mod and intVal are currently not being mapped
+    ProtoMessageField.toTypedField(pType, id, defaultVal)
+  }
 
   def defaultValue = "[" ~ "default" ~ "=" ~ (ID | NUM) ~ "]"
 

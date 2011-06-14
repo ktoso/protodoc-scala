@@ -41,7 +41,7 @@ class OutEnumRepresentationTest extends FlatSpec with ShouldMatchers {
     // then
     result.fields should have length (2)
 
-//    result.fields should contain StringProtoMessageField("field")
-//    result.fields should contain IntProtoMessageField("last", 42)
+    result.fields.map(_.fieldName) should contain ("field")
+    result.fields.map(_.fieldName) should contain ("last")
   }
 }

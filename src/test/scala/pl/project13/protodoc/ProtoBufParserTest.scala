@@ -1,5 +1,6 @@
 package pl.project13.protodoc
 
+import model.ProtoMessage
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
 
@@ -36,5 +37,28 @@ class ProtoBufParserTest extends FlatSpec with ShouldMatchers {
     result
 
     Console.println(result)
+  }
+
+  "Parser" should "have no problems with field modifiers" in {
+    val result: ProtoMessage = ProtoBufParser.parse("""
+    message WiadomoscDwaPola {
+      optional int one = 1;
+      required int two = 2;
+      required int three = 3 [default = 42];
+      repeated bool four = 4;
+    }""")
+
+    result
+
+    Console.println(result)
+
+    // then
+    result.fields should have length (4)
+
+    val fieldNames = result.fields.map(_.fieldName)
+    fieldNames should contain ("one")
+    fieldNames should contain ("two")
+    fieldNames should contain ("three")
+    fieldNames should contain ("four")
   }
 }
