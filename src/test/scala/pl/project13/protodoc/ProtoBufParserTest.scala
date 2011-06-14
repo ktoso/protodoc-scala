@@ -26,7 +26,7 @@ class ProtoBufParserTest extends FlatSpec with ShouldMatchers {
     message Wiadomosc {
       string name = 1;
 
-      enum Type {
+      enum MyEnum {
         EMAIL = 1;
         SMS = 2;
       }

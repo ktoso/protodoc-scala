@@ -2,21 +2,26 @@ package pl.project13.protodoc
 
 import model._
 import scala.util.parsing.combinator._
+import java.util.EnumSet
 
 /**
  * @author Konrad Malawski
  */
 object ProtoBufParser extends RegexParsers {
 
-  val ID = """[a-zA-Z]([a-zA-Z0-9]|_[a-zA-Z0-9])*""".r
-  val NUM = """[1-9][0-9]*""".r
+  def ID = """[a-zA-Z]([a-zA-Z0-9]|_[a-zA-Z0-9])*""".r
+  def NUM = """[1-9][0-9]*""".r
+
 
   /**
    * For now, just ignore whitespaces
    */
   protected override val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
 
-  def message = "message" ~ ID ~ "{" ~ (field *) ~ "}"
+  def message = "message" ~ ID ~ "{" ~ (field *) ~ "}" ^^ {
+    case m ~ id ~ p1 ~ fields ~ p2 =>
+    Console.println("Parsing message '%s'".format(id))
+  }
 
   def modifier = "optional" | "required" | "repeated"
 
@@ -42,9 +47,17 @@ object ProtoBufParser extends RegexParsers {
   def field = enumField | messageField
 
   // enums
-  def enumField = "enum" ~ ID ~ "{" ~ (enumValue *) ~ "}"
+  def enumField: Parser[ProtoEnumTypeField] = "enum" ~ ID ~ "{" ~ rep(enumValue) ~ "}" ^^ {
+    case e ~ id ~ p1 ~ vals ~ p2 =>
+      Console.println("parsing enum type '" + id + "'...")
+      Console.println("enum values: " + vals)
 
-  def enumValue = ID ~ "=" ~ NUM ~ ";"
+//      val enumValues = vals.map(ProtoEnumValue(_))
+      val enumValues = List()
+      ProtoEnumTypeField(typeName = id, enumValues)
+  }
+
+  def enumValue: Parser[ProtoEnumValue] = ID ~ "=" ~ NUM ~ ";" ^^ { case id ~ eq ~ num ~ end => ProtoEnumValue(id) }
 
   // fields
   def messageField = opt(modifier) ~ protoType ~ ID ~ "=" ~ integerValue ~ opt(defaultValue) ~ ";" ^^^ {
