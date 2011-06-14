@@ -18,7 +18,7 @@ class ProtoBufParserTest extends FlatSpec with ShouldMatchers {
 
     result
 
-    println(result)
+    Console.println(result)
   }
 
   "Parser" should "parse single message with enum" in {
@@ -35,6 +35,6 @@ class ProtoBufParserTest extends FlatSpec with ShouldMatchers {
 
     result
 
-    println(result)
+    Console.println(result)
   }
 }

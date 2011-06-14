@@ -47,14 +47,11 @@ object ProtoBufParser extends RegexParsers {
   def field = enumField | messageField
 
   // enums
-  def enumField: Parser[ProtoEnumTypeField] = "enum" ~ ID ~ "{" ~ rep(enumValue) ~ "}" ^^ {
-    case e ~ id ~ p1 ~ vals ~ p2 =>
+  def enumField: Parser[ProtoEnumTypeField] = "enum" ~ ID ~ "{" ~ rep(enumValue) ~ "}" ^^ { case e ~ id ~ p1 ~ vals ~ p2 =>
       Console.println("parsing enum type '" + id + "'...")
       Console.println("enum values: " + vals)
 
-//      val enumValues = vals.map(ProtoEnumValue(_))
-      val enumValues = List()
-      ProtoEnumTypeField(typeName = id, enumValues)
+      ProtoEnumTypeField(typeName = id, vals)
   }
 
   def enumValue: Parser[ProtoEnumValue] = ID ~ "=" ~ NUM ~ ";" ^^ { case id ~ eq ~ num ~ end => ProtoEnumValue(id) }
