@@ -1,8 +1,9 @@
 package pl.project13.protodoc
 
+import model.ProtoModifier
+import model.ProtoModifier._
 import model._
 import scala.util.parsing.combinator._
-import java.util.EnumSet
 
 /**
  * @author Konrad Malawski
@@ -32,7 +33,7 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
                        innerMessages = List())    // todo this is a stub
   }
 
-  def modifier = "optional" | "required" | "repeated"
+  def modifier: Parser[ProtoModifier] = "optional" | "required" | "repeated" ^^ { s => ProtoModifier.REQUIRED }
 
   def protoType = (
                     "int"
@@ -63,15 +64,15 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
       ProtoEnumTypeField(typeName = id, vals)
   }
 
-  def enumValue: Parser[ProtoEnumValue] = ID ~ "=" ~ NUM ~ ";" ^^ { case id ~ eq ~ num ~ end => ProtoEnumValue(id) }
+  def enumValue: Parser[ProtoEnumValue] = ID ~ "=" ~ NUM ~ ";" ^^ { case id ~ eq ~ num ~ end => ProtoEnumValue(id, num) }
 
   // fields
   def messageField = opt(modifier) ~ protoType ~ ID ~ "=" ~ integerValue ~ opt(defaultValue) ~ ";" ^^ {
-    case mod ~ pType ~ id ~ eq ~ intVal ~ defaultVal ~ end =>
+    case mod ~ pType ~ id ~ eq ~ tag ~ defaultVal ~ end =>
     Console.println("parsing message field '" + id + "'...")
 
-    // todo mod and intVal are currently not being mapped
-    ProtoMessageField.toTypedField(pType, id, defaultVal)
+    val modifier = mod.getOrElse(ProtoModifier.NONE)
+    ProtoMessageField.toTypedField(pType, id, tag, modifier, defaultVal)
   }
 
   def defaultValue = "[" ~ "default" ~ "=" ~ (ID | NUM) ~ "]"
@@ -83,7 +84,7 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
 
   /* methods */
 
-  def parse(s: String) = parseAll(message, s) match {
+  def parse(s: String): ProtoMessage = parseAll(message, s) match {
     case Success(res, _) => res
     //    case Failure(msg, _)  => throw new RuntimeException(msg)
     //    case Error(msg, _) => throw new RuntimeException(msg)

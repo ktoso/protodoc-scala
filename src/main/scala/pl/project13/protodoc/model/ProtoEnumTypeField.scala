@@ -28,4 +28,5 @@ case class ProtoEnumTypeField(typeName: String,
   }
 }
 
-case class ProtoEnumValue(valueName: String)
+case class ProtoEnumValue(valueName: String,
+                          tag: ProtoTag)

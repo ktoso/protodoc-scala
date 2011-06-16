@@ -1,19 +1,8 @@
 package pl.project13.protodoc.model
 
-/**
- *
- * @author Konrad Malawski
- */
-trait ParserConversions {
+case class ProtoTag(tagNumber: Long)
 
-  implicit def list2typedEnumTypeList(li: List[Any]): List[ProtoEnumTypeField] = {
-    li.filter(_.isInstanceOf[ProtoEnumTypeField]).map(_.asInstanceOf[ProtoEnumTypeField])
-  }
-
-  implicit def list2typedMessageFieldList(li: List[Any]): List[ProtoMessageField] = {
-    li.filter(_.isInstanceOf[ProtoMessageField]).map(_.asInstanceOf[ProtoMessageField])
-  }
-
+trait HasProtoTag {
   implicit def tag2long(tag: ProtoTag): Long = {
     tag.tagNumber
   }
@@ -28,10 +17,17 @@ trait ParserConversions {
     long2tag(tagString.toLong)
   }
 
+  implicit def any2tag(anyValue: Any): ProtoTag = {
+    str2tag(anyValue.toString)
+  }
+
+  /**
+   * Check the tag number is valid.
+   * Please note that values between 1900 and 1999 are reserved for internal use, and can not be used.
+   */
   def checkProtoTagNumber(tagNumber: Long) = {
     if(!(tagNumber > 0 && tagNumber <= 536870911 && (tagNumber < 1900 || tagNumber > 1999))){
       throw new RuntimeException("Invalid tag: " + tagNumber)
     }
   }
-
 }

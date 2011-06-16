@@ -11,7 +11,7 @@ import org.scalatest.matchers.ShouldMatchers
 class ProtoBufParserTest extends FlatSpec with ShouldMatchers {
 
   "Parser" should "parse single simple message" in {
-    val result: Any = ProtoBufParser.parse("""
+    val result: ProtoMessage = ProtoBufParser.parse("""
     message Wiadomosc {
       string name = 1;
     }
@@ -38,8 +38,8 @@ class ProtoBufParserTest extends FlatSpec with ShouldMatchers {
 
     result.enums should have size (1)
     result.enums.head.values should have size (2)
-    result.enums.head.values should contain (ProtoEnumValue("EMAIL"))
-    result.enums.head.values should contain (ProtoEnumValue("SMS"))
+    result.enums.head.values should contain (ProtoEnumValue("EMAIL", 1))
+    result.enums.head.values should contain (ProtoEnumValue("SMS", 2))
 
     Console.println(result)
   }
@@ -66,4 +66,5 @@ class ProtoBufParserTest extends FlatSpec with ShouldMatchers {
     fieldNames should contain ("three")
     fieldNames should contain ("four")
   }
+
 }
