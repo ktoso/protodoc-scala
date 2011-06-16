@@ -1,6 +1,6 @@
 package pl.project13.protodoc
 
-import model.ProtoMessage
+import model.{ProtoEnumValue, ProtoEnumTypeField, ProtoMessage}
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
 
@@ -23,7 +23,7 @@ class ProtoBufParserTest extends FlatSpec with ShouldMatchers {
   }
 
   "Parser" should "parse single message with enum" in {
-    val result: Any = ProtoBufParser.parse("""
+    val result: ProtoMessage = ProtoBufParser.parse("""
     message Wiadomosc {
       string name = 1;
 
@@ -35,6 +35,11 @@ class ProtoBufParserTest extends FlatSpec with ShouldMatchers {
     """)
 
     result
+
+    result.enums should have size (1)
+    result.enums.head.values should have size (2)
+    result.enums.head.values should contain (ProtoEnumValue("EMAIL"))
+    result.enums.head.values should contain (ProtoEnumValue("SMS"))
 
     Console.println(result)
   }
