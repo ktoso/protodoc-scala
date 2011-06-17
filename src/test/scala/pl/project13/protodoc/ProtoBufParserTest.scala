@@ -35,12 +35,12 @@ class ProtoBufParserTest extends FlatSpec with ShouldMatchers
     }
     """)
 
-    result
-
     result.enums should have size (1)
-    result.enums.head.values should have size (2)
-    result.enums.head.values should contain (ProtoEnumValue("EMAIL", ProtoTag(1)))
-    result.enums.head.values should contain (ProtoEnumValue("SMS", ProtoTag(2)))
+
+    val myEnum = result.enums.head
+    myEnum.values should have size (2)
+    myEnum.values should contain (ProtoEnumValue("EMAIL", ProtoTag(1)))
+    myEnum.values should contain (ProtoEnumValue("SMS", ProtoTag(2)))
 
     Console.println(result)
   }
