@@ -19,8 +19,6 @@ class ProtoBufParserTest extends FlatSpec with ShouldMatchers
     """)
 
     result
-
-    Console.println(result)
   }
 
   "Parser" should "parse single message with enum" in {
@@ -41,11 +39,9 @@ class ProtoBufParserTest extends FlatSpec with ShouldMatchers
     myEnum.values should have size (2)
     myEnum.values should contain (ProtoEnumValue("EMAIL", ProtoTag(1)))
     myEnum.values should contain (ProtoEnumValue("SMS", ProtoTag(2)))
-
-    Console.println(result)
   }
 
-  "Parser" should "have no problems with field modifiers" in {
+  "Parser" should "have no problems with anyField modifiers" in {
     val result: ProtoMessage = ProtoBufParser.parse("""
     message WiadomoscDwaPola {
       optional int one = 1;
@@ -55,8 +51,6 @@ class ProtoBufParserTest extends FlatSpec with ShouldMatchers
     }""")
 
     result
-
-    Console.println(result)
 
     // then
     result.fields should have length (4)

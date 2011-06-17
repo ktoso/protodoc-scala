@@ -82,10 +82,9 @@ object ProtoMessageField extends HasProtoTag {
                    protoTag: Any,
                    modifier: ProtoModifier,
                    defaultValue: Any = null) = typeName match {
-    case "int" | "int32" | "uint32" | "sint32" =>
-      var zom: Option[ProtoModifier] = null;
+    case "int" | "int32" | "uint32" | "sint32"| "fixed32" | "sfixed32" =>
       new IntProtoMessageField(fieldName, protoTag, modifier, defaultValue)
-    case "long" | "int64" | "uint64" | "sint64" =>
+    case "long" | "int64" | "uint64" | "sint64" | "fixed64" | "sfixed64" =>
       new LongProtoMessageField(fieldName, protoTag, modifier, defaultValue)
     case "double" =>
       new DoubleProtoMessageField(fieldName, protoTag, modifier, defaultValue)
