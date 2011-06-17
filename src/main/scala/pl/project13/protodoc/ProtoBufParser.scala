@@ -28,9 +28,7 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
 
       new ProtoMessage(messageName = id ,
                        packageName = "plz.change.me.im.not.real",
-//                       fields = messageFields,
                        fields = allFields /*will be implicitly filtered*/,
-//                       enums = enumFields,
                        enums = allFields /*will be implicitly filtered*/,
                        innerMessages = List())    // todo this is a stub
   }
@@ -79,7 +77,7 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
     case mod ~ pType ~ id ~ eq ~ tag ~ defaultVal ~ end =>
       log("parsing message anyField '" + id + "'...")
 
-      val modifier = mod.getOrElse(NoProtoModifier())
+      val modifier = mod.getOrElse(RequiredProtoModifier()) // todo remove this
       ProtoMessageField.toTypedField(pType, id, tag, modifier, defaultVal)
   }
 

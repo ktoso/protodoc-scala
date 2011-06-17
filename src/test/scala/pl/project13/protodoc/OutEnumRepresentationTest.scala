@@ -25,7 +25,7 @@ class OutEnumRepresentationTest extends FlatSpec with ShouldMatchers {
     result
   }
 
-  "Three anyField message" should "in fact have 2 fields" in {
+  "Message with 2 fields" should "in fact have 2 fields" in {
     val result: ProtoMessage = ProtoBufParser.parse("""
     message WiadomoscDwaPola {
       string anyField = 23;

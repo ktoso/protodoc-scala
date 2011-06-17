@@ -3,8 +3,10 @@
  * @author Konrad Malawski
  */
 
-option java_package = "";
+option java_package = "pl.project13.protodoc";
 
 message Wiadomosc {
 
+  required int32 number = 1;
+  required string name = 2 [default = "loremipsum"];
 }
