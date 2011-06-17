@@ -33,7 +33,10 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
                        innerMessages = List())    // todo this is a stub
   }
 
-  def modifier: Parser[ProtoModifier] = "optional" | "required" | "repeated" ^^ { s => ProtoModifier.REQUIRED }
+  def modifier: Parser[ProtoModifier] = ("optional" | "required" | "repeated") ^^ {s =>
+    Console.println(s)
+    ProtoModifier.str2modifier(s)
+  }
 
   def protoType = (
                     "int"
@@ -71,7 +74,7 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
     case mod ~ pType ~ id ~ eq ~ tag ~ defaultVal ~ end =>
     Console.println("parsing message field '" + id + "'...")
 
-    val modifier = mod.getOrElse(ProtoModifier.NONE)
+    val modifier = mod.getOrElse(NoProtoModifier())
     ProtoMessageField.toTypedField(pType, id, tag, modifier, defaultVal)
   }
 

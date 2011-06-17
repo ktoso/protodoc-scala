@@ -3,8 +3,16 @@ package pl.project13.protodoc.model
 case class ProtoTag(tagNumber: Long)
 
 trait HasProtoTag {
+
   implicit def tag2long(tag: ProtoTag): Long = {
     tag.tagNumber
+  }
+
+  implicit def int2tag(tagNumber: Int): ProtoTag = {
+    val longTag = tagNumber.toLong
+
+    checkProtoTagNumber(longTag)
+    ProtoTag(longTag)
   }
 
   implicit def long2tag(tagNumber: Long): ProtoTag = {

@@ -7,16 +7,16 @@ import ProtoModifier._
  */
 abstract class ProtoMessageField(val fieldName: String,
                                  val tag: ProtoTag,
-                                 val modifier: ProtoModifier = ProtoModifier.NONE,
-                                 val defaultValue: Any = null)
+                                 val modifier: ProtoModifier = NoProtoModifier(),
+                                 val defaultValue: Any = None)
 
 /**
  * Represent an Int property
  */
 case class IntProtoMessageField(override val fieldName: String,
                                 override val tag: ProtoTag,
-                                override val modifier: ProtoModifier = ProtoModifier.NONE,
-                                override val defaultValue: Any = null)
+                                override val modifier: ProtoModifier = NoProtoModifier(),
+                                override val defaultValue: Any = None)
   extends ProtoMessageField(fieldName, tag, modifier, defaultValue)
 
 /**
@@ -24,8 +24,8 @@ case class IntProtoMessageField(override val fieldName: String,
  */
 case class LongProtoMessageField(override val fieldName: String,
                                  override val tag: ProtoTag,
-                                 override val modifier: ProtoModifier = ProtoModifier.NONE,
-                                 override val defaultValue: Any = null)
+                                 override val modifier: ProtoModifier = NoProtoModifier(),
+                                 override val defaultValue: Any = None)
   extends ProtoMessageField(fieldName, tag, modifier, defaultValue)
 
 /**
@@ -33,8 +33,8 @@ case class LongProtoMessageField(override val fieldName: String,
  */
 case class BooleanProtoMessageField(override val fieldName: String,
                                     override val tag: ProtoTag,
-                                    override val modifier: ProtoModifier = ProtoModifier.NONE,
-                                    override val defaultValue: Any = null)
+                                    override val modifier: ProtoModifier = NoProtoModifier(),
+                                    override val defaultValue: Any = None)
   extends ProtoMessageField(fieldName, tag, modifier, defaultValue)
 
 /**
@@ -42,8 +42,8 @@ case class BooleanProtoMessageField(override val fieldName: String,
  */
 case class FloatProtoMessageField(override val fieldName: String,
                                   override val tag: ProtoTag,
-                                  override val modifier: ProtoModifier = ProtoModifier.NONE,
-                                  override val defaultValue: Any = null)
+                                  override val modifier: ProtoModifier = NoProtoModifier(),
+                                  override val defaultValue: Any = None)
   extends ProtoMessageField(fieldName, tag, modifier, defaultValue)
 
 /**
@@ -51,8 +51,8 @@ case class FloatProtoMessageField(override val fieldName: String,
  */
 case class DoubleProtoMessageField(override val fieldName: String,
                                    override val tag: ProtoTag,
-                                   override val modifier: ProtoModifier = ProtoModifier.NONE,
-                                   override val defaultValue: Any = null)
+                                   override val modifier: ProtoModifier = NoProtoModifier(),
+                                   override val defaultValue: Any = None)
   extends ProtoMessageField(fieldName, tag, modifier, defaultValue)
 
 /**
@@ -60,8 +60,8 @@ case class DoubleProtoMessageField(override val fieldName: String,
  */
 case class StringProtoMessageField(override val fieldName: String,
                                    override val tag: ProtoTag,
-                                   override val modifier: ProtoModifier = ProtoModifier.NONE,
-                                   override val defaultValue: Any = null)
+                                   override val modifier: ProtoModifier = NoProtoModifier(),
+                                   override val defaultValue: Any = None)
   extends ProtoMessageField(fieldName, tag, modifier, defaultValue)
 
 /**
@@ -69,8 +69,8 @@ case class StringProtoMessageField(override val fieldName: String,
  */
 case class ByteStringProtoMessageField(override val fieldName: String,
                                        override val tag: ProtoTag,
-                                       override val modifier: ProtoModifier = ProtoModifier.NONE,
-                                       override val defaultValue: Any = null)
+                                       override val modifier: ProtoModifier = NoProtoModifier(),
+                                       override val defaultValue: Any = None)
   extends ProtoMessageField(fieldName, tag, modifier, defaultValue)
 
 /**

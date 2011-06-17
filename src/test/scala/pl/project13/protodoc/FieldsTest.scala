@@ -21,7 +21,7 @@ class FieldsTest extends FlatSpec with ShouldMatchers {
 
     Console.println(result)
 
-    result.fields.head should equal IntProtoMessageField("number", 1, ProtoModifier.NONE)
+    result.fields.head should equal (IntProtoMessageField("number", ProtoTag(1), NoProtoModifier()))
   }
 
 }
