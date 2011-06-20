@@ -1,7 +1,6 @@
 package pl.project13.protodoc.model
 
 import ProtoModifier._
-import pl.project13.protodoc.exceptions.RequiredFieldMayNotHaveDefaultValueException
 
 /**
  *
@@ -11,12 +10,13 @@ abstract class ProtoMessageField(val fieldName: String,
                                  val modifier: ProtoModifier,
                                  val defaultValue: Any = None) {
 
-  // assure the message field is valid
-  modifier match {
-    case RequiredProtoModifier() =>
-      if(defaultValue != None)
-        throw new RequiredFieldMayNotHaveDefaultValueException(fieldName)
-  }
+// todo protoc actually likes to get defaults here hmmm
+//   assure the message field is valid
+//  modifier match {
+//    case RequiredProtoModifier() =>
+//      if(defaultValue != None)
+//        throw new RequiredFieldMayNotHaveDefaultValueException(fieldName, tag)
+//  }
 }
 
 /**
@@ -90,21 +90,21 @@ object ProtoMessageField extends HasProtoTag {
                    fieldName: String,
                    protoTag: Any,
                    modifier: ProtoModifier,
-                   defaultValue: Any = None) = typeName match {
+                   defaultValue: Option[Any] = None) = typeName match {
     case "int" | "int32" | "uint32" | "sint32"| "fixed32" | "sfixed32" =>
-      new IntProtoMessageField(fieldName, protoTag, modifier, defaultValue)
+      new IntProtoMessageField(fieldName, protoTag, modifier, defaultValue.getOrElse(None))
     case "long" | "int64" | "uint64" | "sint64" | "fixed64" | "sfixed64" =>
-      new LongProtoMessageField(fieldName, protoTag, modifier, defaultValue)
+      new LongProtoMessageField(fieldName, protoTag, modifier, defaultValue.getOrElse(None))
     case "double" =>
-      new DoubleProtoMessageField(fieldName, protoTag, modifier, defaultValue)
+      new DoubleProtoMessageField(fieldName, protoTag, modifier, defaultValue.getOrElse(None))
     case "float" =>
-          new FloatProtoMessageField(fieldName, protoTag, modifier, defaultValue)
+          new FloatProtoMessageField(fieldName, protoTag, modifier, defaultValue.getOrElse(None))
     case "bool" =>
-          new BooleanProtoMessageField(fieldName, protoTag, modifier, defaultValue)
+          new BooleanProtoMessageField(fieldName, protoTag, modifier, defaultValue.getOrElse(None))
     case "string" =>
-      new StringProtoMessageField(fieldName, protoTag, modifier, defaultValue)
+      new StringProtoMessageField(fieldName, protoTag, modifier, defaultValue.getOrElse(None))
     case "bytes" =>
-      new ByteStringProtoMessageField(fieldName, protoTag, modifier, defaultValue)
+      new ByteStringProtoMessageField(fieldName, protoTag, modifier, defaultValue.getOrElse(None))
     case unknownType =>
       throw new UnsupportedOperationException("Unknown field type encountered: " + unknownType)
   }

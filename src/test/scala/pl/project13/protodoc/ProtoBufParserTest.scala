@@ -41,13 +41,14 @@ class ProtoBufParserTest extends FlatSpec with ShouldMatchers
     myEnum.values should contain (ProtoEnumValue("SMS", ProtoTag(2)))
   }
 
-  "Parser" should "have no problems with anyField modifiers" in {
+  "Parser" should "have no problems with field modifiers" in {
     val result: ProtoMessage = ProtoBufParser.parse("""
     message WiadomoscDwaPola {
       optional int one = 1;
-      required int two = 2;
-      required int three = 3 [default = 42];
-      repeated bool four = 4;
+      optional int two = 2 [default = 42];
+      required int three = 3;
+      required int four = 4 [default = 42];
+      repeated bool five = 5;
     }""")
 
     result
@@ -60,6 +61,16 @@ class ProtoBufParserTest extends FlatSpec with ShouldMatchers
     fieldNames should contain ("two")
     fieldNames should contain ("three")
     fieldNames should contain ("four")
+  }
+
+  "Default string value" should "have proper value" in {
+    val result: ProtoMessage = ProtoBufParser.parse("""
+    message Wiadomosc {
+      optional string wiad = 12 [default = "loremipsum"];
+    }
+    """)
+
+    // todo validate the value
   }
 
 }

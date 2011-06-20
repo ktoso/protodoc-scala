@@ -75,18 +75,23 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
   // fields
   def messageField = opt(modifier) ~ protoType ~ ID ~ "=" ~ integerValue ~ opt(defaultValue) ~ ";" ^^ {
     case mod ~ pType ~ id ~ eq ~ tag ~ defaultVal ~ end =>
-      log("parsing message anyField '" + id + "'...")
+      log("parsing message field '" + id + "'...")
 
       val modifier = mod.getOrElse(RequiredProtoModifier()) // todo remove this
       ProtoMessageField.toTypedField(pType, id, tag, modifier, defaultVal)
   }
 
-  def defaultValue = "[" ~ "default" ~ "=" ~ (ID | NUM) ~ "]"
+  def defaultValue = "[" ~ "default" ~ "=" ~ (ID | NUM | stringValue) ~ "]"
 
   // field values
   def integerValue: Parser[Int] = ("[1-9][0-9]*".r) ^^ {
     s =>
       s.toInt
+  }
+
+  def stringValue: Parser[String] = (""""\w+"""".r) ^^ {
+    s =>
+    s // todo anything more?
   }
 
   def booleanValue: Parser[Boolean] = ("true" | "false") ^^ {

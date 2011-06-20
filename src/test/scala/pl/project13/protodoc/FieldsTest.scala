@@ -97,7 +97,7 @@ class FieldsTest extends FlatSpec with HasProtoTag with ShouldMatchers {
   "Parser" should "parse single required string field with default value" in {
     val result: ProtoMessage = ProtoBufParser.parse("""
     message Wiadomosc {
-      optional string name = 1 [default = "loremipsum"];
+      required string name = 1 [default = "loremipsum"]; // thats ok, says the spec
     }
     """)
 
