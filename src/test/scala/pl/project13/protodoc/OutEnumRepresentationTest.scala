@@ -29,7 +29,7 @@ class OutEnumRepresentationTest extends FlatSpec with ShouldMatchers {
     val result: ProtoMessage = ProtoBufParser.parse("""
     message WiadomoscDwaPola {
       string pole = 23;
-      int last = 42 [default = 42];
+      int32 last = 42 [default = 42];
     }""")
 
     result

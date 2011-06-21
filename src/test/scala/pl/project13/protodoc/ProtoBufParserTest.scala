@@ -44,23 +44,24 @@ class ProtoBufParserTest extends FlatSpec with ShouldMatchers
   "Parser" should "have no problems with field modifiers" in {
     val result: ProtoMessage = ProtoBufParser.parse("""
     message WiadomoscDwaPola {
-      optional int one = 1;
-      optional int two = 2 [default = 42];
-      required int three = 3;
-      required int four = 4 [default = 42];
+      optional int32 one = 1;
+      optional int32 two = 2 [default = 42];
+      required int32 three = 3;
+      required int32 four = 4 [default = 42];
       repeated bool five = 5;
     }""")
 
     result
 
     // then
-    result.fields should have length (4)
+    result.fields should have length (5)
 
     val fieldNames = result.fields.map(_.fieldName)
     fieldNames should contain ("one")
     fieldNames should contain ("two")
     fieldNames should contain ("three")
     fieldNames should contain ("four")
+    fieldNames should contain ("five")
   }
 
   "Default string value" should "have proper value" in {

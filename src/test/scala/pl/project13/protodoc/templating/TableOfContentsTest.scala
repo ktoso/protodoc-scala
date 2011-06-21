@@ -1,9 +1,8 @@
-package pl.project13.protodoc
+package pl.project13.protodoc.templating
 
-import model._
+import _root_.pl.project13.protodoc.model._
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
-import templating.ProtoDocTemplateEngine
 
 /**
  * @author Konrad Malawski
@@ -22,7 +21,7 @@ class TableOfContentsTest extends FlatSpec with ShouldMatchers {
   "ProtoDocTemplateEngine" should "render table of contents from sample data" in {
     val page = templateEngine.renderTableOfContents(sampleProtoMessage)
 
-    printToFile(new java.io.File("/tmp/test.html")) ({ p => page.foreach(p.print) })
+//    printToFile(new java.io.File("/tmp/test.html")) ({ p => page.foreach(p.print) })
 
     page should include ("Table of Contents")
     page should include ("MyMessage")

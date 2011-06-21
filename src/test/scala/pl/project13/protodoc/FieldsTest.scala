@@ -11,16 +11,6 @@ import org.scalatest.matchers.ShouldMatchers
 class FieldsTest extends FlatSpec with HasProtoTag
                                   with ShouldMatchers {
 
-  "Parser" should "parse single int field" in {
-    val result: ProtoMessage = ProtoBufParser.parse("""
-    message Wiadomosc {
-      required int number = 1;
-    }
-    """)
-
-    result.fields.head should equal (IntProtoMessageField("number", 1, RequiredProtoModifier()))
-  }
-
   "Parser" should "parse single int32 field" in {
     val result: ProtoMessage = ProtoBufParser.parse("""
     message Wiadomosc {
@@ -28,7 +18,8 @@ class FieldsTest extends FlatSpec with HasProtoTag
     }
     """)
 
-    result.fields.head should equal (IntProtoMessageField("number", 1, RequiredProtoModifier()))
+    val expected = IntProtoMessageField("number", "int32", 1, RequiredProtoModifier())
+    result.fields.head should equal (expected)
   }
 
   "Parser" should "parse single fixed32 field" in {
@@ -38,17 +29,19 @@ class FieldsTest extends FlatSpec with HasProtoTag
     }
     """)
 
-    result.fields.head should equal (IntProtoMessageField("number", 1, RequiredProtoModifier()))
+    val expected = IntProtoMessageField("number", "fixed32", 1, RequiredProtoModifier())
+    result.fields.head should equal (expected)
   }
 
   "Parser" should "parse single sfixed32 field" in {
     val result: ProtoMessage = ProtoBufParser.parse("""
     message Wiadomosc {
-      required sfixed32 number = 1;
+      required sfixed64 number = 1;
     }
     """)
 
-    result.fields.head should equal (IntProtoMessageField("number", 1, RequiredProtoModifier()))
+    val expected = IntProtoMessageField("number", "sfixed64", 1, RequiredProtoModifier())
+    result.fields.head should equal (expected)
   }
 
   "Parser" should "parse single int64 field" in {
@@ -58,7 +51,8 @@ class FieldsTest extends FlatSpec with HasProtoTag
     }
     """)
 
-    result.fields.head should equal (LongProtoMessageField("number", 1, RequiredProtoModifier()))
+    val expected = LongProtoMessageField("number", "int64", 1, RequiredProtoModifier())
+    result.fields.head should equal (expected)
   }
 
   "Parser" should "parse single fixed64 field" in {
@@ -68,7 +62,8 @@ class FieldsTest extends FlatSpec with HasProtoTag
     }
     """)
 
-    result.fields.head should equal (LongProtoMessageField("number", 1, RepeatedProtoModifier()))
+    val expected = LongProtoMessageField("number", "fixed64", 1, RepeatedProtoModifier())
+    result.fields.head should equal (expected)
   }
 
   "Parser" should "parse single optional string field" in {
@@ -78,7 +73,8 @@ class FieldsTest extends FlatSpec with HasProtoTag
     }
     """)
 
-    result.fields.head should equal (StringProtoMessageField("name", 1, OptionalProtoModifier()))
+    val expected = StringProtoMessageField("name", 1, OptionalProtoModifier())
+    result.fields.head should equal (expected)
   }
 
   "Parser" should "parse single required string field with default value" in {
@@ -88,7 +84,8 @@ class FieldsTest extends FlatSpec with HasProtoTag
     }
     """)
 
-    result.fields.head should equal (StringProtoMessageField("name", 1, RequiredProtoModifier(), "loremipsum"))
+    val expected = StringProtoMessageField("name", 1, RequiredProtoModifier(), "loremipsum")
+    result.fields.head should equal (expected)
   }
 
 }

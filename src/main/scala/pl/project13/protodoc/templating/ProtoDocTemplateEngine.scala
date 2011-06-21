@@ -22,14 +22,15 @@ class ProtoDocTemplateEngine {
                                  defaultValue = Option(""""v1.0"""")))
 
   def renderTableOfContents(contents: List[ProtoMessage]) = {
-    val data = Map("contents" -> contents,
-                   "test" -> "it's working, yay!")
+    val data = Map("contents" -> contents)
 
     engine.layout("index.mustache", data)
   }
 
-  def renderMessagePage() = {
-    "" // todo implement me
+  def renderMessagePage(msg: ProtoMessage) = {
+    val data = Map("msg" -> msg)
+
+    engine.layout("message.mustache", data)
   }
 
 }

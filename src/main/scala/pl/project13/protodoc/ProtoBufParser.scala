@@ -12,22 +12,29 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
 
   def ID = """[a-zA-Z]([a-zA-Z0-9]*|_[a-zA-Z0-9]*)*""".r
   def NUM = """[1-9][0-9]*""".r
-
+  def CHAR = """[a-zA-Z0-9]""".r
 
   /**
    * For now, just ignore whitespaces
    */
   protected override val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
 
-  def message: Parser[_ <: ProtoMessage] = "message" ~ ID ~ "{" ~ rep(enumField | messageField ) ~ "}" ^^ {
-    case m ~ id ~ p1 ~ allFields ~ p2 =>
+  def pack: Parser[String] = "package" ~ repsep(ID, ".") ~ ";" ^^ {
+    case p ~ packName ~ end =>
+      packName.foldLeft("") { (sum, item) => sum + "." + item }
+  }
 
-      log("Parsed message '%s'".format(id))
+  def message: Parser[_ <: ProtoMessage] = opt(pack) ~ "message" ~ ID ~ "{" ~ rep(enumField | messageField ) ~ "}" ^^ {
+    case maybePack ~ m ~ id ~ p1 ~ allFields ~ p2 =>
+
+      val pack = maybePack.getOrElse("")
+
+      log("Parsed message in '%s' named '%s'".format(pack, id))
       log(" fields: " + list2typedMessageFieldList(allFields))
       log(" enums: " + list2typedEnumTypeList(allFields))
 
       new ProtoMessage(messageName = id ,
-                       packageName = "plz.change.me.im.not.real",
+                       packageName = pack,
                        fields = allFields /*will be implicitly filtered*/,
                        enums = allFields /*will be implicitly filtered*/,
                        innerMessages = List())    // todo this is a stub
@@ -72,16 +79,27 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
       ProtoEnumValue(id, num)
   }
 
+  def protoDocComment: Parser[ProtoDocComment] = "/**" ~ rep(CHAR) ~ "*/" ^^ {
+    case s ~ text ~ end =>
+      Console.println(">>> " + text)
+
+      ProtoDocComment("someComment")
+  }
+
   // fields
-  def messageField = opt(modifier) ~ protoType ~ ID ~ "=" ~ integerValue ~ opt(defaultValue) ~ ";" ^^ {
-    case mod ~ pType ~ id ~ eq ~ tag ~ defaultVal ~ end =>
+  def messageField = opt(protoDocComment) ~ opt(modifier) ~ protoType ~ ID ~ "=" ~ integerValue ~ opt(defaultValue) ~ ";" ^^ {
+    case doc ~ mod ~ pType ~ id ~ eq ~ tag ~ defaultVal ~ end =>
       log("parsing message field '" + id + "'...")
 
       val modifier = mod.getOrElse(RequiredProtoModifier()) // todo remove this
       ProtoMessageField.toTypedField(pType, id, tag, modifier, defaultVal)
   }
 
-  def defaultValue = "[" ~ "default" ~ "=" ~ (ID | NUM | stringValue) ~ "]"
+  def defaultValue: Parser[Any] = "[" ~ "default" ~ "=" ~ (ID | NUM | stringValue) ~ "]" ^^ {
+    case b ~ d ~ eq ~ value ~ end =>
+      log("Default values: " + value)
+      value
+  }
 
   // field values
   def integerValue: Parser[Int] = ("[1-9][0-9]*".r) ^^ {
@@ -89,9 +107,9 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
       s.toInt
   }
 
-  def stringValue: Parser[String] = (""""\w+"""".r) ^^ {
-    s =>
-    s // todo anything more?
+  def stringValue: Parser[String] = "\"" ~ """\w+""".r ~ "\"" ^^ {
+    case o ~ stringValue ~ end =>
+      stringValue
   }
 
   def booleanValue: Parser[Boolean] = ("true" | "false") ^^ {

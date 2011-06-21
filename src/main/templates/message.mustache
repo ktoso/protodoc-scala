@@ -1,16 +1,17 @@
-<h1>{{message}}</h1>
-{{#bug}}
-{{/bug}}
+<h1>{{msg.messageName}}</h1>
 
-<h2>Message fields:</h2>
+
+<h2>Fields:</h2>
 <ul>
-{{#fields}}
+{{#msg.fields}}
   {{#field}}
     <li>
-        {{type}} <strong>{{name}}</strong>
+        <strong>{{fieldName}}</strong><br/>
+        defined as: {{protoTypeName}}<br/>
+        mapped to: {{scalaTypeName}}
     </li>
   {{/field}}
-{{/fields}}
+{{/msg.fields}}
 </ul>
 
 {{#empty}}
