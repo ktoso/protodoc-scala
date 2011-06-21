@@ -44,6 +44,7 @@
     </orderEntry>
     <orderEntry type="library" name="scala-compiler-2.8.1" level="application" />
     <orderEntry type="library" name="scala-library-2.8.1" level="application" />
+    <orderEntry type="library" name="scalate" level="project" />
   </component>
 </module>
 
