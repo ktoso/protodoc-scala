@@ -29,7 +29,7 @@ case class IntProtoMessageField(override val fieldName: String,
                                 override val tag: ProtoTag,
                                 override val modifier: ProtoModifier,
                                 override val defaultValue: Any = None)
-  extends ProtoMessageField(fieldName, protoTypeName, "Int", tag, modifier, defaultValue)
+  extends ProtoMessageField(fieldName, protoTypeName, "scala.Int", tag, modifier, defaultValue)
 
 /**
  * Represent an Int property
@@ -39,7 +39,7 @@ case class LongProtoMessageField(override val fieldName: String,
                                  override val tag: ProtoTag,
                                  override val modifier: ProtoModifier,
                                  override val defaultValue: Any = None)
-  extends ProtoMessageField(fieldName, protoTypeName, "Long", tag, modifier, defaultValue)
+  extends ProtoMessageField(fieldName, protoTypeName, "scala.Long", tag, modifier, defaultValue)
 
 /**
  * Represent an String property
@@ -48,7 +48,7 @@ case class BooleanProtoMessageField(override val fieldName: String,
                                     override val tag: ProtoTag,
                                     override val modifier: ProtoModifier,
                                     override val defaultValue: Any = None)
-  extends ProtoMessageField(fieldName, "bool", "Boolean", tag, modifier, defaultValue)
+  extends ProtoMessageField(fieldName, "bool", "scala.Boolean", tag, modifier, defaultValue)
 
 /**
  * Represent an Float property
@@ -57,7 +57,7 @@ case class FloatProtoMessageField(override val fieldName: String,
                                   override val tag: ProtoTag,
                                   override val modifier: ProtoModifier,
                                   override val defaultValue: Any = None)
-  extends ProtoMessageField(fieldName, "float", "Float", tag, modifier, defaultValue)
+  extends ProtoMessageField(fieldName, "float", "scala.Float", tag, modifier, defaultValue)
 
 /**
  * Represent an Double property
@@ -66,7 +66,7 @@ case class DoubleProtoMessageField(override val fieldName: String,
                                    override val tag: ProtoTag,
                                    override val modifier: ProtoModifier,
                                    override val defaultValue: Any = None)
-  extends ProtoMessageField(fieldName, "double", "Double", tag, modifier, defaultValue)
+  extends ProtoMessageField(fieldName, "double", "scala.Double", tag, modifier, defaultValue)
 
 /**
  * Represent an String property
@@ -75,7 +75,7 @@ case class StringProtoMessageField(override val fieldName: String,
                                    override val tag: ProtoTag,
                                    override val modifier: ProtoModifier,
                                    override val defaultValue: Any = None)
-  extends ProtoMessageField(fieldName, "string", "String", tag, modifier, defaultValue)
+  extends ProtoMessageField(fieldName, "string", "java.lang.String", tag, modifier, defaultValue)
 
 /**
  * Represent an String property
@@ -84,7 +84,7 @@ case class ByteStringProtoMessageField(override val fieldName: String,
                                        override val tag: ProtoTag,
                                        override val modifier: ProtoModifier,
                                        override val defaultValue: Any = None)
-  extends ProtoMessageField(fieldName, "bytes", "ByteString", tag, modifier, defaultValue)
+  extends ProtoMessageField(fieldName, "bytes", "com.google.protobuf.ByteString", tag, modifier, defaultValue)
 
 /**
  * Represent a Message property, that is of course also defined as Protocol Buffers resource

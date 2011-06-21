@@ -21,7 +21,10 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
 
   def pack: Parser[String] = "package" ~ repsep(ID, ".") ~ ";" ^^ {
     case p ~ packName ~ end =>
-      packName.reduceLeft(_ + "." + _)
+      val joinedName = packName.reduceLeft(_ + "." + _)
+      log("detected package name: " + joinedName)
+
+      joinedName
   }
 
   def message: Parser[_ <: ProtoMessage] = opt(pack) ~ "message" ~ ID ~ "{" ~ rep(enumField | messageField ) ~ "}" ^^ {
@@ -51,7 +54,6 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
                                   | "uint64"
                                   | "sint32"
                                   | "sint64"
-                                  | "int"
                                   | "fixed32"
                                   | "fixed64"
                                   | "sfixed32"
@@ -68,8 +70,8 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
   // enums
   def enumField: Parser[ProtoEnumTypeField] = "enum" ~ ID ~ "{" ~ rep(enumValue) ~ "}" ^^ {
     case e ~ id ~ p1 ~ vals ~ p2 =>
-      log("parsing enum type '" + id + "'...")
-      log("enum values: " + vals)
+      log("detected enum type '" + id + "'...")
+      log("              values: " + vals)
 
       ProtoEnumTypeField(typeName = id, vals)
   }
@@ -81,9 +83,10 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
 
   def protoDocComment: Parser[ProtoDocComment] = "/**" ~ rep(CHAR) ~ "*/" ^^ {
     case s ~ text ~ end =>
-      Console.println(">>> " + text)
+      val wholeComment = text.reduceLeft(_ + _)
 
-      ProtoDocComment("someComment")
+      log("detected comment: '" + wholeComment + "'")
+      ProtoDocComment(wholeComment)
   }
 
   // fields

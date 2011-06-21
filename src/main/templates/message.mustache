@@ -1,9 +1,15 @@
+<html>
+<head>
+    {{> styles_css}}
+</head>
+<body>
 <h1>{{messageName}}</h1>
+
 <h2>defined in package: {{packageName}}</h2>
 
 <h2>Fields:</h2>
 <ul id="fields">
-{{#fields}}
+    {{#fields}}
     <li>
         <strong>{{fieldName}}</strong><br/>
         defined as: {{protoTypeName}}<br/>
@@ -11,9 +17,11 @@
     </li>
 
     {{#empty}}
-        <li>
-            <strong>This message has no fields.</strong>
-        </li>
+    <li>
+        <strong>This message has no fields.</strong>
+    </li>
     {{/empty}}
-{{/fields}}
+    {{/fields}}
 </ul>
+</body>
+</html>
