@@ -21,7 +21,7 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
 
   def pack: Parser[String] = "package" ~ repsep(ID, ".") ~ ";" ^^ {
     case p ~ packName ~ end =>
-      packName.foldLeft("") { (sum, item) => sum + "." + item }
+      packName.reduceLeft(_ + "." + _)
   }
 
   def message: Parser[_ <: ProtoMessage] = opt(pack) ~ "message" ~ ID ~ "{" ~ rep(enumField | messageField ) ~ "}" ^^ {

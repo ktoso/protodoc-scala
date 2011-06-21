@@ -2,8 +2,8 @@ package pl.project13.protodoc.templating
 
 import org.fusesource.scalate._
 import layout.DefaultLayoutStrategy
-import pl.project13.protodoc.model.ProtoMessage
 import java.io.File
+import pl.project13.protodoc.model.ProtoMessage
 
 /**
  *
@@ -21,6 +21,9 @@ class ProtoDocTemplateEngine {
                                  className = "String",
                                  defaultValue = Option(""""v1.0"""")))
 
+  /**
+   * Renders the HTML with all Messages, a table of contents so to say
+   */
   def renderTableOfContents(contents: List[ProtoMessage]) = {
     val data = Map("contents" -> contents)
 
@@ -28,7 +31,11 @@ class ProtoDocTemplateEngine {
   }
 
   def renderMessagePage(msg: ProtoMessage) = {
-    val data = Map("msg" -> msg)
+    val data = Map("messageName" -> msg.messageName,
+                   "packageName" -> msg.packageName,
+                   "fields" -> msg.fields,
+                   "enums" -> msg.enums,
+                   "innerMessages" -> msg.innerMessages)
 
     engine.layout("message.mustache", data)
   }

@@ -1,19 +1,19 @@
-<h1>{{msg.messageName}}</h1>
-
+<h1>{{messageName}}</h1>
+<h2>defined in package: {{packageName}}</h2>
 
 <h2>Fields:</h2>
-<ul>
-{{#msg.fields}}
-  {{#field}}
+<ul id="fields">
+{{#fields}}
     <li>
         <strong>{{fieldName}}</strong><br/>
         defined as: {{protoTypeName}}<br/>
         mapped to: {{scalaTypeName}}
     </li>
-  {{/field}}
-{{/msg.fields}}
-</ul>
 
-{{#empty}}
-  <p>The list is empty.</p>
-{{/empty}}
+    {{#empty}}
+        <li>
+            <strong>This message has no fields.</strong>
+        </li>
+    {{/empty}}
+{{/fields}}
+</ul>

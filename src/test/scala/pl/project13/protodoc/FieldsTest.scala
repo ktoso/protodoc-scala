@@ -33,14 +33,14 @@ class FieldsTest extends FlatSpec with HasProtoTag
     result.fields.head should equal (expected)
   }
 
-  "Parser" should "parse single sfixed32 field" in {
+  "Parser" should "parse single sfixed64 field" in {
     val result: ProtoMessage = ProtoBufParser.parse("""
     message Wiadomosc {
       required sfixed64 number = 1;
     }
     """)
 
-    val expected = IntProtoMessageField("number", "sfixed64", 1, RequiredProtoModifier())
+    val expected = LongProtoMessageField("number", "sfixed64", 1, RequiredProtoModifier())
     result.fields.head should equal (expected)
   }
 

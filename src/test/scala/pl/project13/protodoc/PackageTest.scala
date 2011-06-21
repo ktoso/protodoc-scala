@@ -16,12 +16,10 @@ class PackageTest extends FlatSpec with HasProtoTag
     package pl.project13;
 
     message Wiadomosc {
-      required int32 number = 1;
     }
     """)
 
-    val expected = IntProtoMessageField("number", "int32", 1, RequiredProtoModifier())
-    result.fields.head should equal (expected)
+    result.packageName should equal ("pl.project13")
   }
 
 }

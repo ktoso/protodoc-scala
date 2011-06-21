@@ -9,5 +9,7 @@ case class ProtoMessage (messageName: String,
                          enums: List[ProtoEnumTypeField] = List(),
                          innerMessages: List[ProtoMessage] = List()) {
 
+  def fullName = packageName + "." + messageName
+
 //  override def toString = "ProtoMessage '%s' in %s, with: %s".format(messageName, packageName, fields)
 }
