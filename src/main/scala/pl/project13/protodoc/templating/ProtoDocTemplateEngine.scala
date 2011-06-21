@@ -2,7 +2,6 @@ package pl.project13.protodoc.templating
 
 import org.fusesource.scalate._
 import layout.DefaultLayoutStrategy
-import mustache.MustacheCodeGenerator
 import pl.project13.protodoc.model.ProtoMessage
 import java.io.File
 
@@ -23,8 +22,10 @@ class ProtoDocTemplateEngine {
                                  defaultValue = Option(""""v1.0"""")))
 
   def renderTableOfContents(contents: List[ProtoMessage]) = {
-    val data = Map("contents" -> contents, "test" -> "it's working, yay!")
-    engine.layout("toc.mustache", data)
+    val data = Map("contents" -> contents,
+                   "test" -> "it's working, yay!")
+
+    engine.layout("index.mustache", data)
   }
 
   def renderMessagePage() = {

@@ -1,0 +1,17 @@
+<div>
+    <h1>
+        ProtoDoc {{protodoc_version}}<br/>
+        <small>by Konrad Malawski konrad.malawski@java.pl</small>
+    </h1>
+
+    <h2>Table of Contents</h2>
+
+    <h3 id="header">Messages:</h3>
+    <ul id="list">
+        {{#contents}}
+        <li>
+            <a href="{{packageName}}.{{messageName}}.html" target="main">{{messageName}}</a>
+        </li>
+        {{/contents}}
+    </ul>
+</div>

@@ -18,8 +18,6 @@ class FieldsTest extends FlatSpec with HasProtoTag
     }
     """)
 
-    result
-
     result.fields.head should equal (IntProtoMessageField("number", 1, RequiredProtoModifier()))
   }
 
@@ -29,8 +27,6 @@ class FieldsTest extends FlatSpec with HasProtoTag
       required int32 number = 1;
     }
     """)
-
-    result
 
     result.fields.head should equal (IntProtoMessageField("number", 1, RequiredProtoModifier()))
   }
@@ -42,8 +38,6 @@ class FieldsTest extends FlatSpec with HasProtoTag
     }
     """)
 
-    result
-
     result.fields.head should equal (IntProtoMessageField("number", 1, RequiredProtoModifier()))
   }
 
@@ -53,8 +47,6 @@ class FieldsTest extends FlatSpec with HasProtoTag
       required sfixed32 number = 1;
     }
     """)
-
-    result
 
     result.fields.head should equal (IntProtoMessageField("number", 1, RequiredProtoModifier()))
   }
@@ -66,8 +58,6 @@ class FieldsTest extends FlatSpec with HasProtoTag
     }
     """)
 
-    result
-
     result.fields.head should equal (LongProtoMessageField("number", 1, RequiredProtoModifier()))
   }
 
@@ -77,8 +67,6 @@ class FieldsTest extends FlatSpec with HasProtoTag
       repeated fixed64 number = 1;
     }
     """)
-
-    result
 
     result.fields.head should equal (LongProtoMessageField("number", 1, RepeatedProtoModifier()))
   }
@@ -90,8 +78,6 @@ class FieldsTest extends FlatSpec with HasProtoTag
     }
     """)
 
-    result
-
     result.fields.head should equal (StringProtoMessageField("name", 1, OptionalProtoModifier()))
   }
 
@@ -101,8 +87,6 @@ class FieldsTest extends FlatSpec with HasProtoTag
       required string name = 1 [default = "loremipsum"]; // thats ok, says the spec
     }
     """)
-
-    result
 
     result.fields.head should equal (StringProtoMessageField("name", 1, RequiredProtoModifier(), "loremipsum"))
   }
