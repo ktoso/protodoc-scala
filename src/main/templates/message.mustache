@@ -1,0 +1,18 @@
+<h1>{{message}}</h1>
+{{#bug}}
+{{/bug}}
+
+<h2>Message fields:</h2>
+<ul>
+{{#fields}}
+  {{#field}}
+    <li>
+        {{type}} <strong>{{name}}</strong>
+    </li>
+  {{/field}}
+{{/fields}}
+</ul>
+
+{{#empty}}
+  <p>The list is empty.</p>
+{{/empty}}

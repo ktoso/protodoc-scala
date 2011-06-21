@@ -3,11 +3,11 @@ package pl.project13.protodoc.model
 /**
  * @author Konrad Malawski
  */
-class ProtoMessage (val messageName: String,
-                    val packageName: String,
-                    val fields: List[ProtoMessageField],
-                    val enums: List[ProtoEnumTypeField],
-                    val innerMessages: List[ProtoMessage]) {
+case class ProtoMessage (messageName: String,
+                         packageName: String,
+                         fields: List[ProtoMessageField] = List(),
+                         enums: List[ProtoEnumTypeField] = List(),
+                         innerMessages: List[ProtoMessage] = List()) {
 
-  override def toString = "ProtoMessage '%s' in %s, with: %s".format(messageName, packageName, fields)
+//  override def toString = "ProtoMessage '%s' in %s, with: %s".format(messageName, packageName, fields)
 }

@@ -8,7 +8,8 @@ import org.scalatest.matchers.ShouldMatchers
 *
 * @author Konrad Malawski
 */
-class FieldsTest extends FlatSpec with HasProtoTag with ShouldMatchers {
+class FieldsTest extends FlatSpec with HasProtoTag
+                                  with ShouldMatchers {
 
   "Parser" should "parse single int field" in {
     val result: ProtoMessage = ProtoBufParser.parse("""
