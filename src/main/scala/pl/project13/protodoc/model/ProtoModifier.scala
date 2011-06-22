@@ -1,6 +1,6 @@
 package pl.project13.protodoc.model
 
-import pl.project13.protodoc.InvalidModifierException
+import pl.project13.protodoc.exceptions.InvalidModifierException
 
 /**
  * @author Konrad Malawski
