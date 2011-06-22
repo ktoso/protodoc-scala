@@ -1,0 +1,19 @@
+<script type="text/javascript">
+    $(document).ready(function() {
+        var contentWindow = $('#content-window');
+
+        $('.msg-link').each(function(index) {
+            var filename = $(this).attr('href');
+            $(this).attr('href', '#' + filename);
+            $(this).attr('filename', filename);
+        });
+
+        $('.msg-link').click(function(e) {
+            e.preventDefault();
+
+            var filename = $(this).attr('filename');
+            console.log("loading: " + filename);
+            contentWindow.attr('src', filename);
+        });
+    });
+</script>

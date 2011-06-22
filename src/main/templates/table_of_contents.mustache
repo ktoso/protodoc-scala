@@ -1,3 +1,5 @@
+{{> menu_load_to_div_js }}
+
 <div>
     <h1>
         ProtoDoc {{protodoc_version}}<br/>
@@ -10,7 +12,7 @@
     <ul id="list">
         {{#contents}}
         <li>
-            <a href="{{packageName}}.{{messageName}}.html" target="main">{{messageName}}</a>
+            <a class="msg-link" href="{{packageName}}.{{messageName}}.html">{{messageName}}</a>
         </li>
         {{/contents}}
     </ul>

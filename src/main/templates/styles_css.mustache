@@ -19,6 +19,7 @@
         position: fixed;
         top: 0;
         overflow: scroll;
+        overflow-x: hidden;
         width: 15%;
         height: 100%;
         float: left;
@@ -85,21 +86,19 @@
         background: white;
     }
 
+    .no-marg {
+        margin: 0;
+    }
+
+    .no-pad {
+        padding: 0;
+    }
+
+        /* search filter in table of contents */
     .placeholder {
         background: white;
         color: #999;
         font-style: italic;
-    }
-
-    .filterinput {
-        border: none;
-        background: transparent url(images/filter_box_bar_bg.png) repeat-x;
-        height: 22px;
-
-        margin-left: 21px;
-        margin-right: 21px;
-        margin-top: -1px;
-        width: 100%;
     }
 
     .filterform {
@@ -107,4 +106,22 @@
         background: transparent url(images/filter_box_left.png) no-repeat left;
         height: 22px;
     }
+
+    .filterinput {
+        border: none;
+        background: transparent url(images/filter_box_bar_bg.png) repeat-x;
+        height: 22px;
+
+        position: relative;
+        left: 21px;
+        /*margin-left: 21px;*/
+        /*margin-right: 21px;*/
+        margin-top: -1px;
+        width: 100%;
+    }
+
+    iframe {
+        border: none;
+    }
+
 </style>
