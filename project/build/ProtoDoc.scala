@@ -1,4 +1,7 @@
+import java.io.File
 import sbt._
+import FileUtilities._
+
 class ProtoDocProject(info: ProjectInfo) extends DefaultProject(info) {
 
   //project name
@@ -21,8 +24,23 @@ class ProtoDocProject(info: ProjectInfo) extends DefaultProject(info) {
     FileUtilities.copyFlat(jars.get, libraryJarPath, log)
   }
 
+  lazy val pack = packageAction
+//  lazy val compile = compileAction
 
-  lazy val collectJars = task { collectJarsTask; None } dependsOn (compile)
+  lazy val collectJars = task {
+    collectJarsTask; None
+  } dependsOn (compile)
+
+  lazy val `jar` = task {
+    None
+  } dependsOn (collectJars)
+
+//  lazy val dist = task {
+//    createDirectory("dist", log)
+//    copyFile(List(new File("target/scala-2.8.1/protodoc-1.0.jar")), "dist", log)
+//    copyFile(List(new File("target/scala-2.8.1/lib")), "dist", log)
+//    None
+//  } dependsOn (compile, pack)
 
   //proguard
   /******** Proguard *******/

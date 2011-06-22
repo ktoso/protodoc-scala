@@ -12,7 +12,8 @@ class Configuration(m: ValueMap) extends ConfigMap(m) {
 // our argument parser which uses a factory to create our Configuration
 case class ArgumentsParser() extends ArgumentParser(new Configuration(_))
                              with DefaultHelpViewer {
-  override val programName = Some("SimpleExample") // set the program name for the help text
+
+  override val programName = Some("ProtoDoc")
 
   // define our expected arguments
   ! "-v" | "--verbose"   |% "active verbose output, [default = false]"       |> "verbose"
