@@ -1,6 +1,8 @@
 *.class
 *.bak
 
+.idea/
+lib/
 idea/
 target/
 lib_managed/
