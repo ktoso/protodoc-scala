@@ -5,11 +5,13 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
 
 /**
-*
-* @author Konrad Malawski
-*/
+ *
+ * @author Konrad Malawski
+ */
 class InnerMessagesTest extends FlatSpec with HasProtoTag
-                                  with ShouldMatchers {
+                                         with ShouldMatchers {
+
+  ProtoBufParser.verbose = true
 
   "Parser" should "parse single int32 field" in {
     val result: ProtoMessage = ProtoBufParser.parse("""
@@ -22,9 +24,7 @@ class InnerMessagesTest extends FlatSpec with HasProtoTag
 
     val intField = IntProtoMessageField("number", "int32", 1, RequiredProtoModifier())
     val inner = ProtoMessage("InnerMessage", fields = List(intField))
-    val expected = ProtoMessage("MyMessage", innerMessages = List(inner))
-
-    result.fields.head should equal (expected)
+    result should equal (ProtoMessage("MyMessage", innerMessages = List(inner)))
   }
 
 }

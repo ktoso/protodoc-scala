@@ -32,7 +32,7 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
       joinedName
   }
 
-  def message: Parser[_ <: ProtoMessage] = opt(pack) ~ "message" ~ ID ~ "{" ~ rep(enumField | messageField) ~ "}" ^^ {
+  def message: Parser[_ <: ProtoMessage] = opt(pack) ~ "message" ~ ID ~ "{" ~ rep(enumField | messageField | message) ~ "}" ^^ {
     case maybePack ~ m ~ id ~ p1 ~ allFields ~ p2 =>
 
       val pack = maybePack.getOrElse("")
