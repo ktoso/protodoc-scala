@@ -33,14 +33,15 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
       val pack = maybePack.getOrElse("")
 
       log("Parsed message in '%s' named '%s'".format(pack, id))
-      log(" fields: " + list2typedMessageFieldList(allFields))
-      log(" enums: " + list2typedEnumTypeList(allFields))
+      log(" fields: " + list2messageFieldList(allFields))
+      log(" enums: " + list2enumTypeList(allFields))
+      log(" inner messages: " + list2messageList(allFields))
 
       new ProtoMessage(messageName = id ,
                        packageName = pack,
                        fields = allFields /*will be implicitly filtered*/,
                        enums = allFields /*will be implicitly filtered*/,
-                       innerMessages = List())    // todo this is a stub
+                       innerMessages = allFields/*will be implicitly filtered*/)
   }
 
   def modifier: Parser[ProtoModifier] = ("optional" | "required" | "repeated") ^^ {s =>

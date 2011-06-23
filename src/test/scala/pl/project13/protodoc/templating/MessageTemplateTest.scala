@@ -24,7 +24,7 @@ class MessageTemplateTest extends FlatSpec with ShouldMatchers {
 
     val page = templateEngine.renderMessagePage(message)
 
-    printToFile(new java.io.File("/tmp/test.html")) ({ p => page.foreach(p.print) })
+    printToFile(new java.io.File("/tmp/pl.project13.protobuf.AmazingMessage.html")) ({ p => page.foreach(p.print) })
 
     page should include ("pl.project13.protobuf")
     page should include ("AmazingMessage")

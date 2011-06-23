@@ -6,12 +6,16 @@ package pl.project13.protodoc.model
  */
 trait ParserConversions {
 
-  implicit def list2typedEnumTypeList(li: List[Any]): List[ProtoEnumTypeField] = {
+  implicit def list2enumTypeList(li: List[Any]): List[ProtoEnumTypeField] = {
     li.filter(_.isInstanceOf[ProtoEnumTypeField]).map(_.asInstanceOf[ProtoEnumTypeField])
   }
 
-  implicit def list2typedMessageFieldList(li: List[Any]): List[ProtoMessageField] = {
+  implicit def list2messageFieldList(li: List[Any]): List[ProtoMessageField] = {
     li.filter(_.isInstanceOf[ProtoMessageField]).map(_.asInstanceOf[ProtoMessageField])
+  }
+
+  implicit def list2messageList(li: List[Any]): List[ProtoMessage] = {
+    li.filter(_.isInstanceOf[ProtoMessage]).map(_.asInstanceOf[ProtoMessage])
   }
 
   implicit def tag2long(tag: ProtoTag): Long = {

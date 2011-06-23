@@ -14,6 +14,7 @@ class TableOfContentsTest extends FlatSpec with ShouldMatchers {
   val sampleProtoMessage = List(ProtoMessage("MyMessage", "pl.project13"),
                                 ProtoMessage("SecondMessage", "pl.project13"),
                                 ProtoMessage("Person", "pl.project13"),
+                                ProtoMessage("AmazingMessage", "pl.project13.protobuf"),
                                 ProtoMessage("PhoneNumber", "pl.project13"),
                                 ProtoMessage("Address", "pl.project13"),
                                 ProtoMessage("PersonTypeEnum", "pl.project13"))
@@ -21,7 +22,7 @@ class TableOfContentsTest extends FlatSpec with ShouldMatchers {
   "ProtoDocTemplateEngine" should "render table of contents from sample data" in {
     val page = templateEngine.renderTableOfContents(sampleProtoMessage)
 
-    printToFile(new java.io.File("/tmp/test.html")) ({ p => page.foreach(p.print) })
+    printToFile(new java.io.File("/tmp/index.html")) ({ p => page.foreach(p.print) })
 
     page should include ("Table of Contents")
     page should include ("MyMessage")

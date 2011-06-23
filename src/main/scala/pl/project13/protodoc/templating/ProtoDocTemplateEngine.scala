@@ -25,7 +25,8 @@ class ProtoDocTemplateEngine {
    * Renders the HTML with all Messages, a table of contents so to say
    */
   def renderTableOfContents(contents: List[ProtoMessage]) = {
-    val data = Map("contents" -> contents)
+    val sortedContents = contents.sortBy(m => m.messageName)
+    val data = Map("contents" -> sortedContents)
 
     engine.layout("index.mustache", data)
   }
