@@ -10,7 +10,7 @@ import org.scalatest.matchers.ShouldMatchers
 *
 * @author Konrad Malawski
 */
-class OutEnumRepresentationTest extends FlatSpec with ShouldMatchers {
+class EnumsTest extends FlatSpec with ShouldMatchers {
 
   "Parser" should "generate valid ProtoEnumTypeField" in {
     val result: ProtoMessage = ProtoBufParser.parse("""
@@ -28,8 +28,30 @@ class OutEnumRepresentationTest extends FlatSpec with ShouldMatchers {
   "Message with 2 fields" should "in fact have 2 fields" in {
     val result: ProtoMessage = ProtoBufParser.parse("""
     message WiadomoscDwaPola {
-      string pole = 23;
-      int32 last = 42 [default = 42];
+      required string pole = 23;
+      required int32 last = 42 [default = 42];
+    }""")
+
+    result
+
+    // then
+    result.fields should have length (2)
+
+    result.fields.map(_.fieldName) should contain ("pole")
+    result.fields.map(_.fieldName) should contain ("last")
+  }
+
+  "Enum" should "be usable as field type" in {
+    val result: ProtoMessage = ProtoBufParser.parse("""
+    message WiadomoscDwaPola {
+
+      enum EnumType {
+        EMAIL = 1;
+        SMS = 2;
+      }
+
+      optional string pole = 1;
+      required EnumType theEnum = 2;
     }""")
 
     result

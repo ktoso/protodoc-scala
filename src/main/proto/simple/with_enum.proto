@@ -1,0 +1,16 @@
+/**
+ * @author Konrad Malawski
+ */
+
+//option java_package = "pl.project13.protodoc";
+
+message WithEnum {
+    enum SomeEnumType {
+        EMAIL = 1;
+        SMS = 2;
+        MAIL = 3;
+    }
+
+    required string name = 2 [default = "default"];
+    optional SomeEnumType aField = 3;
+}
