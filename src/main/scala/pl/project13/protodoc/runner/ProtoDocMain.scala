@@ -66,6 +66,14 @@ object ProtoDocMain {
 
       val outFilename = outDir + "/" + parsedProto.fullName + ".html"
       writeToFile(outFilename, pageHtml)
+
+      // and for all inner messages
+      for(msg <- parsedProto.innerMessages) {
+        val pageHtml = templateEngine.renderMessagePage(msg)
+
+        val outFilename = outDir + "/" + msg.fullName + ".html"
+        writeToFile(outFilename, pageHtml)
+      }
     }
 
     val indexHtml  = templateEngine.renderTableOfContents(parsedProtos)

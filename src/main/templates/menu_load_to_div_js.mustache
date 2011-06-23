@@ -10,19 +10,6 @@
             console.log("loading: " + filename);
             contentWindow.attr('src', filename);
         }
-
-        $('.msg-link').each(function(index) {
-            var filename = $(this).attr('href');
-            $(this).attr('href', '#' + filename);
-            $(this).attr('filename', filename);
-        });
-
-        $('.msg-link').click(function(e) {
-            e.preventDefault();
-
-            var filename = $(this).attr('filename');
-            loadContent(filename);
-            window.location.hash = filename;
-        });
     });
 </script>
+{{> message_links_js }}

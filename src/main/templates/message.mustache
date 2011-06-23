@@ -10,7 +10,7 @@
 <h2>defined in package: {{packageName}}</h2>
 
 <h2 class="fields-header sub-header">Fields:</h2>
-<ul id="fields">
+<ul class="fields">
     {{#fields}}
     <li>
         <strong>{{fieldName}}</strong><br/>
@@ -26,7 +26,7 @@
 </ul>
 
 <h2 class="inner-enums-header sub-header">Inner Enums:</h2>
-<ul id="inner-enums">
+<ul class="inner-enums">
     {{#enums}}
     <li>
         <strong>{{typeName}}</strong><br/>
@@ -57,5 +57,19 @@
     <!--{{/empty}}-->
     {{/enums}}
 </ul>
+
+<h2 class="inner-msgs-header sub-header">Inner messages:</h2>
+<ul class="inner-msgs">
+    {{#innerMessages}}
+    <li>
+        <strong>
+            <a class="msg-link" href="{{packageName}}.{{messageName}}.html">
+                {{messageName}}
+            </a>
+        </strong>
+    </li>
+    {{/innerMessages}}
+</ul>
+
 </body>
 </html>
