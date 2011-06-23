@@ -1,8 +1,9 @@
 package pl.project13.protodoc
 
-import exceptions.ProtoDocParsingException
+import exceptions.{UnknownTypeException, ProtoDocParsingException}
 import model._
 import scala.util.parsing.combinator._
+import org.fusesource.scalate.ssp.ElseFragment
 
 /**
  * @author Konrad Malawski
@@ -14,11 +15,15 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
    */
   var verbose = false
 
-  def ID = """[a-zA-Z]([a-zA-Z0-9]*|_[a-zA-Z0-9]*)*""".r
+  def ID = """[a-zA-Z_]([a-zA-Z0-9_]*|_[a-zA-Z0-9]*)*""".r
 
   def NUM = """[1-9][0-9]*""".r
 
   def CHAR = """[a-zA-Z0-9]""".r
+
+  // lists of "known types", to allow parsing of enum fields etc
+  var knownEnums: List[ProtoEnumType] = List()
+  var knownMessages: List[ProtoMessage] = List()
 
   /**
    * For now, just ignore whitespaces
@@ -33,7 +38,7 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
       joinedName
   }
 
-  def message: Parser[_ <: ProtoMessage] = opt(pack) ~ "message" ~ ID ~ "{" ~ rep(enumField | messageField | message) ~ "}" ^^ {
+  def message: Parser[_ <: ProtoMessage] = opt(pack) ~ "message" ~ ID ~ "{" ~ rep(enumTypeDef | instanceField | message) ~ "}" ^^ {
     case maybePack ~ m ~ id ~ p1 ~ allFields ~ p2 =>
 
       val pack = maybePack.getOrElse("")
@@ -56,32 +61,51 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
       ProtoModifier.str2modifier(s)
   }
 
+  // todo make these two fields use the same list
+  val primitiveTypes = List("int32", "int64", "uint32", "uint64", "sint32", "sint64", "fixed32", "fixed64",
+                            "sfixed32", "sfixed64", "double", "float", "bool","string", "bytes")
+
   def protoType: Parser[String] = ("int32"
-    | "int64"
-    | "uint32"
-    | "uint64"
-    | "sint32"
-    | "sint64"
-    | "fixed32"
-    | "fixed64"
-    | "sfixed32"
-    | "sfixed64"
-    | "double"
-    | "float"
-    | "bool"
-    | "string"
-    | "bytes"
-    )
+                                 | "int64"
+                                 | "uint32"
+                                 | "uint64"
+                                 | "sint32"
+                                 | "sint64"
+                                 | "fixed32"
+                                 | "fixed64"
+                                 | "sfixed32"
+                                 | "sfixed64"
+                                 | "double"
+                                 | "float"
+                                 | "bool"
+                                 | "string"
+                                 | "bytes"
+                                 )
 
-  def anyField = enumField | messageField
+  def enumType: Parser[String] = ("""\w+""".r) ^^ {
+    s =>
+      log("Trying to parse '" + s + "' as 'known' enum...")
+      val knownEnumNames = knownEnums.map(_.typeName)
+      log("Known enums are: " + knownEnumNames)
 
-  // enums
-  def enumField: Parser[ProtoEnumTypeField] = "enum" ~ ID ~ "{" ~ rep(enumValue) ~ "}" ^^ {
+      if (knownEnumNames.contains(s)) {
+        s
+      } else {
+        throw new UnknownTypeException("Unable to link '" + s + "' to any known enum Type.")
+      }
+  }
+
+  def anyField = enumTypeDef | instanceField //| enumField
+
+  // enums --------------------------------------------------------------------
+  def enumTypeDef: Parser[ProtoEnumType] = "enum" ~ ID ~ "{" ~ rep(enumValue) ~ "}" ^^ {
     case e ~ id ~ p1 ~ vals ~ p2 =>
       log("detected enum type '" + id + "'...")
       log("              values: " + vals)
 
-      ProtoEnumTypeField(typeName = id, vals)
+      val definedEnum = ProtoEnumType(typeName = id, vals)
+      knownEnums ::= definedEnum
+      definedEnum
   }
 
   def enumValue: Parser[ProtoEnumValue] = ID ~ "=" ~ NUM ~ ";" ^^ {
@@ -89,6 +113,7 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
       ProtoEnumValue(id, num)
   }
 
+  // comments -----------------------------------------------------------------
   def protoDocComment: Parser[ProtoDocComment] = "/**" ~ rep(CHAR) ~ "*/" ^^ {
     case s ~ text ~ end =>
       val wholeComment = text.reduceLeft(_ + _)
@@ -97,13 +122,24 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
       ProtoDocComment(wholeComment)
   }
 
-  // fields
-  def messageField = opt(protoDocComment) ~ opt(modifier) ~ protoType ~ ID ~ "=" ~ integerValue ~ opt(defaultValue) ~ ";" ^^ {
+  // fields -------------------------------------------------------------------
+  def instanceField = opt(protoDocComment) ~ modifier ~ (protoType | enumType /* | msgType*/) ~ ID ~ "=" ~ integerValue ~ opt(defaultValue) ~ ";" ^^ {
     case doc ~ mod ~ pType ~ id ~ eq ~ tag ~ defaultVal ~ end =>
-      log("parsing message field '" + id + "'...")
+      log("parsing field '" + id + "'...")
 
-      val modifier = mod.getOrElse(RequiredProtoModifier()) // todo remove this
-      ProtoMessageField.toTypedField(pType, id, tag, modifier, defaultVal)
+      if(primitiveTypes.contains(pType)) {
+        ProtoMessageField.toTypedField(pType, id, tag, mod, defaultVal)
+      } else if(knownEnums.map(_.typeName).contains(pType)){
+        // it's an enum
+        val itsEnumType = knownEnums.find(p => p.typeName == pType).get
+        ProtoMessageField.toEnumField(id, itsEnumType, tag, mod, defaultVal)
+      }
+//      else if(knownMessages.map(_.messageName).contains(pType)){ // todo must be impreved, fullname also is ok here
+//        ProtoMessageField.to // todo implement messages, the same way as enum fields
+//      }
+      else {
+        throw new UnknownTypeException("Unable to create Field instance for field: '" + id + "', type: " + pType)
+      }
   }
 
   def defaultValue: Parser[Any] = "[" ~ "default" ~ "=" ~ (ID | NUM | stringValue) ~ "]" ^^ {
@@ -112,7 +148,7 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
       value
   }
 
-  // field values
+  // field values -------------------------------------------------------------
   def integerValue: Parser[Int] = ("[1-9][0-9]*".r) ^^ {
     s =>
       s.toInt
@@ -128,7 +164,7 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
       s.toBoolean
   }
 
-  /* methods */
+  /* ----------------- API methods ----------------------------------------- */
 
   def parse(s: String): ProtoMessage = parseAll(message, s) match {
     case Success(res, _) => res

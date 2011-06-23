@@ -5,8 +5,8 @@ package pl.project13.protodoc.model
  * @author Konrad Malawski
  */
 
-case class ProtoEnumTypeField(typeName: String,
-                              values: List[ProtoEnumValue]) {
+case class ProtoEnumType(typeName: String,
+                         values: List[ProtoEnumValue]) {
   def asScalaSourceCode() {
     """
     /* THIS FILE HAS BEEN GENERATED AUTOMATICALY, DONT MODIFY IT BY HAND */

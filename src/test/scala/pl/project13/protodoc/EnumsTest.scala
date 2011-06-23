@@ -5,16 +5,23 @@ import model.IntProtoMessageField._
 import model.StringProtoMessageField._
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
+import pl.project13.protodoc.exceptions.UnknownTypeException
 
 /**
 *
 * @author Konrad Malawski
 */
-class EnumsTest extends FlatSpec with ShouldMatchers {
+class EnumsTest extends FlatSpec with ShouldMatchers
+                                 with HasProtoTag {
 
-  "Parser" should "generate valid ProtoEnumTypeField" in {
+  ProtoBufParser.verbose = true
+
+  "Enum" should "be parseable inside of an Message" in {
     val result: ProtoMessage = ProtoBufParser.parse("""
     message Wiadomosc {
+      required string some_field = 1;
+      required string some_field_zomg = 5;
+
       enum MyEnum {
         VALUE = 2;
         OTHER = 4;
@@ -22,23 +29,12 @@ class EnumsTest extends FlatSpec with ShouldMatchers {
       }
     }""")
 
-    result
-  }
+    result.fields should have size (2)
+    result.enums should have size (1)
 
-  "Message with 2 fields" should "in fact have 2 fields" in {
-    val result: ProtoMessage = ProtoBufParser.parse("""
-    message WiadomoscDwaPola {
-      required string pole = 23;
-      required int32 last = 42 [default = 42];
-    }""")
-
-    result
-
-    // then
-    result.fields should have length (2)
-
-    result.fields.map(_.fieldName) should contain ("pole")
-    result.fields.map(_.fieldName) should contain ("last")
+    val values = ProtoEnumValue("VALUE", 2) :: ProtoEnumValue("OTHER", 4) :: ProtoEnumValue("LAST", 5) :: Nil
+    val expected = ProtoEnumType("MyEnum", values)
+    result.enums should contain (expected)
   }
 
   "Enum" should "be usable as field type" in {
@@ -50,16 +46,36 @@ class EnumsTest extends FlatSpec with ShouldMatchers {
         SMS = 2;
       }
 
-      optional string pole = 1;
       required EnumType theEnum = 2;
+      optional string pole = 1;
     }""")
 
-    result
+    result.fields should have size (2)
+    result.enums should have size (1)
 
-    // then
-    result.fields should have length (2)
+    val enumType: ProtoEnumType = result.enums.head
+    val enumField: ProtoMessageField = result.fields.head
+    enumField should have (
+      'tag (ProtoTag(2)),
+      'modifier (RequiredProtoModifier()),
+      'fieldName ("theEnum"),
+      'defaultValue (null),
+      'scalaTypeName (enumType.typeName),
+      'protoTypeName (enumType.typeName)
+    )
+  }
 
-    result.fields.map(_.fieldName) should contain ("pole")
-    result.fields.map(_.fieldName) should contain ("last")
+  "Enum" should "stick to 'known' enums, and not allow random field types" in {
+    evaluating {
+      ProtoBufParser.parse("""
+        message Msg {
+        enum SomeEnum {
+          SMS = 1;
+        }
+
+        required UndefinedEnum field = 1;
+      }
+      """)
+    } should produce [UnknownTypeException]
   }
 }

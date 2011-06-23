@@ -6,8 +6,8 @@ package pl.project13.protodoc.model
  */
 trait ParserConversions {
 
-  implicit def list2enumTypeList(li: List[Any]): List[ProtoEnumTypeField] = {
-    li.filter(_.isInstanceOf[ProtoEnumTypeField]).map(_.asInstanceOf[ProtoEnumTypeField])
+  implicit def list2enumTypeList(li: List[Any]): List[ProtoEnumType] = {
+    li.filter(_.isInstanceOf[ProtoEnumType]).map(_.asInstanceOf[ProtoEnumType])
   }
 
   implicit def list2messageFieldList(li: List[Any]): List[ProtoMessageField] = {

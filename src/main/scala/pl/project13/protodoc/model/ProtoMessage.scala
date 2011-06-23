@@ -6,7 +6,7 @@ package pl.project13.protodoc.model
 case class ProtoMessage (messageName: String,
                          packageName: String = "",
                          fields: List[ProtoMessageField] = List(),
-                         enums: List[ProtoEnumTypeField] = List(),
+                         enums: List[ProtoEnumType] = List(),
                          innerMessages: List[ProtoMessage] = List()) {
 
   def fullName = packageName + "." + messageName

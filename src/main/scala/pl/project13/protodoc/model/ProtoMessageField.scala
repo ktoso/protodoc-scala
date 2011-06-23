@@ -99,6 +99,19 @@ case class MessageProtoMessageField(override val fieldName: String,
   extends ProtoMessageField(fieldName, scalaTypeName, protoTypeName,  tag, modifier, defaultValue)
 
 /**
+ * Represent a Enum property, that is of course also defined as Protocol Buffers resource
+ * todo actually use it to represent Enum instance fields
+ */
+case class EnumProtoMessageField(override val fieldName: String,
+                                 override val protoTypeName: String,
+                                 override val scalaTypeName: String,
+                                 override val tag: ProtoTag,
+                                 override val modifier: ProtoModifier,
+                                 override val defaultValue: Any)
+//                                 override val defaultValue: ProtoEnumValue) // todo would be awesome
+  extends ProtoMessageField(fieldName, scalaTypeName, protoTypeName,  tag, modifier, defaultValue)
+
+/**
  * Companion object, serves as factory, will be used by parser
  */
 object ProtoMessageField extends HasProtoTag {
@@ -123,5 +136,19 @@ object ProtoMessageField extends HasProtoTag {
       new ByteStringProtoMessageField(fieldName, protoTag, modifier, defaultValue.getOrElse(None))
     case unknownType =>
       throw new UnsupportedOperationException("Unknown field type encountered: " + unknownType)
+  }
+
+  def toEnumField(fieldName: String,
+                  isValueOfEnumType: ProtoEnumType,
+                  protoTag: Any,
+                  modifier: ProtoModifier,
+                  defaultValue: Option[Any] = None) = {
+//                  defaultValue: Option[ProtoEnumValue] = None) = { // todo would be awesome
+    new EnumProtoMessageField(fieldName = fieldName,
+                              protoTypeName = isValueOfEnumType.typeName,
+                              scalaTypeName = isValueOfEnumType.typeName,
+                              tag = protoTag,
+                              modifier = modifier,
+                              defaultValue = defaultValue.getOrElse(null))
   }
 }

@@ -14,17 +14,23 @@ class ProtoBufParserTest extends FlatSpec with ShouldMatchers
   "Parser" should "parse single simple message" in {
     val result: ProtoMessage = ProtoBufParser.parse("""
     message Wiadomosc {
-      string name = 1;
+      required string name = 1;
     }
     """)
 
-    result
+    result.fields.head should have (
+      'tag (ProtoTag(1)),
+      'fieldName ("name"),
+      'protoTypeName ("string"),
+      'scalaTypeName ("java.lang.String"),
+      'modifier (RequiredProtoModifier())
+    )
   }
 
   "Parser" should "parse single message with enum" in {
     val result: ProtoMessage = ProtoBufParser.parse("""
     message Wiadomosc {
-      string name = 1;
+      required string name = 1;
 
       enum MyEnum {
         EMAIL = 1;
