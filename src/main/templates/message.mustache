@@ -2,13 +2,14 @@
 <head>
     <title>ProtoDoc for: {{packageName}}.{{fieldName}}</title>
     {{> styles_css}}
+    {{> message_styles_css}}
 </head>
 <body>
-<h1>{{messageName}}</h1>
+<h1 class="message-header">{{messageName}}</h1>
 
 <h2>defined in package: {{packageName}}</h2>
 
-<h2>Fields:</h2>
+<h2 class="fields-header sub-header">Fields:</h2>
 <ul id="fields">
     {{#fields}}
     <li>
@@ -16,13 +17,28 @@
         defined as: {{protoTypeName}}<br/>
         mapped to: {{scalaTypeName}}
     </li>
-
-    {{#empty}}
-    <li>
-        <strong>This message has no fields.</strong>
-    </li>
-    {{/empty}}
+    <!--{{#empty}}-->
+    <!--<li>-->
+        <!--<strong>This message has no fields.</strong>-->
+    <!--</li>-->
+    <!--{{/empty}}-->
     {{/fields}}
+</ul>
+
+<h2 class="inner-enums-header sub-header">Inner Enums:</h2>
+<ul id="inner-enums">
+    {{#enums}}
+    <li>
+        <strong>{{fieldName}}</strong><br/>
+        defined as: {{protoTypeName}}<br/>
+        mapped to: {{scalaTypeName}}
+    </li>
+    <!--{{#empty}}-->
+    <!--<li>-->
+        <!--<strong>This message has no fields.</strong>-->
+    <!--</li>-->
+    <!--{{/empty}}-->
+    {{/enums}}
 </ul>
 </body>
 </html>
