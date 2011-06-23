@@ -1,5 +1,6 @@
 package pl.project13.protodoc
 
+import exceptions.ProtoDocParsingException
 import model._
 import scala.util.parsing.combinator._
 
@@ -133,11 +134,11 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
     case Success(res, _) => res
     //    case Failure(msg, _)  => throw new RuntimeException(msg)
     //    case Error(msg, _) => throw new RuntimeException(msg)
-    case x: Failure => throw new RuntimeException(x.toString())
+    case x: Failure => throw new ProtoDocParsingException(x.toString())
     case x: Error => throw new RuntimeException(x.toString())
   }
 
-  def log(msg: String) = {
+  def log(msg: String) {
     if(verbose){
       Console.println(msg)
     }

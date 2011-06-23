@@ -4,8 +4,9 @@ import de.downgra.scarg._
 import pl.project13.protodoc.ProtoBufParser
 import pl.project13.protodoc.templating.ProtoDocTemplateEngine
 import io.Source
-import java.io.{File, FileWriter}
 import pl.project13.protodoc.model.ProtoMessage
+import java.io.{FilenameFilter, File, FileWriter}
+import java.lang.{Boolean => JBoolean}
 
 // we want to store three values, a boolean and two strings
 class Configuration(m: ValueMap) extends ConfigMap(m) {
@@ -34,6 +35,10 @@ object ProtoDocMain {
 
   var parsedProtos: List[ProtoMessage] = List()
 
+  val onlyProtos = new FilenameFilter() {
+    override def accept(dir: File, name: String) = name.endsWith(".proto")
+  }
+
   def main(args: Array[String]) {
     ArgumentsParser().parse(args) match {
       case Right(c) =>
@@ -50,8 +55,10 @@ object ProtoDocMain {
   def generateProtoDoc(protoDir: String, outDir: String, verbose: Boolean) {
     ProtoBufParser.verbose = verbose;
 
-    for (file <- new File(protoDir).listFiles) {
-      val protoString = Source.fromFile("file.txt").mkString
+    for (file <- new File(protoDir).listFiles(onlyProtos)) {
+      Console.println("Parsing file: " + file)
+
+      val protoString = Source.fromFile(file).mkString
 
       val parsedProto = ProtoBufParser.parse(protoString)
       parsedProtos ::= parsedProto
@@ -70,6 +77,8 @@ object ProtoDocMain {
     val fw = new FileWriter(path)
     fw.write(contents)
     fw.close()
+
+    Console.println("Saved ProtoDoc file to: " + path)
   }
 
   // Some ANSI helpers...

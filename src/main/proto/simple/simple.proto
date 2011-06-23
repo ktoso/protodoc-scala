@@ -1,0 +1,8 @@
+message Message {
+    required int32 number = 1;
+    required string name = 2 [default = "loremipsum"];
+
+    message InnerMessage {
+        optional string name = 3;
+    }
+}

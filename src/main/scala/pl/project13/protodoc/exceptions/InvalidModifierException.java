@@ -4,6 +4,9 @@ package pl.project13.protodoc.exceptions;
  * @author Konrad Malawski
  */
 public class InvalidModifierException extends RuntimeException {
+
+  private static final long serialVersionUID = -5278899620537400987L;
+
   public InvalidModifierException() {
   }
 
