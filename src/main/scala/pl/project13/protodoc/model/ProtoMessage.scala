@@ -4,7 +4,7 @@ package pl.project13.protodoc.model
  * @author Konrad Malawski
  */
 case class ProtoMessage (messageName: String,
-                         packageName: String,
+                         packageName: String = "",
                          fields: List[ProtoMessageField] = List(),
                          enums: List[ProtoEnumTypeField] = List(),
                          innerMessages: List[ProtoMessage] = List()) {

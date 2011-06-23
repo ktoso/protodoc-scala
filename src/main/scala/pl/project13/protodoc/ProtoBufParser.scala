@@ -1,7 +1,5 @@
 package pl.project13.protodoc
 
-import model.ProtoModifier
-import model.ProtoModifier._
 import model._
 import scala.util.parsing.combinator._
 
@@ -10,8 +8,15 @@ import scala.util.parsing.combinator._
  */
 object ProtoBufParser extends RegexParsers with ParserConversions {
 
+  /**
+   * Defines if log messages should be printed or not
+   */
+  var verbose = false
+
   def ID = """[a-zA-Z]([a-zA-Z0-9]*|_[a-zA-Z0-9]*)*""".r
+
   def NUM = """[1-9][0-9]*""".r
+
   def CHAR = """[a-zA-Z0-9]""".r
 
   /**
@@ -27,7 +32,7 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
       joinedName
   }
 
-  def message: Parser[_ <: ProtoMessage] = opt(pack) ~ "message" ~ ID ~ "{" ~ rep(enumField | messageField ) ~ "}" ^^ {
+  def message: Parser[_ <: ProtoMessage] = opt(pack) ~ "message" ~ ID ~ "{" ~ rep(enumField | messageField) ~ "}" ^^ {
     case maybePack ~ m ~ id ~ p1 ~ allFields ~ p2 =>
 
       val pack = maybePack.getOrElse("")
@@ -37,34 +42,35 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
       log(" enums: " + list2enumTypeList(allFields))
       log(" inner messages: " + list2messageList(allFields))
 
-      new ProtoMessage(messageName = id ,
+      new ProtoMessage(messageName = id,
                        packageName = pack,
-                       fields = allFields /*will be implicitly filtered*/,
-                       enums = allFields /*will be implicitly filtered*/,
-                       innerMessages = allFields/*will be implicitly filtered*/)
+                       fields = allFields /*will be implicitly filtered*/ ,
+                       enums = allFields /*will be implicitly filtered*/ ,
+                       innerMessages = allFields /*will be implicitly filtered*/)
   }
 
-  def modifier: Parser[ProtoModifier] = ("optional" | "required" | "repeated") ^^ {s =>
-    log(s)
-    ProtoModifier.str2modifier(s)
+  def modifier: Parser[ProtoModifier] = ("optional" | "required" | "repeated") ^^ {
+    s =>
+      log("Found " + s + " field")
+      ProtoModifier.str2modifier(s)
   }
 
-  def protoType: Parser[String] = ( "int32"
-                                  | "int64"
-                                  | "uint32"
-                                  | "uint64"
-                                  | "sint32"
-                                  | "sint64"
-                                  | "fixed32"
-                                  | "fixed64"
-                                  | "sfixed32"
-                                  | "sfixed64"
-                                  | "double"
-                                  | "float"
-                                  | "bool"
-                                  | "string"
-                                  | "bytes"
-  )
+  def protoType: Parser[String] = ("int32"
+    | "int64"
+    | "uint32"
+    | "uint64"
+    | "sint32"
+    | "sint64"
+    | "fixed32"
+    | "fixed64"
+    | "sfixed32"
+    | "sfixed64"
+    | "double"
+    | "float"
+    | "bool"
+    | "string"
+    | "bytes"
+    )
 
   def anyField = enumField | messageField
 
@@ -132,6 +138,8 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
   }
 
   def log(msg: String) = {
-    Console.println(msg)
+    if(verbose){
+      Console.println(msg)
+    }
   }
 }
