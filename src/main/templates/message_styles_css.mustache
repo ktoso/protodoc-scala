@@ -11,9 +11,16 @@
     ul, h1, h2, h3 {
         padding-left: 25px;
         padding-bottom: 0;
+        padding-top: 0;
+        margin-top: 0;
     }
 
-    .sub-header{
+    h2 {
+        margin-bottom: 0;
+
+    }
+
+    .sub-header {
         height: 28px;
         color: white;
         font-style: oblique;
@@ -24,7 +31,33 @@
         background: url(images/value_members_bg.gif) repeat-x;
     }
 
+    #fields li {
+        background: #d6e6ff;
+    }
+
+    #fields li:nth-child(odd) {
+        background: #edf4ff;
+    }
+
     .inner-enums-header {
         background: url(images/type_members_bg.gif) repeat-x;
+    }
+
+    #inner-enums li {
+        background: #caffaf;
+    }
+
+    #inner-enums li:nth-child(odd) {
+        background: #c2f0aa;
+    }
+
+    table {
+        padding-left: 2em;
+        font-size: 1em;
+    }
+
+    .code {
+        font-family: 'courier new', monospace;
+        font-weight: bold;
     }
 </style>

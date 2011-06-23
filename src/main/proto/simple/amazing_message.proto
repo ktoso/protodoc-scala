@@ -1,0 +1,20 @@
+package pl.project13.protodoc;
+
+message AwesomeMessage {
+    enum EnumType {
+        SMS = 1;
+        PHONE = 2;
+    }
+
+    enum SecondEnumType {
+        OMG = 1;
+        WHAT_VALUE = 2;
+    }
+
+    required int32 number = 1;
+    required string name = 2 [default = "loremipsum"];
+
+    message InnerMessage {
+        optional string name = 3;
+    }
+}

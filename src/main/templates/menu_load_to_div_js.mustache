@@ -2,6 +2,15 @@
     $(document).ready(function() {
         var contentWindow = $('#content-window');
 
+        if(window.location.hash) {
+            loadContent(window.location.hash.substring(1));
+        }
+
+        function loadContent(filename) {
+            console.log("loading: " + filename);
+            contentWindow.attr('src', filename);
+        }
+
         $('.msg-link').each(function(index) {
             var filename = $(this).attr('href');
             $(this).attr('href', '#' + filename);
@@ -12,8 +21,8 @@
             e.preventDefault();
 
             var filename = $(this).attr('filename');
-            console.log("loading: " + filename);
-            contentWindow.attr('src', filename);
+            loadContent(filename);
+            window.location.hash = filename;
         });
     });
 </script>

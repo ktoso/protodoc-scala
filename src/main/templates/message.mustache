@@ -19,7 +19,7 @@
     </li>
     <!--{{#empty}}-->
     <!--<li>-->
-        <!--<strong>This message has no fields.</strong>-->
+    <!--<strong>This message has no fields.</strong>-->
     <!--</li>-->
     <!--{{/empty}}-->
     {{/fields}}
@@ -29,13 +29,30 @@
 <ul id="inner-enums">
     {{#enums}}
     <li>
-        <strong>{{fieldName}}</strong><br/>
-        defined as: {{protoTypeName}}<br/>
-        mapped to: {{scalaTypeName}}
+        <strong>{{typeName}}</strong><br/>
+        defines values:
+        <table>
+            <thead>
+            <tr>
+                <td>Value</td>
+                <td>TAG</td>
+                <td>Comment</td>
+            </tr>
+            </thead>
+            <tbody>
+            {{#values}}
+            <tr>
+                <td class="code">{{valueName}}</td>
+                <td>{{tag}}</td>
+                <td>{{comment}}</td>
+            </tr>
+            {{/values}}
+            </tbody>
+        </table>
     </li>
     <!--{{#empty}}-->
     <!--<li>-->
-        <!--<strong>This message has no fields.</strong>-->
+    <!--<strong>This message has no fields.</strong>-->
     <!--</li>-->
     <!--{{/empty}}-->
     {{/enums}}

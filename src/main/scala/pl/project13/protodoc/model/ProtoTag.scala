@@ -1,6 +1,8 @@
 package pl.project13.protodoc.model
 
-case class ProtoTag(tagNumber: Long)
+case class ProtoTag(tagNumber: Long) {
+  override def toString = String.valueOf(tagNumber)
+}
 
 trait HasProtoTag {
 
@@ -33,7 +35,7 @@ trait HasProtoTag {
    * Check the tag number is valid.
    * Please note that values between 1900 and 1999 are reserved for internal use, and can not be used.
    */
-  def checkProtoTagNumber(tagNumber: Long) = {
+  def checkProtoTagNumber(tagNumber: Long) {
     if(!(tagNumber > 0 && tagNumber <= 536870911 && (tagNumber < 1900 || tagNumber > 1999))){
       throw new RuntimeException("Invalid tag: " + tagNumber)
     }
