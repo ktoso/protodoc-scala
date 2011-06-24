@@ -17,11 +17,11 @@
         defined as: {{protoTypeName}}<br/>
         mapped to: {{scalaTypeName}}
     </li>
-    <!--{{#empty}}-->
-    <!--<li>-->
-    <!--<strong>This message has no fields.</strong>-->
-    <!--</li>-->
-    <!--{{/empty}}-->
+    {{/fields}}
+    {{^fields}}
+    <li>
+        This message defines no fields.
+    </li>
     {{/fields}}
 </ul>
 
@@ -50,11 +50,11 @@
             </tbody>
         </table>
     </li>
-    <!--{{#empty}}-->
-    <!--<li>-->
-    <!--<strong>This message has no fields.</strong>-->
-    <!--</li>-->
-    <!--{{/empty}}-->
+    {{/enums}}
+    {{^enums}}
+    <li>
+        This message defines no enums.
+    </li>
     {{/enums}}
 </ul>
 
@@ -67,6 +67,11 @@
                 {{messageName}}
             </a>
         </strong>
+    </li>
+    {{/innerMessages}}
+    {{^innerMessages}}
+    <li>
+        This message defines no inner messages.
     </li>
     {{/innerMessages}}
 </ul>

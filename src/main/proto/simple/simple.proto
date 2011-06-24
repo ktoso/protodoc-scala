@@ -1,4 +1,4 @@
-message Message {
+message MessageWithInner {
     required int32 number = 1;
     required string name = 2 [default = "loremipsum"];
 

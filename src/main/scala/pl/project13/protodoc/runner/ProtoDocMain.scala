@@ -56,37 +56,16 @@ object ProtoDocMain {
     ProtoBufParser.verbose = verbose;
 
     for (file <- new File(protoDir).listFiles(onlyProtos)) {
-      Console.println("Parsing file: " + file)
+      Console.println("Parsing file: " + BOLD + file + RESET)
 
       val protoString = Source.fromFile(file).mkString
 
       val parsedProto = ProtoBufParser.parse(protoString)
       parsedProtos ::= parsedProto
-      val pageHtml = templateEngine.renderMessagePage(parsedProto)
-
-      val outFilename = outDir + "/" + parsedProto.fullName + ".html"
-      writeToFile(outFilename, pageHtml)
-
-      // and for all inner messages
-      for(msg <- parsedProto.innerMessages) {
-        val pageHtml = templateEngine.renderMessagePage(msg)
-
-        val outFilename = outDir + "/" + msg.fullName + ".html"
-        writeToFile(outFilename, pageHtml)
-      }
+      templateEngine.renderMessagePage(parsedProto, outDir)
     }
 
-    val indexHtml  = templateEngine.renderTableOfContents(parsedProtos)
-    val indexFilename = outDir + "/index.html"
-    writeToFile(indexFilename, indexHtml)
-  }
-
-  def writeToFile(path: String, contents: String) {
-    val fw = new FileWriter(path)
-    fw.write(contents)
-    fw.close()
-
-    Console.println("Saved ProtoDoc file to: " + path)
+    templateEngine.renderTableOfContents(parsedProtos, outDir)
   }
 
   // Some ANSI helpers...
