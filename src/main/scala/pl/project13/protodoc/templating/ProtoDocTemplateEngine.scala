@@ -2,13 +2,14 @@ package pl.project13.protodoc.templating
 
 import org.fusesource.scalate._
 import layout.DefaultLayoutStrategy
-import pl.project13.protodoc.model.ProtoMessage
 import java.io.{FileWriter, File}
+import pl.project13.protodoc.model.{ProtoEnumType, ProtoMessage}
+
 /**
  *
  * @author Konrad Malawski
  */
-class ProtoDocTemplateEngine {
+class ProtoDocTemplateEngine extends AnsiTerminalTools {
 
   var templatesDir = new File("/home/ktoso/coding/protodoc-scala/src/main/templates/")
 
@@ -51,6 +52,23 @@ class ProtoDocTemplateEngine {
     val html = renderMessagePage(msg)
     val filename: String = outDir + "/" + msg.fullName + ".html"
     writeToFile(filename, html)
+
+    msg.innerMessages.foreach(renderMessagePage(_, outDir))
+    msg.enums.foreach(renderEnumPage(_, outDir))
+  }
+
+  def renderEnumPage(enum: ProtoEnumType) = {
+    val data = Map("enumName" -> enum.typeName,
+                   "packageName" -> enum.packageName,
+                   "values" -> enum.values)
+
+    engine.layout("enum.mustache", data)
+  }
+
+  def renderEnumPage(enum: ProtoEnumType, outDir: String) {
+    val html = renderEnumPage(enum)
+    val filename: String = outDir + "/" + enum.fullName + ".html"
+    writeToFile(filename, html)
   }
 
   def writeToFile(path: String, contents: String) {
@@ -78,10 +96,4 @@ class ProtoDocTemplateEngine {
     }
     all
   }
-
-  // Some ANSI helpers...
-  def ANSI(value: Any) = "\u001B[" + value + "m"
-
-  val BOLD = ANSI(1)
-  val RESET = ANSI(0)
 }

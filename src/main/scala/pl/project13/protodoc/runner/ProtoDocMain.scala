@@ -68,7 +68,7 @@ object ProtoDocMain {
     templateEngine.renderTableOfContents(parsedProtos, outDir)
   }
 
-  // Some ANSI helpers...
+  // some ansi helpers...
   def ANSI(value: Any) = "\u001B[" + value + "m"
 
   val BOLD = ANSI(1)

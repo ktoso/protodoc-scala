@@ -3,9 +3,10 @@ package pl.project13;
 message TopLevel {
 
     message MiddleLevel {
-        optional string name = 3;
+        optional string middle_name = 3;
 
         message InnerInnerLevel {
+
             enum EnumInInnerInnerLevel {
                 VAL = 23;
             }

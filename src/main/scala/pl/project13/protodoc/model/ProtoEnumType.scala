@@ -27,6 +27,8 @@ case class ProtoEnumType(typeName: String,
     """ format(typeName, typeName, typeName,
                values.map(_.valueName).reduceLeft(_ + ", " + _))
   }
+
+  def fullName = packageName + "." + typeName
 }
 
 /**
