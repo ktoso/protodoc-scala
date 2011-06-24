@@ -8,7 +8,7 @@ import org.scalatest.matchers.ShouldMatchers
 *
 * @author Konrad Malawski
 */
-class PackageTest extends FlatSpec with HasProtoTag
+class PackageTest extends FlatSpec with ProtoTagConversions
                                    with ShouldMatchers {
 
   "Package name" should "be read from proto file with it" in {

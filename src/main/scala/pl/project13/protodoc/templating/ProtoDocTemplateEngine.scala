@@ -49,7 +49,7 @@ class ProtoDocTemplateEngine {
 
   def renderMessagePage(msg: ProtoMessage, outDir: String) {
     val html = renderMessagePage(msg)
-    val filename: String = outDir + "/index.html"
+    val filename: String = outDir + "/" + msg.fullName + ".html"
     writeToFile(filename, html)
   }
 

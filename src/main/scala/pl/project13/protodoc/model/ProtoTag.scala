@@ -4,7 +4,7 @@ case class ProtoTag(tagNumber: Long) {
   override def toString = String.valueOf(tagNumber)
 }
 
-trait HasProtoTag {
+trait ProtoTagConversions {
 
   implicit def tag2long(tag: ProtoTag): Long = {
     tag.tagNumber

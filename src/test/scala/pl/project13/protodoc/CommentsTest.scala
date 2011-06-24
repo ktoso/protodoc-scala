@@ -10,7 +10,7 @@ import pl.project13.protodoc.exceptions.UnknownTypeException
 * @author Konrad Malawski
 */
 class CommentsTest extends FlatSpec with ShouldMatchers
-                                 with HasProtoTag {
+                                 with ProtoTagConversions {
 
   ProtoBufParser.verbose = true
 

@@ -8,7 +8,7 @@ import org.scalatest.matchers.ShouldMatchers
  *
  * @author Konrad Malawski
  */
-class FieldsTest extends FlatSpec with HasProtoTag
+class FieldsTest extends FlatSpec with ProtoTagConversions
                                   with ShouldMatchers {
 
   "Message with 2 fields" should "in fact have 2 fields" in {

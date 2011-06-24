@@ -12,7 +12,7 @@ import pl.project13.protodoc.exceptions.UnknownTypeException
 * @author Konrad Malawski
 */
 class EnumsTest extends FlatSpec with ShouldMatchers
-                                 with HasProtoTag {
+                                 with ProtoTagConversions {
 
   ProtoBufParser.verbose = true
 

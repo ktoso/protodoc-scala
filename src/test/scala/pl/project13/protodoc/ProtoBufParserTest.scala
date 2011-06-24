@@ -9,7 +9,7 @@ import org.scalatest.matchers.ShouldMatchers
 * @author Konrad Malawski
 */
 class ProtoBufParserTest extends FlatSpec with ShouldMatchers
-                                          with HasProtoTag {
+                                          with ProtoTagConversions {
 
   ProtoBufParser.verbose = true
 

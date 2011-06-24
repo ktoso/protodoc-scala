@@ -114,7 +114,7 @@ case class EnumProtoMessageField(override val fieldName: String,
 /**
  * Companion object, serves as factory, will be used by parser
  */
-object ProtoMessageField extends HasProtoTag {
+object ProtoMessageField extends ProtoTagConversions {
   def toTypedField(typeName: String,
                    fieldName: String,
                    protoTag: Any,

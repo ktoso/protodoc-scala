@@ -8,7 +8,7 @@ import org.scalatest.matchers.ShouldMatchers
  *
  * @author Konrad Malawski
  */
-class InnerMessagesTest extends FlatSpec with HasProtoTag
+class InnerMessagesTest extends FlatSpec with ProtoTagConversions
                                          with ShouldMatchers {
 
   ProtoBufParser.verbose = true
