@@ -1,0 +1,16 @@
+package pl.project13;
+
+/**
+ * Has an enum representing filetype of a book, it can also be "paper"
+ */
+message HasDocumentedEnum {
+
+    /**
+     * This enumeration describes the filetype of an e-book
+     */
+    enum BookFileType {
+        EPUB = 1;
+        PDF = 2;
+        TXT = 3;
+    }
+}

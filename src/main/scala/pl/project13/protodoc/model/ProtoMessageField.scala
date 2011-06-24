@@ -10,7 +10,7 @@ abstract class ProtoMessageField(val fieldName: String,
                                  val scalaTypeName: String,
                                  val tag: ProtoTag,
                                  val modifier: ProtoModifier,
-                                 val defaultValue: Any = None) {
+                                 val defaultValue: Any = None) extends Commentable {
 
 // todo protoc actually likes to get defaults here hmmm
 //   assure the message field is valid

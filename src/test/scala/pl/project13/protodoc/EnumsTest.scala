@@ -33,7 +33,7 @@ class EnumsTest extends FlatSpec with ShouldMatchers
     result.enums should have size (1)
 
     val values = ProtoEnumValue("VALUE", 2) :: ProtoEnumValue("OTHER", 4) :: ProtoEnumValue("LAST", 5) :: Nil
-    val expected = ProtoEnumType("MyEnum", "Wiadomosc", values)
+    val expected = ProtoEnumType("MyEnum", ".Wiadomosc", values)
     result.enums should contain (expected)
   }
 
@@ -47,21 +47,21 @@ class EnumsTest extends FlatSpec with ShouldMatchers
       }
 
       required EnumType theEnum = 2;
-      optional string pole = 1;
+//      optional string pole = 1;
     }""")
 
     result.fields should have size (2)
     result.enums should have size (1)
 
     val enumType: ProtoEnumType = result.enums.head
-    val enumField: ProtoMessageField = result.fields.head
+    val enumField: ProtoMessageField = result.fields.last // todo head and last are NOT really deterministic here!
     enumField should have (
+      'fieldName ("theEnum"),
+      'scalaTypeName (enumType.typeName),
+      'protoTypeName (enumType.typeName),
       'tag (ProtoTag(2)),
       'modifier (RequiredProtoModifier()),
-      'fieldName ("theEnum"),
-      'defaultValue (null),
-      'scalaTypeName (enumType.typeName),
-      'protoTypeName (enumType.typeName)
+      'defaultValue (null)
     )
   }
 

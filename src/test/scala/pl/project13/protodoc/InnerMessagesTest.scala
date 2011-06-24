@@ -13,7 +13,7 @@ class InnerMessagesTest extends FlatSpec with ProtoTagConversions
 
   ProtoBufParser.verbose = true
 
-  "Parser" should "parse single int32 field" in {
+  "Inner message" should "be parsed properly" in {
     val result: ProtoMessage = ProtoBufParser.parse("""
     message MyMessage {
       message InnerMessage {
@@ -23,7 +23,7 @@ class InnerMessagesTest extends FlatSpec with ProtoTagConversions
     """)
 
     val intField = IntProtoMessageField("number", "int32", 1, RequiredProtoModifier())
-    val inner = ProtoMessage("InnerMessage", fields = List(intField))
+    val inner = ProtoMessage("InnerMessage", ".MyMessage", fields = List(intField))
     result should equal (ProtoMessage("MyMessage", innerMessages = List(inner)))
   }
 

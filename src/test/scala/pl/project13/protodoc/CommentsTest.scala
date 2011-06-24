@@ -10,70 +10,83 @@ import pl.project13.protodoc.exceptions.UnknownTypeException
 * @author Konrad Malawski
 */
 class CommentsTest extends FlatSpec with ShouldMatchers
-                                 with ProtoTagConversions {
+                                    with ProtoTagConversions {
 
   ProtoBufParser.verbose = true
 
-  "Enum" should "be parseable inside of an Message" in {
-    val result: ProtoMessage = ProtoBufParser.parse("""
-    message Wiadomosc {
-      required string some_field = 1;
-      required string some_field_zomg = 5;
+  "Comment on top level message" should "be parsed properly" in {
+    val message = ProtoBufParser.parse("""/** This is a test comment */
+    message HasDocumentedEnum {}""")
 
-      enum MyEnum {
-        VALUE = 2;
-        OTHER = 4;
-        LAST = 5;
-      }
-    }""")
-
-    result.fields should have size (2)
-    result.enums should have size (1)
-
-    val values = ProtoEnumValue("VALUE", 2) :: ProtoEnumValue("OTHER", 4) :: ProtoEnumValue("LAST", 5) :: Nil
-    val expected = ProtoEnumType("MyEnum", "Wiadomosc", values)
-    result.enums should contain (expected)
-  }
-
-  "Enum" should "be usable as field type" in {
-    val result: ProtoMessage = ProtoBufParser.parse("""
-    message WiadomoscDwaPola {
-
-      enum EnumType {
-        EMAIL = 1;
-        SMS = 2;
-      }
-
-      required EnumType theEnum = 2;
-      optional string pole = 1;
-    }""")
-
-    result.fields should have size (2)
-    result.enums should have size (1)
-
-    val enumType: ProtoEnumType = result.enums.head
-    val enumField: ProtoMessageField = result.fields.head
-    enumField should have (
-      'tag (ProtoTag(2)),
-      'modifier (RequiredProtoModifier()),
-      'fieldName ("theEnum"),
-      'defaultValue (null),
-      'scalaTypeName (enumType.typeName),
-      'protoTypeName (enumType.typeName)
+    message should have (
+      'comment (" This is a test comment ")
     )
   }
 
-  "Enum" should "stick to 'known' enums, and not allow random field types" in {
-    evaluating {
-      ProtoBufParser.parse("""
-        message Msg {
-        enum SomeEnum {
-          SMS = 1;
-        }
+  "Multi Line Comment on top level message" should "be parsed properly" in {
+    val message = ProtoBufParser.parse("""
+    /**
+     * This is a test comment
+     */
+    message HasDocumentedEnum {}""")
 
-        required UndefinedEnum field = 1;
-      }
-      """)
-    } should produce [UnknownTypeException]
+    message should have (
+      'comment (" This is a test comment ")
+    )
   }
+
+  "Comment on field" should "be parsed properly" in {
+    val message = ProtoBufParser.parse("""
+    message HasDocumentedEnum {
+      /* This is my comment */ optional string name = 1;
+    }""")
+
+    val field = message.fields.head
+    field.comment should equal (" This is my comment ")
+    field.tag should equal (ProtoTag(1))
+    field.fieldName should equal ("name")
+  }
+
+  "Comment on field" should "be parsed properly, even if inline" in {
+    val message = ProtoBufParser.parse("""
+    message HasDocumentedEnum {
+      /* This is my comment */
+      optional string name = 1;
+    }""")
+
+    val field = message.fields.head
+    field.comment should equal (" This is my comment ")
+    field.tag should equal (ProtoTag(1))
+    field.fieldName should equal ("name")
+  }
+
+  "Comment on field" should "be parsed properly, using JavaDoc style markers" in {
+    val message = ProtoBufParser.parse("""
+    message HasDocumentedEnum {
+      /** This is my comment */
+      optional string name = 1;
+    }""")
+
+    val field = message.fields.head
+    field.comment should equal (" This is my comment ")
+    field.tag should equal (ProtoTag(1))
+    field.fieldName should equal ("name")
+  }
+
+  "Comment on field" should "be parsed properly, even if spanning multiple lines" in {
+    val message = ProtoBufParser.parse("""
+    message HasDocumentedEnum {
+      /**
+       * This is my comment
+       * Second comment line
+       */
+       optional string name = 1;
+    }""")
+
+    val field = message.fields.head
+    field.comment should equal (" This is my comment" + "\n" + " Second comment line")
+    field.tag should equal (ProtoTag(1))
+    field.fieldName should equal ("name")
+  }
+
 }

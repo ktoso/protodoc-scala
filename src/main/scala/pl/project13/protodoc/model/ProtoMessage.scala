@@ -7,7 +7,7 @@ case class ProtoMessage (messageName: String,
                          packageName: String = "",
                          fields: List[ProtoMessageField] = List(),
                          enums: List[ProtoEnumType] = List(),
-                         innerMessages: List[ProtoMessage] = List()) {
+                         innerMessages: List[ProtoMessage] = List()) extends Commentable {
 
   def fullName = packageName + "." + messageName
 
