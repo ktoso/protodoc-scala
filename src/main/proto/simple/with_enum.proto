@@ -2,6 +2,8 @@
  * @author Konrad Malawski
  */
 
+package pl.project13.protodoc;
+
 //option java_package = "pl.project13.protodoc";
 
 message WithEnum {

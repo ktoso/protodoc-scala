@@ -11,6 +11,8 @@ import org.scalatest.matchers.ShouldMatchers
 class ProtoBufParserTest extends FlatSpec with ShouldMatchers
                                           with HasProtoTag {
 
+  ProtoBufParser.verbose = true
+
   "Parser" should "parse single simple message" in {
     val result: ProtoMessage = ProtoBufParser.parse("""
     message Wiadomosc {
@@ -70,14 +72,22 @@ class ProtoBufParserTest extends FlatSpec with ShouldMatchers
     fieldNames should contain ("five")
   }
 
-  "Default string value" should "have proper value" in {
-    val result: ProtoMessage = ProtoBufParser.parse("""
-    message Wiadomosc {
-      optional string wiad = 12 [default = "loremipsum"];
-    }
-    """)
+  "addOuterMessageInfo" should "fix package info of inner enums/msgs" in {
+    val data = List(ProtoMessage("InnerMessage", "", innerMessages = ProtoMessage("InnerInnerMessage", "") :: Nil))
 
-    // todo validate the value
+    println("Will fix packages of: " + data)
+
+    val fixedData = ProtoBufParser.addOuterMessageInfo("Outer", "pl.project13", data)
+
+    println("Fix resulted in: " + fixedData)
+
+    val fixedMessage = fixedData.head.asInstanceOf[ProtoMessage]
+    fixedMessage should have (
+      'packageName ("pl.project13.Outer")
+    )
+    fixedMessage.innerMessages.head should have (
+      'packageName ("pl.project13.Outer.InnerMessage")
+    )
   }
 
 }

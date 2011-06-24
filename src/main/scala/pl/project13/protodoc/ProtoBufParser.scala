@@ -43,10 +43,12 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
 
       val pack = maybePack.getOrElse("")
 
+      val postProcessedFields = addOuterMessageInfo(id, pack, allFields)
+
       log("Parsed message in '%s' named '%s'".format(pack, id))
-      log(" fields: " + list2messageFieldList(allFields))
-      log(" enums: " + list2enumTypeList(allFields))
-      log(" inner messages: " + list2messageList(allFields))
+      log(" fields: " + list2messageFieldList(postProcessedFields))
+      log(" enums: " + list2enumTypeList(postProcessedFields))
+      log(" inner messages: " + list2messageList(postProcessedFields))
 
       new ProtoMessage(messageName = id,
                        packageName = pack,
@@ -103,7 +105,7 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
       log("detected enum type '" + id + "'...")
       log("              values: " + vals)
 
-      val definedEnum = ProtoEnumType(typeName = id, vals)
+      val definedEnum = ProtoEnumType(id, "", vals)
       knownEnums ::= definedEnum
       definedEnum
   }
@@ -164,6 +166,50 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
       s.toBoolean
   }
 
+  /* -------------------- helper methods ----------------------------------- */
+
+  /**
+   * This method adds package information for messages and enums contained withing another message
+   * so that the access path to them is reflected by their package, for example:
+   * <pre>
+   *   package pl.project13;
+   *
+   *   message Outer {
+   *     message Inner {}
+   *   }
+   * </pre>
+   * Should result in <em>Inner</em> having the package "pl.project13.Outer".
+   */
+  def addOuterMessageInfo(msgName: String, msgPack: String, innerFields: List[_]): List[Any] = {
+    var processedFields = List[Any]()
+
+    for(field <- innerFields) field match {
+      case ProtoMessage(_, _, _, _, _) =>
+        val f = field.asInstanceOf[ProtoMessage]
+        log("Adding package info to: " + f.fullName)
+        val packageWithOuterClass: String = msgPack + "." + msgName + f.packageName
+        processedFields ::= ProtoMessage(messageName = f.messageName,
+                                         packageName = packageWithOuterClass,
+                                         fields = f.fields,
+                                         enums = addOuterMessageInfo(f.messageName,
+                                                                     packageWithOuterClass,
+                                                                     f.enums),
+                                         innerMessages = addOuterMessageInfo(f.messageName,
+                                                                             packageWithOuterClass,
+                                                                             f.innerMessages))
+      case ProtoEnumType(_, _, _) =>
+        val e = field.asInstanceOf[ProtoEnumType]
+        val packageWithOuterClass: String = msgPack + "." + msgName
+        processedFields ::= ProtoEnumType(typeName = e.typeName,
+                                          packageName = packageWithOuterClass,
+                                          values = e.values)
+      case f =>
+        log("Ignored field while fixing packages: " + f)
+    }
+
+    processedFields
+  }
+
   /* ----------------- API methods ----------------------------------------- */
 
   def parse(s: String): ProtoMessage = parseAll(message, s) match {
@@ -175,7 +221,7 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
   }
 
   def log(msg: String) {
-    if(verbose){
+    if(verbose) {
       Console.println(msg)
     }
   }

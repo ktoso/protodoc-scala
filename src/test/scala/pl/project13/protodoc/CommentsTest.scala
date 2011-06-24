@@ -31,7 +31,7 @@ class CommentsTest extends FlatSpec with ShouldMatchers
     result.enums should have size (1)
 
     val values = ProtoEnumValue("VALUE", 2) :: ProtoEnumValue("OTHER", 4) :: ProtoEnumValue("LAST", 5) :: Nil
-    val expected = ProtoEnumType("MyEnum", values)
+    val expected = ProtoEnumType("MyEnum", "Wiadomosc", values)
     result.enums should contain (expected)
   }
 

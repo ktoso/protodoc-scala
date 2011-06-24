@@ -1,0 +1,14 @@
+package pl.project13.protodoc;
+
+message TopLevel {
+
+    message MiddleLevel {
+        optional string name = 3;
+
+        message InnerInnerLevel {
+            enum EnumInInnerInnerLevel {
+                VAL = 23;
+            }
+        }
+    }
+}

@@ -20,29 +20,37 @@ class ProtoDocTemplateEngine {
                                  className = "String",
                                  defaultValue = Option(""""v1.0"""")))
 
-  /**
-   * Renders the HTML with all Messages, a table of contents so to say
-   */
-  def renderTableOfContents(contents: List[ProtoMessage], outDir: String) = {
+  def renderTableOfContents(contents: List[ProtoMessage]) = {
     var all = allInnerMessagesOf(contents).sortBy(m => m.messageName)
 
-    Console.println("ALL MESSAGES: " + all.map(_.messageName))
+    Console.println("ALL MESSAGES: " + all.map(_.fullName))
 
     val data = Map("contents" -> all)
 
-    val html = engine.layout("index.mustache", data)
+    engine.layout("index.mustache", data)
+  }
+
+  /**
+   * Renders the HTML with all Messages, a table of contents so to say
+   */
+  def renderTableOfContents(contents: List[ProtoMessage], outDir: String): Unit = {
+    val html = renderTableOfContents(contents)
     val filename: String = outDir + "/index.html"
     writeToFile(filename, html)
   }
 
-  def renderMessagePage(msg: ProtoMessage, outDir: String) = {
+  def renderMessagePage(msg: ProtoMessage) = {
     val data = Map("messageName" -> msg.messageName,
                    "packageName" -> msg.packageName,
                    "fields" -> msg.fields,
                    "enums" -> msg.enums,
                    "innerMessages" -> msg.innerMessages)
 
-    val html = engine.layout("message.mustache", data)
+    engine.layout("message.mustache", data)
+  }
+
+  def renderMessagePage(msg: ProtoMessage, outDir: String): Unit = {
+    val html = renderMessagePage(msg)
     val filename: String = outDir + "/index.html"
     writeToFile(filename, html)
   }
@@ -52,13 +60,13 @@ class ProtoDocTemplateEngine {
     fw.write(contents)
     fw.close()
 
-    Console.println("Saved ProtoDoc file to: " + path)
+//    Console.println("Saved ProtoDoc file to: " + path)
   }
 
   def allInnerMessagesOf(msg: ProtoMessage): List[ProtoMessage] = {
     var all: List[ProtoMessage] = List(msg)
     for (inner <- msg.innerMessages) {
-      println("Inner message: " + msg.messageName + ">" + inner.messageName)
+      println("Inner:   " + msg.fullName + BOLD + inner.fullName + RESET)
       all ++= allInnerMessagesOf(inner)
     }
     all
@@ -67,9 +75,15 @@ class ProtoDocTemplateEngine {
   def allInnerMessagesOf(msgs: List[ProtoMessage]): List[ProtoMessage] = {
     var all: List[ProtoMessage] = List()
     for(msg <- msgs) {
+      println("Message: " + BOLD + msg.fullName + RESET)
       all ++= allInnerMessagesOf(msg)
     }
     all
   }
 
+  // Some ANSI helpers...
+  def ANSI(value: Any) = "\u001B[" + value + "m"
+
+  val BOLD = ANSI(1)
+  val RESET = ANSI(0)
 }
