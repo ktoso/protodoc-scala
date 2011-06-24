@@ -43,18 +43,18 @@ object ProtoBufParser extends RegexParsers with ParserConversions {
 
       val pack = maybePack.getOrElse("")
 
-      val postProcessedFields = addOuterMessageInfo(id, pack, allFields)
+      val processedFields = addOuterMessageInfo(id, pack, allFields)
 
       log("Parsed message in '%s' named '%s'".format(pack, id))
-      log(" fields: " + list2messageFieldList(postProcessedFields))
-      log(" enums: " + list2enumTypeList(postProcessedFields))
-      log(" inner messages: " + list2messageList(postProcessedFields))
+      log(" fields: " + list2messageFieldList(processedFields))
+      log(" enums: " + list2enumTypeList(processedFields))
+      log(" inner messages: " + list2messageList(processedFields))
 
       new ProtoMessage(messageName = id,
                        packageName = pack,
-                       fields = allFields /*will be implicitly filtered*/ ,
-                       enums = allFields /*will be implicitly filtered*/ ,
-                       innerMessages = allFields /*will be implicitly filtered*/)
+                       fields = processedFields /*will be implicitly filtered*/ ,
+                       enums = processedFields /*will be implicitly filtered*/ ,
+                       innerMessages = processedFields /*will be implicitly filtered*/)
   }
 
   def modifier: Parser[ProtoModifier] = ("optional" | "required" | "repeated") ^^ {

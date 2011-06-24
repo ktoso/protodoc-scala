@@ -2,7 +2,7 @@
  * @author Konrad Malawski
  */
 
-package pl.project13.protodoc;
+package pl.project13;
 
 //option java_package = "pl.project13.protodoc";
 

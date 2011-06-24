@@ -1,4 +1,4 @@
-package pl.project13.protodoc;
+package pl.project13;
 
 message TopLevel {
 

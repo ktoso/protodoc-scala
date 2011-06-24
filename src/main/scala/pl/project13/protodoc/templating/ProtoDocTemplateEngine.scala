@@ -21,9 +21,7 @@ class ProtoDocTemplateEngine {
                                  defaultValue = Option(""""v1.0"""")))
 
   def renderTableOfContents(contents: List[ProtoMessage]) = {
-    var all = allInnerMessagesOf(contents).sortBy(m => m.messageName)
-
-    Console.println("ALL MESSAGES: " + all.map(_.fullName))
+    val all = allInnerMessagesOf(contents).sortBy(m => m.fullName)
 
     val data = Map("contents" -> all)
 
@@ -33,7 +31,7 @@ class ProtoDocTemplateEngine {
   /**
    * Renders the HTML with all Messages, a table of contents so to say
    */
-  def renderTableOfContents(contents: List[ProtoMessage], outDir: String): Unit = {
+  def renderTableOfContents(contents: List[ProtoMessage], outDir: String) {
     val html = renderTableOfContents(contents)
     val filename: String = outDir + "/index.html"
     writeToFile(filename, html)
@@ -49,7 +47,7 @@ class ProtoDocTemplateEngine {
     engine.layout("message.mustache", data)
   }
 
-  def renderMessagePage(msg: ProtoMessage, outDir: String): Unit = {
+  def renderMessagePage(msg: ProtoMessage, outDir: String) {
     val html = renderMessagePage(msg)
     val filename: String = outDir + "/index.html"
     writeToFile(filename, html)
@@ -66,7 +64,7 @@ class ProtoDocTemplateEngine {
   def allInnerMessagesOf(msg: ProtoMessage): List[ProtoMessage] = {
     var all: List[ProtoMessage] = List(msg)
     for (inner <- msg.innerMessages) {
-      println("Inner:   " + msg.fullName + BOLD + inner.fullName + RESET)
+      println("Inner:   " + msg.fullName + "." + BOLD + inner.messageName + RESET)
       all ++= allInnerMessagesOf(inner)
     }
     all
