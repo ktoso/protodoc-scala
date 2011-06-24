@@ -18,9 +18,7 @@ class CommentsTest extends FlatSpec with ShouldMatchers
     val message = ProtoBufParser.parse("""/** This is a test comment */
     message HasDocumentedEnum {}""")
 
-    message should have (
-      'comment (" This is a test comment ")
-    )
+    message.comment should include ("This is a test comment")
   }
 
   "Multi Line Comment on top level message" should "be parsed properly" in {
@@ -30,9 +28,7 @@ class CommentsTest extends FlatSpec with ShouldMatchers
      */
     message HasDocumentedEnum {}""")
 
-    message should have (
-      'comment (" This is a test comment ")
-    )
+    message.comment should include ("This is a test comment")
   }
 
   "Comment on field" should "be parsed properly" in {
@@ -42,7 +38,7 @@ class CommentsTest extends FlatSpec with ShouldMatchers
     }""")
 
     val field = message.fields.head
-    field.comment should equal (" This is my comment ")
+    field.comment should include ("This is my comment")
     field.tag should equal (ProtoTag(1))
     field.fieldName should equal ("name")
   }
@@ -55,7 +51,7 @@ class CommentsTest extends FlatSpec with ShouldMatchers
     }""")
 
     val field = message.fields.head
-    field.comment should equal (" This is my comment ")
+    field.comment should include ("This is my comment")
     field.tag should equal (ProtoTag(1))
     field.fieldName should equal ("name")
   }
@@ -84,7 +80,7 @@ class CommentsTest extends FlatSpec with ShouldMatchers
     }""")
 
     val field = message.fields.head
-    field.comment should equal (" This is my comment" + "\n" + " Second comment line")
+    field.comment should include ("This is my comment\nSecond comment line")
     field.tag should equal (ProtoTag(1))
     field.fieldName should equal ("name")
   }

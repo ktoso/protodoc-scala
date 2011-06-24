@@ -88,7 +88,6 @@ case class ByteStringProtoMessageField(override val fieldName: String,
 
 /**
  * Represent a Message property, that is of course also defined as Protocol Buffers resource
- * todo actually use it to represent Message instance fields
  */
 case class MessageProtoMessageField(override val fieldName: String,
                                     override val protoTypeName: String,
@@ -100,7 +99,6 @@ case class MessageProtoMessageField(override val fieldName: String,
 
 /**
  * Represent a Enum property, that is of course also defined as Protocol Buffers resource
- * todo actually use it to represent Enum instance fields
  */
 case class EnumProtoMessageField(override val fieldName: String,
                                  override val protoTypeName: String,

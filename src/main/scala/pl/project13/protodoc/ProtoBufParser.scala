@@ -151,7 +151,22 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
   def commentContent: Parser[Any]  = rep(chrExcept('/', '*') | '/' ~ not('*') | '*' ~ not('/') | comment)
   def comment: Parser[String] = commentStart ~ commentContent ~ commentEnd ^^ {
     case s ~ comment ~ end =>
-      comment.asInstanceOf[List[java.lang.Character]].map(_.toString).reduceRight(_.toString + _.toString)
+        log("COMMENT: " + comment)
+
+        if(comment.toString.contains("\n")) {
+          val r = """(\w|\n| |\t)""".r
+          comment.asInstanceOf[List[Any]]
+                 .map(_.toString)
+                 .filter(s => r.findFirstIn(s).isDefined)
+                 .reduceRight(_.toString + _.toString)
+                 .split("\n") // zomg so ugly... (removing leading spaces from comment text)
+                 .map(_.trim())
+                 .reduceRight(_.toString + "\n" + _.toString)
+        } else {
+          comment.asInstanceOf[List[java.lang.Character]]
+                 .map(_.toString)
+                 .reduceRight(_.toString + _.toString)
+        }
   }
   def cStyleComment: Parser[String] = "//" ~ rep(commentContent) ~ "\n" ^^ {
     case s ~ comment ~ end =>
