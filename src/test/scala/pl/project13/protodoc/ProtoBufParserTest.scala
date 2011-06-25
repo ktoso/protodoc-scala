@@ -11,8 +11,6 @@ import org.scalatest.matchers.ShouldMatchers
 class ProtoBufParserTest extends FlatSpec with ShouldMatchers
                                           with ProtoTagConversions {
 
-  ProtoBufParser.verbose = true
-
   "Parser" should "parse single simple message" in {
     val result: ProtoMessage = ProtoBufParser.parse("""
     message Wiadomosc {

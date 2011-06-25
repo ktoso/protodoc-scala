@@ -14,8 +14,6 @@ import pl.project13.protodoc.exceptions.UnknownTypeException
 class EnumsTest extends FlatSpec with ShouldMatchers
                                  with ProtoTagConversions {
 
-  ProtoBufParser.verbose = true
-
   "Enum" should "be parseable inside of an Message" in {
     val result: ProtoMessage = ProtoBufParser.parse("""
     message Wiadomosc {
@@ -48,9 +46,10 @@ class EnumsTest extends FlatSpec with ShouldMatchers
 
       required EnumType theEnum = 2;
 //      optional string pole = 1;
+//      ^^^^^^^^^^^^^^^^^^^^^^^^^ it's commented out
     }""")
 
-    result.fields should have size (2)
+    result.fields should have size (1)
     result.enums should have size (1)
 
     val enumType: ProtoEnumType = result.enums.head

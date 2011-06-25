@@ -12,8 +12,6 @@ import pl.project13.protodoc.exceptions.UnknownTypeException
 class CommentsTest extends FlatSpec with ShouldMatchers
                                     with ProtoTagConversions {
 
-  ProtoBufParser.verbose = true
-
   "Comment on top level message" should "be parsed properly" in {
     val message = ProtoBufParser.parse("""/** This is a test comment */
     message HasDocumentedEnum {}""")

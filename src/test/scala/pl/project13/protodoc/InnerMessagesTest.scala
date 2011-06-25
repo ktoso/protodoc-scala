@@ -11,8 +11,6 @@ import org.scalatest.matchers.ShouldMatchers
 class InnerMessagesTest extends FlatSpec with ProtoTagConversions
                                          with ShouldMatchers {
 
-  ProtoBufParser.verbose = true
-
   "Inner message" should "be parsed properly" in {
     val result: ProtoMessage = ProtoBufParser.parse("""
     message MyMessage {

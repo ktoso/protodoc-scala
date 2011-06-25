@@ -11,20 +11,8 @@ import javax.management.remote.rmi._RMIConnection_Stub
 /**
  * @author Konrad Malawski
  */
-trait CharParsers extends PackratParsers with ImplicitConversions {
-  override type Elem = Char
-//  type Token = SToken
-
-  // temp
-  def syntaxError(msg: String): Nothing = { error(msg) }
-}
-
-/**
- * @author Konrad Malawski
- */
 object ProtoBufParser extends RegexParsers with ImplicitConversions
-                                           with ParserConversions
-                                           with CharParsers {
+                                           with ParserConversions {
 
   /**
    * Defines if log messages should be printed or not
@@ -45,7 +33,7 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
    * For now, just ignore whitespaces
    */
 //  protected override val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
-  protected override val whiteSpace = """( |\n)+""".r
+  protected override val whiteSpace = """( |\n|\t|//.*)+""".r
 
   def pack: Parser[String] = "package" ~ repsep(ID, ".") ~ ";" ^^ {
     case p ~ packName ~ end =>
