@@ -22,7 +22,7 @@ class ProtoDocTemplateEngine extends AnsiTerminalTools {
                                  defaultValue = Option(""""v1.0"""")))
 
   def renderTableOfContents(contents: List[ProtoMessage]) = {
-    val all = allInnerMessagesOf(contents).sortBy(m => m.fullName)
+    val all = (allInnerMessagesOf(contents) ++ allInnerEnumsOf(contents)).sortBy(m => m.fullName)
 
     val data = Map("contents" -> all)
 
@@ -81,6 +81,8 @@ class ProtoDocTemplateEngine extends AnsiTerminalTools {
 //    Console.println("Saved ProtoDoc file to: " + path)
   }
 
+  // traversal methods
+
   def allInnerMessagesOf(msg: ProtoMessage): List[ProtoMessage] = {
     var all: List[ProtoMessage] = List(msg)
     for (inner <- msg.innerMessages) {
@@ -95,6 +97,16 @@ class ProtoDocTemplateEngine extends AnsiTerminalTools {
     for(msg <- msgs) {
       println("Message: " + BOLD + msg.fullName + RESET)
       all ++= allInnerMessagesOf(msg)
+    }
+    all
+  }
+
+  def allInnerEnumsOf(msg: ProtoMessage): List[ProtoEnumType] = msg.enums
+
+  def allInnerEnumsOf(msgs: List[ProtoMessage]): List[ProtoEnumType] = {
+    var all: List[ProtoEnumType] = List()
+    for(msg <- msgs) {
+      all ++= allInnerEnumsOf(msg)
     }
     all
   }

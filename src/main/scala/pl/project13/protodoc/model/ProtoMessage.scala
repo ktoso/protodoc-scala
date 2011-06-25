@@ -7,9 +7,9 @@ case class ProtoMessage (messageName: String,
                          packageName: String = "",
                          fields: List[ProtoMessageField] = List(),
                          enums: List[ProtoEnumType] = List(),
-                         innerMessages: List[ProtoMessage] = List()) extends Commentable {
+                         innerMessages: List[ProtoMessage] = List()) extends Commentable with HasFullName {
 
-  def fullName = packageName + "." + messageName
+  override val fullName = packageName + "." + messageName
 
 //  override def toString = "ProtoMessage '%s' in %s, with: %s".format(messageName, packageName, fields)
 }
