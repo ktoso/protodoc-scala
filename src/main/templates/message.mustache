@@ -6,6 +6,7 @@
 </head>
 <body>
 <h1 class="message-header">{{messageName}}</h1>
+<span class="top-level-comment">{{& comment}}</span>
 
 <h2>defined in package: {{packageName}}</h2>
 
@@ -14,8 +15,9 @@
     {{#fields}}
     <li>
         <strong>{{fieldName}}</strong><br/>
-        defined as: {{protoTypeName}}<br/>
-        mapped to: {{scalaTypeName}}
+        <span class="comment">{{& comment}}</span><br/>
+        Defined as: {{protoTypeName}}<br/>
+        Mapped to: {{scalaTypeName}}<br/>
     </li>
     {{/fields}}
     {{^fields}}
@@ -30,7 +32,8 @@
     {{#enums}}
     <li>
         <strong>{{typeName}}</strong><br/>
-        defines values:
+        <span class="comment">{{& comment}}</span>
+        Defines values:
         <table>
             <thead>
             <tr>
@@ -44,7 +47,7 @@
             <tr>
                 <td class="code">{{valueName}}</td>
                 <td>{{tag}}</td>
-                <td>{{comment}}</td>
+                <td>{{& comment}}</td>
             </tr>
             {{/values}}
             </tbody>
@@ -67,6 +70,7 @@
                 {{messageName}}
             </a>
         </strong>
+        <span class="comment">{{& comment}}</span>
     </li>
     {{/innerMessages}}
     {{^innerMessages}}

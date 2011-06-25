@@ -85,4 +85,45 @@ class CommentsTest extends FlatSpec with ShouldMatchers
     field.fieldName should equal ("name")
   }
 
+
+  "Multi Line Comment on inner enum" should "be parsed properly" in {
+    val message = ProtoBufParser.parse("""
+    message HasDocumentedEnum {
+      /**
+       * This is my comment
+       * Second comment line
+       */
+       enum SomeEnum {
+         /** Comment on an enum value */
+         EMAIL = 1;
+       }
+    }""")
+
+    val enum = message.enums.head
+    enum.comment should include ("This is my comment\nSecond comment line")
+    enum.typeName should equal ("SomeEnum")
+
+    enum.values should have size (1)
+    val EMAIL = enum.values.head
+    EMAIL.valueName should equal ("EMAIL")
+    EMAIL.tag should equal (ProtoTag(1))
+    EMAIL.comment should include ("Comment on an enum value")
+  }
+
+  "Comment on enum value" should "be parsed properly" in {
+    val message = ProtoBufParser.parse("""
+    message HasDocumentedEnum {
+       enum SomeEnum {
+         /** Comment on an enum value */
+         EMAIL = 1;
+       }
+    }""")
+
+    val enum = message.enums.head
+    enum.values should have size (1)
+    val EMAIL = enum.values.head
+    EMAIL.valueName should equal ("EMAIL")
+    EMAIL.tag should equal (ProtoTag(1))
+    EMAIL.comment should include ("Comment on an enum value")
+  }
 }

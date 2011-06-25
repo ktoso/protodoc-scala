@@ -7,7 +7,9 @@ package pl.project13.protodoc.model
 
 case class ProtoEnumType(typeName: String,
                          packageName: String = "",
-                         values: List[ProtoEnumValue]) {
+                         values: List[ProtoEnumValue])
+                         extends Commentable {
+
   def asScalaSourceCode() {
     """
     /* THIS FILE HAS BEEN GENERATED AUTOMATICALY, DONT MODIFY IT BY HAND */
@@ -36,3 +38,4 @@ case class ProtoEnumType(typeName: String,
  */
 case class ProtoEnumValue(valueName: String,
                           tag: ProtoTag)
+                          extends Commentable

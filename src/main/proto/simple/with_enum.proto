@@ -1,12 +1,13 @@
-/**
- * @author Konrad Malawski
- */
-
 package pl.project13;
 
-//option java_package = "pl.project13.protodoc";
-
+/**
+ * This message has an enum
+ */
 message WithEnum {
+
+    /**
+     * This is a documented enumeration. Oh protodoc saved my life.
+     */
     enum SomeEnumType {
         EMAIL = 1;
         SMS = 2;

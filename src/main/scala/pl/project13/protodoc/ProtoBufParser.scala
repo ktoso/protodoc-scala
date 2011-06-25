@@ -121,30 +121,31 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
   def anyField = enumTypeDef | instanceField //| enumField
 
   // enums --------------------------------------------------------------------
-  def enumTypeDef: Parser[ProtoEnumType] = "enum" ~ ID ~ "{" ~ rep(enumValue) ~ "}" ^^ {
-    case e ~ id ~ p1 ~ vals ~ p2 =>
+  def enumTypeDef: Parser[ProtoEnumType] = opt(comment) ~ "enum" ~ ID ~ "{" ~ rep(enumValue) ~ "}" ^^ {
+    case maybeDoc ~ e ~ id ~ p1 ~ vals ~ p2 =>
       log("detected enum type '" + id + "'...")
       log("              values: " + vals)
 
+      val comment = maybeDoc.getOrElse("")
+
       val definedEnum = ProtoEnumType(id, "", vals)
+      definedEnum.comment = comment
+
       knownEnums ::= definedEnum
       definedEnum
   }
 
-  def enumValue: Parser[ProtoEnumValue] = ID ~ "=" ~ NUM ~ ";" ^^ {
-    case id ~ eq ~ num ~ end =>
-      ProtoEnumValue(id, num)
+  def enumValue: Parser[ProtoEnumValue] = opt(comment) ~ ID ~ "=" ~ NUM ~ ";" ^^ {
+    case maybeDoc ~ id ~ eq ~ num ~ end =>
+      val value = ProtoEnumValue(id, num)
+      val comment = maybeDoc.getOrElse("")
+      log("enum value: '" + value + "', with comment: '" + comment + "'")
+
+      value.comment = comment
+      value
   }
 
   // comments -----------------------------------------------------------------
-//  def protoDocComment: Parser[ProtoDocComment] = "/**" ~ rep(CHAR | " " | "\n") ~ "*/" ^^ {
-//    case s ~ text ~ end =>
-//      val wholeComment = text.reduceLeft(_ + _)
-//
-//      log("detected comment: '" + wholeComment + "'")
-//      ProtoDocComment(wholeComment)
-//  }
-
   // a little complicated to allow for nesting comments
   def commentStart: Parser[Any]    = ("/**" | "/*")
   def commentEnd: Parser[Any]      = "*/"
@@ -180,15 +181,16 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
   def instanceField = opt(comment) ~ modifier ~ (protoType | enumType /* | msgType*/) ~ ID ~ "=" ~ integerValue ~ opt(defaultValue) ~ ";" ^^ {
     case doc ~ mod ~ pType ~ id ~ eq ~ tag ~ defaultVal ~ end =>
       log("parsing field '" + id + "'...")
+      val comment = doc.getOrElse("")
 
       if(primitiveTypes.contains(pType)) { // it's a primitive field
         val field = ProtoMessageField.toTypedField(pType, id, tag, mod, defaultVal)
-        field.comment = doc.getOrElse("")
+        field.comment = comment
         field
       } else if(knownEnums.map(_.typeName).contains(pType)) { // it's an enum
         val itsEnumType = knownEnums.find(p => p.typeName == pType).get
         val field = ProtoMessageField.toEnumField(id, itsEnumType, tag, mod, defaultVal)
-        field.comment = doc.getOrElse("")
+        field.comment = comment
         field
       }
 //      else if(knownMessages.map(_.messageName).contains(pType)){ // todo must be improved, fullName also is ok here
@@ -243,21 +245,25 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
         val f = field.asInstanceOf[ProtoMessage]
         log("Adding package info to: " + f.fullName)
         val packageWithOuterClass: String = msgPack + "." + msgName + f.packageName
-        processedFields ::= ProtoMessage(messageName = f.messageName,
-                                         packageName = packageWithOuterClass,
-                                         fields = f.fields,
-                                         enums = addOuterMessageInfo(f.messageName,
-                                                                     packageWithOuterClass,
-                                                                     f.enums),
-                                         innerMessages = addOuterMessageInfo(f.messageName,
-                                                                             packageWithOuterClass,
-                                                                             f.innerMessages))
+        val message = ProtoMessage(messageName = f.messageName,
+                                   packageName = packageWithOuterClass,
+                                   fields = f.fields,
+                                   enums = addOuterMessageInfo(f.messageName,
+                                                               packageWithOuterClass,
+                                                               f.enums),
+                                   innerMessages = addOuterMessageInfo(f.messageName,
+                                                                       packageWithOuterClass,
+                                                                       f.innerMessages))
+        message.comment = f.comment
+        processedFields ::= message
       case ProtoEnumType(_, _, _) =>
         val e = field.asInstanceOf[ProtoEnumType]
         val packageWithOuterClass: String = msgPack + "." + msgName
-        processedFields ::= ProtoEnumType(typeName = e.typeName,
+        val protoEnumType = ProtoEnumType(typeName = e.typeName,
                                           packageName = packageWithOuterClass,
                                           values = e.values)
+        protoEnumType.comment = e.comment
+        processedFields ::= protoEnumType
       case f =>
         log("Ignored field while fixing packages: " + f + ", appending 'as is'.")
         processedFields ::= f
@@ -281,4 +287,10 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
       Console.println(msg)
     }
   }
+
+  // some ansi helpers --------------------------------------------------------
+  def ANSI(value: Any) = "\u001B[" + value + "m"
+
+  val BOLD = ANSI(1)
+  val RESET = ANSI(0)
 }

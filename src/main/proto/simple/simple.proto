@@ -1,10 +1,33 @@
 package pl.project13;
 
+/**
+ * This is a simple Message which has some Inner Message defined.
+ * Also, note that it has a default value on the name property.
+ */
 message MessageWithInner {
+    /**
+     * A number is just a simple property
+     */
     required int32 number = 1;
+
+    /**
+     * This can be a name of your likeing, the default value is "lorem ipsum" etc
+     */
     required string name = 2 [default = "loremipsum"];
 
+
+    /**
+     * Whoa, this is a comment on an inner message!
+     * ProtoDoc is so cool!
+     */
     message InnerMessage {
+
+        /**
+         * This is a comment on an inner messages field, cool~<br/>
+         * <br/>
+         * You may use it like this in your generated Java code:
+         * <pre><code> setName("StringMyName");</code></pre>
+         */
         optional string name = 3;
     }
 }
