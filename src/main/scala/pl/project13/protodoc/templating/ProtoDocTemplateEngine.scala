@@ -39,8 +39,11 @@ class ProtoDocTemplateEngine extends AnsiTerminalTools {
   }
 
   def renderMessagePage(msg: ProtoMessage) = {
+    val isInnerMessage = msg.packageName.find(c => c.isUpper)
+
     val data = Map("messageName" -> msg.messageName,
                    "packageName" -> msg.packageName,
+                   "isInnerMessage" -> isInnerMessage,
                    "comment" -> msg.comment,
                    "fields" -> msg.fields,
                    "enums" -> msg.enums,

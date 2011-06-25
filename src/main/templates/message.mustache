@@ -10,7 +10,18 @@
 </h1>
 <span class="top-level-comment">{{& comment}}</span>
 
-<h2>defined in package: {{packageName}}</h2>
+<!--todo add package pages or something, get rid of this if! vvvvv -->
+{{#isInnerMessage}}
+<h2>
+    defined in message: <a href="{{packageName}}.html">{{packageName}}</a>
+</h2>
+{{/isInnerMessage}}
+{{^isInnerMessage}}
+<h2>
+    defined in package: {{packageName}}
+</h2>
+{{/isInnerMessage}}
+<!--todo add package pages or something, get rid of this if! ^^^^^ -->
 
 <h2 class="fields-header sub-header">Fields:</h2>
 <ul class="fields">
@@ -47,7 +58,11 @@
 <ul class="inner-enums">
     {{#enums}}
     <li>
-        <strong>{{typeName}}</strong><br/>
+        <strong>
+            <a class="msg-link" href="{{packageName}}.{{typeName}}.html">
+                {{typeName}}
+            </a>
+        </strong><br/>
         <span class="comment">{{& comment}}</span>
         Defines values:
         <table>
