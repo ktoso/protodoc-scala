@@ -9,7 +9,8 @@ case class ProtoEnumType(typeName: String,
                          packageName: String = "",
                          values: List[ProtoEnumValue])
                          extends Commentable
-                         with HasFullName {
+                         with HasFullName
+                         with RepresentsProtoElement{
 
   def asScalaSourceCode() {
     """
@@ -32,6 +33,7 @@ case class ProtoEnumType(typeName: String,
   }
 
   override val fullName = packageName + "." + typeName
+  override val representationOf = "enum"
 }
 
 /**
