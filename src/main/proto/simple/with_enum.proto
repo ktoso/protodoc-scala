@@ -8,12 +8,15 @@ message WithEnum {
     /**
      * This is a documented enumeration. Oh protodoc saved my life.
      */
-    enum SomeEnumType {
+    enum SendMessageVia {
+        /* Send messages via email */
         EMAIL = 1;
+        /* Send messages via sms */
         SMS = 2;
+        /* Send messages via normal mail */
         MAIL = 3;
     }
 
     required string name = 2 [default = "default"];
-    optional SomeEnumType aField = 3;
+    optional SendMessageVia message_medium = 3;
 }

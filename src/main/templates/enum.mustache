@@ -5,9 +5,11 @@
     {{> message_styles_css}}
 </head>
 <body>
-<h1 class="enum-header">{{enumName}}</h1>
+<h1 class="enum-header">
+    <img src="images/enum-big.png" alt="enum"/>
+    {{enumName}}
+</h1>
 <span class="top-level-comment">{{& comment}}</span><br/>
-<!-- todo implement this style!!!! and the normal comment style too -->
 <h2>defined in package: {{packageName}}</h2>
 
 <h2 class="inner-enums-header sub-header">Values:</h2>

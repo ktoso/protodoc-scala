@@ -152,8 +152,6 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
   def commentContent: Parser[Any]  = rep(chrExcept('/', '*') | '/' ~ not('*') | '*' ~ not('/') | comment)
   def comment: Parser[String] = commentStart ~ commentContent ~ commentEnd ^^ {
     case s ~ comment ~ end =>
-        log("COMMENT: " + comment)
-
         if(comment.toString.contains("\n")) {
           val r = """(\w|\n| |\t)""".r
           comment.asInstanceOf[List[Any]]

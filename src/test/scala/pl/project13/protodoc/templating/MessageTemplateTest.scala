@@ -24,17 +24,29 @@ class MessageTemplateTest extends FlatSpec with ShouldMatchers {
 
     val page = templateEngine.renderMessagePage(message)
 
-    printToFile(new java.io.File("/tmp/pl.project13.protobuf.AmazingMessage.html")) ({ p => page.foreach(p.print) })
-
     page should include ("pl.project13.protobuf")
     page should include ("AmazingMessage")
     page should include ("name")
     page should include ("age")
   }
 
-  def printToFile(f: java.io.File)(op: java.io.PrintWriter => Any) = {
-    val p = new java.io.PrintWriter(f)
-    try { op(p) } finally { p.close() }
-  }
+  "ProtoDocTemplateEngine" should "render top level message comment" in {
+    val message = ProtoBufParser.parse("""
+    package pl.project13.protobuf;
 
+    /** I'm a protodoc comment */
+    message AmazingMessage {
+     optional string name = 1;
+     optional uint32 age = 2;
+    }
+    """)
+
+    val page = templateEngine.renderMessagePage(message)
+
+    page should include ("pl.project13.protobuf")
+    page should include ("AmazingMessage")
+    page should include ("name")
+    page should include ("age")
+    page should include ("I'm a protodoc comment")
+  }
 }

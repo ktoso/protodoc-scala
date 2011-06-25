@@ -6,9 +6,15 @@ import pl.project13.protodoc.exceptions.InvalidModifierException
  * @author Konrad Malawski
  */
 sealed class ProtoModifier
-case class OptionalProtoModifier() extends ProtoModifier
-case class RequiredProtoModifier() extends ProtoModifier
-case class RepeatedProtoModifier() extends ProtoModifier
+case class OptionalProtoModifier() extends ProtoModifier {
+  override def toString = "optional"
+}
+case class RequiredProtoModifier() extends ProtoModifier {
+  override def toString = "required"
+}
+case class RepeatedProtoModifier() extends ProtoModifier {
+  override def toString = "repeated"
+}
 
 object ProtoModifier {
   def str2modifier(str: String): ProtoModifier = str match {

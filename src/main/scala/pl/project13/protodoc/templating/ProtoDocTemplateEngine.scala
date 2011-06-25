@@ -41,6 +41,7 @@ class ProtoDocTemplateEngine extends AnsiTerminalTools {
   def renderMessagePage(msg: ProtoMessage) = {
     val data = Map("messageName" -> msg.messageName,
                    "packageName" -> msg.packageName,
+                   "comment" -> msg.comment,
                    "fields" -> msg.fields,
                    "enums" -> msg.enums,
                    "innerMessages" -> msg.innerMessages)
@@ -60,6 +61,7 @@ class ProtoDocTemplateEngine extends AnsiTerminalTools {
   def renderEnumPage(enum: ProtoEnumType) = {
     val data = Map("enumName" -> enum.typeName,
                    "packageName" -> enum.packageName,
+                   "comment" -> enum.comment,
                    "values" -> enum.values)
 
     engine.layout("enum.mustache", data)

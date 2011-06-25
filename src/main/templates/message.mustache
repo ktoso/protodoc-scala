@@ -5,7 +5,9 @@
     {{> message_styles_css}}
 </head>
 <body>
-<h1 class="message-header">{{messageName}}</h1>
+<h1 class="message-header">
+    <img src="images/message-big.png" alt="msg"/> {{messageName}}
+</h1>
 <span class="top-level-comment">{{& comment}}</span>
 
 <h2>defined in package: {{packageName}}</h2>
@@ -16,8 +18,22 @@
     <li>
         <strong>{{fieldName}}</strong><br/>
         <span class="comment">{{& comment}}</span><br/>
-        Defined as: {{protoTypeName}}<br/>
-        Mapped to: {{scalaTypeName}}<br/>
+
+        <dl>
+            {{#defaultValue}}
+            <dt>Default value:</dt>
+            <dd>{{defaultValue}}</dd>
+            {{/defaultValue}}
+
+            <dt>Modifier:</dt>
+            <dd>{{modifier}}</dd>
+
+            <dt>Defined as:</dt>
+            <dd>{{protoTypeName}}</dd>
+
+            <dt>Mapped to:</dt>
+            <dd>{{scalaTypeName}}</dd>
+        </dl>
     </li>
     {{/fields}}
     {{^fields}}
@@ -80,5 +96,6 @@
     {{/innerMessages}}
 </ul>
 
+<div class="footer-placemaker"/>
 </body>
 </html>

@@ -8,6 +8,12 @@
         text-shadow: black 0.1em 0.1em 0.1em;
     }
 
+    .message-header img, .enum-header img {
+        position: relative;
+        top: 5px;
+        left: -5px;
+    }
+
     .enum-header {
         height: 71px;
         background: url(images/defbg-blue.gif) repeat-x;
@@ -65,6 +71,10 @@
         font-size: 1em;
     }
 
+    td {
+        padding: 0 1em;
+    }
+
     .code {
         font-family: 'courier new', monospace;
         font-weight: bold;
@@ -80,5 +90,23 @@
 
     .inner-msgs li:nth-child(odd) {
         background: #e6e7e6;
+    }
+
+    /* comments */
+    .top-level-comment {
+        border: #808080 dashed 1px;
+        padding: 1em;
+        display: block;
+        margin: 1em;
+    }
+
+    .comment {
+        border: #808080 dashed 1px;
+        padding: 1em;
+        display: block;
+    }
+
+    .footer-placemaker {
+        padding-bottom: 150px;
     }
 </style>
