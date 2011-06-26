@@ -15,17 +15,39 @@ package pl.project13;
  * </p>
  */
 message AmazingMessage {
+
+    /**
+     * Nam iaculis sapien id est elementum pulvinar pharetra libero
+     * faucibus. Duis risus leo, fermentum in tincidunt a, elementum id tellus. Sed sodales eleifend
+     * nisl, et cursus elit aliquet sit amet. Vestibulum rhoncus nulla eu nunc faucibus commodo.
+     * Integer malesuada facilisis dui sed posuere. Maecenas commodo nulla et metus facilisis mattis
+     * a ut libero.
+     */
     enum EnumType {
         SMS = 1;
         PHONE = 2;
     }
 
+    /**
+     * Nam iaculis sapien id est elementum pulvinar pharetra libero
+     * faucibus. Duis risus leo, fermentum in tincidunt a, elementum id tellus. Sed sodales eleifend
+     * nisl, et cursus elit aliquet sit amet. Vestibulum rhoncus nulla eu nunc faucibus commodo.
+     * Integer malesuada facilisis dui sed posuere. Maecenas commodo nulla et metus facilisis mattis
+     * a ut libero.
+     */
     enum SecondEnumType {
         OMG = 1;
         WHAT_VALUE = 2;
     }
 
+    /**
+     * Nam iaculis sapien id est elementum pulvinar pharetra libero
+     */
     required int32 number = 1;
+
+    /**
+     * Nam iaculis sapien id est elementum pulvinar pharetra libero
+     */
     required string name = 2 [default = "loremipsum"];
 
     /**
@@ -35,8 +57,11 @@ message AmazingMessage {
      * tincidunt nec dolor.
      */
     message InnerMessage {
+        /** Documented name value */
         required string name = 3;
+        /** Documented surname value */
         required string surname = 4;
+        /** Documentation generated using protodoc for field age */
         optional string age = 5;
     }
 }

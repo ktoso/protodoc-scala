@@ -30,7 +30,7 @@ class MessageTemplateTest extends FlatSpec with ShouldMatchers {
     page should include ("age")
   }
 
-  "ProtoDocTemplateEngine" should "render top level message comment" in {
+  it should "render top level message comment" in {
     val message = ProtoBufParser.parse("""
     package pl.project13.protobuf;
 

@@ -4,6 +4,7 @@ import org.fusesource.scalate._
 import layout.DefaultLayoutStrategy
 import java.io.{FileWriter, File}
 import pl.project13.protodoc.model.{ProtoEnumType, ProtoMessage}
+import scala.annotation.tailrec
 
 /**
  *
@@ -26,7 +27,7 @@ class ProtoDocTemplateEngine extends AnsiTerminalTools {
 
     val data = Map("contents" -> all)
 
-    engine.layout("index.mustache", data)
+    engine.layout("/home/ktoso/coding/protodoc-scala/src/main/templates/index.mustache", data)
   }
 
   /**
@@ -49,7 +50,7 @@ class ProtoDocTemplateEngine extends AnsiTerminalTools {
                    "enums" -> msg.enums,
                    "innerMessages" -> msg.innerMessages)
 
-    engine.layout("message.mustache", data)
+    engine.layout("/home/ktoso/coding/protodoc-scala/src/main/templates/message.mustache", data)
   }
 
   def renderMessagePage(msg: ProtoMessage, outDir: String) {
@@ -67,7 +68,7 @@ class ProtoDocTemplateEngine extends AnsiTerminalTools {
                    "comment" -> enum.comment,
                    "values" -> enum.values)
 
-    engine.layout("enum.mustache", data)
+    engine.layout("/home/ktoso/coding/protodoc-scala/src/main/templates/enum.mustache", data)
   }
 
   def renderEnumPage(enum: ProtoEnumType, outDir: String) {
@@ -104,13 +105,7 @@ class ProtoDocTemplateEngine extends AnsiTerminalTools {
     all
   }
 
-  def allInnerEnumsOf(msg: ProtoMessage): List[ProtoEnumType] = msg.enums
-
   def allInnerEnumsOf(msgs: List[ProtoMessage]): List[ProtoEnumType] = {
-    var all: List[ProtoEnumType] = List()
-    for(msg <- msgs) {
-      all ++= allInnerEnumsOf(msg)
-    }
-    all
+    msgs.map(_.enums).flatten
   }
 }

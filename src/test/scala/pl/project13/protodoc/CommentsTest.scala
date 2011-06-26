@@ -19,16 +19,6 @@ class CommentsTest extends FlatSpec with ShouldMatchers
     message.comment should include ("This is a test comment")
   }
 
-  "Multi Line Comment on top level message" should "be parsed properly" in {
-    val message = ProtoBufParser.parse("""
-    /**
-     * This is a test comment
-     */
-    message HasDocumentedEnum {}""")
-
-    message.comment should include ("This is a test comment")
-  }
-
   "Comment on field" should "be parsed properly" in {
     val message = ProtoBufParser.parse("""
     message HasDocumentedEnum {
@@ -41,7 +31,7 @@ class CommentsTest extends FlatSpec with ShouldMatchers
     field.fieldName should equal ("name")
   }
 
-  "Comment on field" should "be parsed properly, even if inline" in {
+  it should "be parsed properly, even if inline" in {
     val message = ProtoBufParser.parse("""
     message HasDocumentedEnum {
       /* This is my comment */
@@ -54,7 +44,7 @@ class CommentsTest extends FlatSpec with ShouldMatchers
     field.fieldName should equal ("name")
   }
 
-  "Comment on field" should "be parsed properly, using JavaDoc style markers" in {
+  it should "be parsed properly, using JavaDoc style markers" in {
     val message = ProtoBufParser.parse("""
     message HasDocumentedEnum {
       /** This is my comment */
@@ -67,7 +57,7 @@ class CommentsTest extends FlatSpec with ShouldMatchers
     field.fieldName should equal ("name")
   }
 
-  "Comment on field" should "be parsed properly, even if spanning multiple lines" in {
+  it should "be parsed properly, even if spanning multiple lines" in {
     val message = ProtoBufParser.parse("""
     message HasDocumentedEnum {
       /**
@@ -83,6 +73,15 @@ class CommentsTest extends FlatSpec with ShouldMatchers
     field.fieldName should equal ("name")
   }
 
+  "Multi Line Comment on top level message" should "be parsed properly" in {
+    val message = ProtoBufParser.parse("""
+    /**
+     * This is a test comment
+     */
+    message HasDocumentedEnum {}""")
+
+    message.comment should include ("This is a test comment")
+  }
 
   "Multi Line Comment on inner enum" should "be parsed properly" in {
     val message = ProtoBufParser.parse("""

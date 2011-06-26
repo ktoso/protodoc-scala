@@ -1,0 +1,7 @@
+#!/bin/sh
+
+scp -r /tmp/js project13.pl:/home/ktoso/project13/uploadmysoul/protodoc/
+scp -r /tmp/images project13.pl:/home/ktoso/project13/uploadmysoul/protodoc/
+
+scp /tmp/*.html project13.pl:/home/ktoso/project13/uploadmysoul/protodoc/
+scp /tmp/.*.html project13.pl:/home/ktoso/project13/uploadmysoul/protodoc/
