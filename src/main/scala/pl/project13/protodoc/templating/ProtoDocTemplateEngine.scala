@@ -87,6 +87,7 @@ class ProtoDocTemplateEngine extends AnsiTerminalTools {
 
   // traversal methods
 
+  // todo @pbadenski: why not flatMap ?
   def allInnerMessagesOf(msg: ProtoMessage): List[ProtoMessage] = {
     var all: List[ProtoMessage] = List(msg)
     for (inner <- msg.innerMessages) {
@@ -96,6 +97,7 @@ class ProtoDocTemplateEngine extends AnsiTerminalTools {
     all
   }
 
+  // todo @pbadenski: why not flatMap ?
   def allInnerMessagesOf(msgs: List[ProtoMessage]): List[ProtoMessage] = {
     var all: List[ProtoMessage] = List()
     for(msg <- msgs) {
