@@ -26,7 +26,7 @@ message AwesomeMessage {
 
 and generates this:<br/>
 
-<img src="https://raw.github.com/ktoso/protodoc-gui/master/doc/protodoc_main.png" alt="protodoc sample"/>
+<img src="https://raw.github.com/ktoso/protodoc-scala/master/doc/protodoc_main.png" alt="protodoc sample"/>
 
 <br/>
 Hooray!
