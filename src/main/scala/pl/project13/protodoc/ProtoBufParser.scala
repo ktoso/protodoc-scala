@@ -99,11 +99,9 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
       val knownEnumNames = knownEnums.map(_.typeName)
       log("Known enums are: " + knownEnumNames)
 
-      if (knownEnumNames.contains(s)) {
-        s
-      } else {
-        throw new UnknownTypeException("Unable to link '" + s + "' to any known enum Type.")
-      }
+    knownEnumNames.find(_ == s).getOrElse {
+      throw new UnknownTypeException("Unable to link '" + s + "' to any known enum Type.")
+    }
   }
 
   def anyField = enumTypeDef | instanceField //| enumField
