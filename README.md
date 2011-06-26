@@ -8,6 +8,10 @@ an easily searchable and most informative website with all information about you
 
 **It's currently not production ready, and allows only for basic Messages to be parsed.** But it should most probably be finished and fully working quite soon.
 
+Live Demo
+---------
+There is a <a href="http://www.up.project13.pl/protodoc/index.html">live demo available here</a>.
+
 Coding notes
 ------------
 
