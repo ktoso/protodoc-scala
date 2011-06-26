@@ -37,7 +37,7 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
 
   def pack: Parser[String] = "package" ~ repsep(ID, ".") ~ ";" ^^ {
     case p ~ packName ~ end =>
-      val joinedName = packName.reduceLeft(_ + "." + _)
+      val joinedName = packName.mkString(".")
       log("detected package name: " + joinedName)
 
       joinedName
@@ -146,11 +146,11 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
                  .reduceRight(_.toString + _.toString)
                  .split("\n") // zomg so ugly... (removing leading spaces from comment text)
                  .map(_.trim())
-                 .reduceRight(_.toString + "\n" + _.toString)
+                 .mkString("\n")
         } else {
           comment.asInstanceOf[List[java.lang.Character]]
                  .map(_.toString)
-                 .reduceRight(_.toString + _.toString)
+                 .mkString("")
         }
   }
   def cStyleComment: Parser[String] = "//" ~ rep(commentContent) ~ "\n" ^^ {
