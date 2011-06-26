@@ -33,6 +33,7 @@
 
 \maketitle
 
+\newpage
 \tableofcontents
 
 \newpage
@@ -200,7 +201,30 @@ otrzymujemy listę wiadomości zawierających \textit{kompletną} strukturę pó
 Zachowana zostaje również poprawność ścieżek package do wiadomości wewnętrznych - wówczas \textit{package} sub-wiadomości powinien zawierać (kończyć się na) 
 \textit{message} w którym się zawiera.
 
-Kolejnym krokiem jest generowanie na podstawie 
+Kolejnym krokiem jest generowanie na podstawie listy wiadomości stron HTML zawierających dokumentację. Dzięki pelnej reprezentacji wszystkich elementów 
+przeparsowanych plików - w tym komentarzy oraz zagnieżdżeń typów w typach proces ten jest stosunkowo prosty i odbywa się przy pomocy zastosowaniu
+kilku funkcyjnych metod/własności kolekcji języka Scala, konkretniej: map, reduce, fold, oraz filter. Przy pomocy złożeń tych transformacji kolekcji bardzo łatwo było
+uzyskać na przykład listę wszystkich typów, które następnie transformowano na wspólny im nad typ, aby przekazać do systemu szablonowego.  
+Jest to o tyle ciekawe oraz istotne iż w każdym kroku tego procesu zachowywane są całe struktury obiektów jak i ich typy. W żadnym miejscu programu nie mamy 
+do czynienia z operowaniem na jedynie napisach - gdyż tak byłoby w wielu językach o wiele łatwiej filtrować tylko interesujące nas wiadomości; dzięki \textit{Scala}
+praca na rzeczywistych typach nie tylko była wygodna, ale również naturalna.
+
+\newpage
+Wybrany do implementacji warstwy widoku język szablonów nazywa się "\textit{Mustache}". Jego nazwa pochodzi od składni jaką się posługuje wypisując zmienne w szablonach
+\textit{mustache}. Poniżej mały przykłąd prostego szablonu \textit{mustache}:
+\begin{verbatim}
+ <ul>
+   {{#fields}}
+     <li>name: {{name}}</li>
+   {{/fields}}
+ </ul>
+\end{verbatim}
+Proces generowanie ProtoDoc kończy się w momencie przekazania ostatniej wiadomości (lub enumeracji) do systemu szablonów. 
+Wynikowe pliki HTML są zapisywane do podanego podczas uruchamiania aplikacji przez użytkownika folderu. 
+
+Przeglądanie stron jest możliwe zarówno przy wykorzystaniu przeglądarek obsługujących JavaScript -- wówczas dostępna jest wyszukiwarka jak i nawigacja 
+"na jednej stronie" z zachowaniem historii, oraz przy wykorzystaniu przeglądarek tekstowych (takich jak links). W przypadku przeglądania strony w trybie tekstowym,
+wyświetlana jest bardzo czytelna dla takich przeglądarek stron wersja, która oczywiście nie wymaga do działania obsłgi \textit{JavaScript}u. 
 
 
 \section{Wykorzystane pakiety zewnętrznye i narzędzia}
@@ -224,19 +248,80 @@ Poniżej wymieniono zależności projektu wykorzystane celem implementacji jak i
                                            Najważniejszą cechą \textbf{sbt} która okazała się wysoce pomocna podczas tego projektu jest możliwość odpalania testów w trybie ciągłym,
                                            dzięki czemu zawsze (co każdą zmianę w pliku źródłowym) mamy informację zwrotną jaki wpływ ta zmiana miała na testy - metoda
                                            ta w połaczeniu z metodyką TDD okazała się wysoce efektywna i przyjemna podczas rozwoju oraz poprawiania usterek w aplikacji.
- \item \textbf{ScalaTest} -- Prosty framework służący pisaniu testów jednostkowych. Można go potraktować jako odpowiednik JUnit (znany z świata Javowego) jednak odrobinę potężniejszy.
+ \item \textbf{ScalaTest} -- Prosty framework służący pisaniu testów jednostkowych w języku Scala.
+                             Można go potraktować jako odpowiednik JUnit (znany z świata Javowego) jednak odrobinę potężniejszy - dzięki przewadze semantycznej języka Scala.
 \end{itemize}
 
 
 \newpage
 \section{Informacje o zastosowaniu specyficznych metod rozwiązania problemu}
+Specyficznym rozwiązaniem w samym parserze są \textit{Scala ParserCombinators} - część języka dedykowana budowaniu Parserów, przy pomocy przeznaczonego
+temu DSLa (Domain Specific Language), choć nadal pozostając z "czystej Scala". Jedną z zalet zastosowania tego narzędzia nad innymi jest 
+brak kolejnego procesu kompilacji który zazwyczajbyśmy musieli zastosować - na przykład wykorzystując Flex/Bisona lub inne rozwiązania którymi
+"klasycznie" generuje się parsery. 
 
+ParserCombinators wywodzą się z bardzo ciekawego pomysłu, jak sama nazwa wskazuje, kombinowania parserów. Dzięki temu poniższy, poprawny w języku Scala,
+zapis: 
+
+\begin{verbatim}
+ def boolValue = ("true" | "false")
+\end{verbatim}
+
+Definiuje w sumie 3 parsery:
+\begin{itemize}
+ \item parser wyrażenia "true", zwracający wartość jako \textit{java.lang.String} (gwarantują to właściwości typów języka \textit{Scala})
+ \item parser wyrażenia "false", zwracający wartość jako \textit{java.lang.String} (gwarantują to właściwości typów języka \textit{Scala})
+ \item parser \textbf{alternatywa}, dwóch wcześniej zdefiniowanych parserów. 
+\end{itemize}
+Dzięki takiej kombinacji parserów, osiągamy bardzo czytelną składnię do definiowania naszego języka oraz bardzo potężne narzędzie w postaci 
+możliwości "wpięcia się" w dowolny moment parsowania zwyczajnym kodem \textit{Scala} i przetworzenia na przykład wybranego typu, na wartość
+innego typu. Idąc tym tokiem rozumowania możemy rozbudować nasz boolValue parser aby zwracał wartość \textbf{Boolean} zamiast \textbf{String}.
+
+Dokonamy tego dzięki zastosowaniu kolejnego kombinatora, o nazwie \textit{"function applying combinator"} oraz oznaczeniu: \verb|^^|.
+Kombinator ten dokonuje transformacji kombinatora parserów po jego lewej stronie, przy pomocy funkcji przekazanej jego prawej stronie.
+W języku Scala przekazywanie funkcji wyższego rzędu jest dość trywialne, zatem nasz problem transformacji \textbf{String}a na \textbf{Boolean} 
+rozwiązalibyśmy następująco:
+
+\begin{verbatim}
+ def boolValue = ("true" | "false") ^^ {
+   s =>
+     s.toBoolean
+ }
+\end{verbatim}
+
+Pamiętamy nadal iż typ kombinatora parserów na którym pracujemy tą funkcją (przekazany jako parametr funkcji anonimowej - \textbf{s})
+to \textit{java.lang.String}. Przypominamy sobie iż klasyczny String nie posiada przecież metody \textbf{toBoolean()} (w \textit{Scala} dozwolone jest 
+pomijanie nawiasów okrągłych, stąd \textbf{toBoolean} oznacza wywołanie metody \textbf{toBoolean()}). Poznaliśmy właśnie kolejną możliwość języka Scala.
+
+Istnieją tak zwane konwersje \textbf{\textit{implicit}}, dzięki którym "jeżeli wygląda na to iż potrzebujemy skonwertować jeden typ na inny" zostanie zastosowana
+konwersja implicit, i uzyskamy pożądany typ. W powyższym przykładzie zadziałało to na zasadzie, istniejącej w bibliotece standardowej konwersji \textit{implicit}:
+
+\begin{verbatim}
+ implicit def string2richString(str: String) = new RichString(str)
+\end{verbatim}
+
+Dzięki tej konwersji otrzymaliśmy obiekt RichString, na którym zostanie zawołana metoda toBoolean (\url{http://www.scala-lang.org/api/2.7.4/scala/runtime/RichString.html#toBoolean}).
+Zwracany typ tej metody to \textbf{scala.Double}. Ostatnim krokiem utworzenia tego kombinatora jest kolejna konwersja \textit{implicit} która zostanie 
+wywołana w momencie zwrócenia naszej funkcji anonimowej. Podczas gdy zwróciliśmy typ scala.Boolean (słowo kluczowe "\textbf{return}" jest w tym przypadku opcjonalne),
+def boolValue powinno być \textbf{Parser}em, dzięki kolejnej implicit konwersji ostatecznie boolValue otrzyma typ Parser[Boolean] i gdy będziemy chcieli pobrać wartość 
+tym sposobem przeparsowanego Tokena, otrzymamy wartość typu \textbf{scala.Boolean}. 
+
+Jak łatwo się domyślić, przedstawione mechanizmy do dopiero czubek góry lodowej jaką jest język \textbf{Scala} i \textbf{ParserCombinators}.
+Uważam, że praca z tak zaawansowanym językiem jak i DSLem do definiowania parserów gramatyk jest niebywale interesującym oraz pouczającym przeżyciem.
+
+Ponad to, otrzymany w efekcie kod Parsera do złudzenia przypomina gramatykę EBNF, a więc jest bardzo czytelna oraz łatwa w implementacji oraz dalszym rozwoju.
+Przed wyborem tego narzędzia testowałem klasyczne podejścia do problemu przy pomocy JFlex/JBison jednak nie były to tak przyjemne w użyciu oraz rozwoju narzędzia 
+jak czysty język Scala i jego funkcyjna natura.
+
+
+
+\newpage
 \section{Instrukcja obsługi}
 \subsection{Pobranie aktualnych źródeł}
 Aby pobrać najświeższą wersję źródeł należy skorzystać z systemu wersjonowania \textbf{git}:
 \begin{verbatim}
  git clone git://github.com/ktoso/protodoc-scala.git
- cd protodoc
+ cd protodoc-scala
 \end{verbatim}
 
 \subsection{Uruchomienie aplikacji przez sbt}
@@ -248,6 +333,7 @@ Aby uruchomić aplikację:
 \begin{verbatim}
  sbt run [parametry aplikacji]
 \end{verbatim}
+
 W przypadku nie podania wymaganych parametrów do uruchomienia ProtoDoc, zostaniemy o tym poinformowani następującą wiadomością:
 \begin{verbatim}
 usage: ProtoDoc [options] proto_dir out_dir
@@ -260,7 +346,7 @@ options:
 \end{verbatim}
 
 Zatem poprawne wywołanie aplikacji wyglądałoby następująco: 
-\begin{verbatim}
+\begin{alltt}
  sbt run ~/coding/protodoc-scala/src/main/proto/simple /tmp
 
  # kompilacja aplikacji
@@ -275,17 +361,17 @@ Parsing file: ~/coding/protodoc-scala/src/main/proto/simple/simple.proto
 Parsing file: ~/coding/protodoc-scala/src/main/proto/simple/multiple_inner_msgs.proto
 Parsing file: ~/coding/protodoc-scala/src/main/proto/simple/amazing_message.proto
 Parsing file: ~/coding/protodoc-scala/src/main/proto/simple/with_enum.proto
-Message: pl.project13.WithEnum
-Message: pl.project13.AmazingMessage
-Inner:   pl.project13.AmazingMessage.InnerMessage
-Message: pl.project13.TopLevel
-Inner:   pl.project13.TopLevel.MiddleLevel
-Inner:   pl.project13.TopLevel.MiddleLevel.InnerInnerLevel
-Message: pl.project13.MessageWithInner
-Inner:   pl.project13.MessageWithInner.InnerMessage
+Message: \textbf{pl.project13.WithEnum}
+Message: \textbf{pl.project13.AmazingMessage}
+Inner:   pl.project13.AmazingMessage.\textbf{InnerMessage}
+Message: \textbf{pl.project13.TopLevel}
+Inner:   pl.project13.TopLevel.\textbf{MiddleLevel}
+Inner:   pl.project13.TopLevel.MiddleLevel.\textbf{InnerInnerLevel}
+Message: \textbf{pl.project13.MessageWithInner}
+Inner:   pl.project13.MessageWithInner.\textbf{InnerMessage}
 [info] == run ==
-[success] Successful.
-\end{verbatim}
+[success] \textcolor{OliveGreen}{Successful.}
+\end{alltt}
 
 Możliwe jest również przekazanie opcji \textit{-v}, która skutkuje znacznym zwiększeniem stopnia logowanych na konsolę wiadomości.
 Raczej powinna być ona zbędna użytkownikowi, pozostawiono ją dostępną jednak na wypadek potrzeby debugowania aplikacji 'wizualnie'.
@@ -459,7 +545,7 @@ message Msg {
 \newpage
 \section{Ograniczenia programu}
 \begin{itemize}
- \item Nie są obsługiwane Serwisy, trochę oddzielny samym dokumentowanym tutaj Wiadomościom temat.
+ \item Nie są obsługiwane Serwisy 
  \item Nie jest sprawdzana poprawność wartości domyślnych pól (czy nie przypisujemy napisu do pola uint32 itp).
  \item Message jeszcze nie mogą być, tak jak Enum'y, stosowane jako typy pól. Zostanie to jednak szybko dodane - analogiczny mechanizm działa już z Typami enum.
  \item Message jeszcze nie są w stanie po sobie dziedziczyć
