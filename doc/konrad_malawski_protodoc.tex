@@ -158,7 +158,7 @@ message FormMessage {
 
 \subsubsection{Gramatyka}
 \begin{verbatim}
-proto : ( message | extend | enum | package | ";" )*
+proto : ( message | enum | package | ";" )*
 
 package : "package" ident ( "." ident )* ";"
 
@@ -223,7 +223,7 @@ Proces generowanie ProtoDoc kończy się w momencie przekazania ostatniej wiadom
 Wynikowe pliki HTML są zapisywane do podanego podczas uruchamiania aplikacji przez użytkownika folderu. 
 
 Przeglądanie stron jest możliwe zarówno przy wykorzystaniu przeglądarek obsługujących JavaScript -- wówczas dostępna jest wyszukiwarka jak i nawigacja 
-"na jednej stronie" z zachowaniem historii, oraz przy wykorzystaniu przeglądarek tekstowych (takich jak links). W przypadku przeglądania strony w trybie tekstowym,
+,,na jednej stronie'' z zachowaniem historii, oraz przy wykorzystaniu przeglądarek tekstowych (takich jak links). W przypadku przeglądania strony w trybie tekstowym,
 wyświetlana jest bardzo czytelna dla takich przeglądarek stron wersja, która oczywiście nie wymaga do działania obsłgi \textit{JavaScript}u. 
 
 
@@ -256,9 +256,9 @@ Poniżej wymieniono zależności projektu wykorzystane celem implementacji jak i
 \newpage
 \section{Informacje o zastosowaniu specyficznych metod rozwiązania problemu}
 Specyficznym rozwiązaniem w samym parserze są \textit{Scala ParserCombinators} - część języka dedykowana budowaniu Parserów, przy pomocy przeznaczonego
-temu DSLa (Domain Specific Language), choć nadal pozostając z "czystej Scala". Jedną z zalet zastosowania tego narzędzia nad innymi jest 
+temu DSLa (Domain Specific Language), choć nadal pozostając z ,,czystej Scala''. Jedną z zalet zastosowania tego narzędzia nad innymi jest 
 brak kolejnego procesu kompilacji który zazwyczajbyśmy musieli zastosować - na przykład wykorzystując Flex/Bisona lub inne rozwiązania którymi
-"klasycznie" generuje się parsery. 
+,,klasycznie'' generuje się parsery. 
 
 ParserCombinators wywodzą się z bardzo ciekawego pomysłu, jak sama nazwa wskazuje, kombinowania parserów. Dzięki temu poniższy, poprawny w języku Scala,
 zapis: 
@@ -269,15 +269,15 @@ zapis:
 
 Definiuje w sumie 3 parsery:
 \begin{itemize}
- \item parser wyrażenia "true", zwracający wartość jako \textit{java.lang.String} (gwarantują to właściwości typów języka \textit{Scala})
- \item parser wyrażenia "false", zwracający wartość jako \textit{java.lang.String} (gwarantują to właściwości typów języka \textit{Scala})
+ \item parser wyrażenia ,,true'', zwracający wartość jako \textit{java.lang.String} (gwarantują to właściwości typów języka \textit{Scala})
+ \item parser wyrażenia ,,false'', zwracający wartość jako \textit{java.lang.String} (gwarantują to właściwości typów języka \textit{Scala})
  \item parser \textbf{alternatywa}, dwóch wcześniej zdefiniowanych parserów. 
 \end{itemize}
 Dzięki takiej kombinacji parserów, osiągamy bardzo czytelną składnię do definiowania naszego języka oraz bardzo potężne narzędzie w postaci 
-możliwości "wpięcia się" w dowolny moment parsowania zwyczajnym kodem \textit{Scala} i przetworzenia na przykład wybranego typu, na wartość
+możliwości ,,wpięcia się'' w dowolny moment parsowania zwyczajnym kodem \textit{Scala} i przetworzenia na przykład wybranego typu, na wartość
 innego typu. Idąc tym tokiem rozumowania możemy rozbudować nasz boolValue parser aby zwracał wartość \textbf{Boolean} zamiast \textbf{String}.
 
-Dokonamy tego dzięki zastosowaniu kolejnego kombinatora, o nazwie \textit{"function applying combinator"} oraz oznaczeniu: \verb|^^|.
+Dokonamy tego dzięki zastosowaniu kolejnego kombinatora, o nazwie \textit{,,function applying combinator''} oraz oznaczeniu: \verb|^^|.
 Kombinator ten dokonuje transformacji kombinatora parserów po jego lewej stronie, przy pomocy funkcji przekazanej jego prawej stronie.
 W języku Scala przekazywanie funkcji wyższego rzędu jest dość trywialne, zatem nasz problem transformacji \textbf{String}a na \textbf{Boolean} 
 rozwiązalibyśmy następująco:
@@ -293,7 +293,7 @@ Pamiętamy nadal iż typ kombinatora parserów na którym pracujemy tą funkcją
 to \textit{java.lang.String}. Przypominamy sobie iż klasyczny String nie posiada przecież metody \textbf{toBoolean()} (w \textit{Scala} dozwolone jest 
 pomijanie nawiasów okrągłych, stąd \textbf{toBoolean} oznacza wywołanie metody \textbf{toBoolean()}). Poznaliśmy właśnie kolejną możliwość języka Scala.
 
-Istnieją tak zwane konwersje \textbf{\textit{implicit}}, dzięki którym "jeżeli wygląda na to iż potrzebujemy skonwertować jeden typ na inny" zostanie zastosowana
+Istnieją tak zwane konwersje \textbf{\textit{implicit}}, dzięki którym ,,jeżeli wygląda na to iż potrzebujemy skonwertować jeden typ na inny'' zostanie zastosowana
 konwersja implicit, i uzyskamy pożądany typ. W powyższym przykładzie zadziałało to na zasadzie, istniejącej w bibliotece standardowej konwersji \textit{implicit}:
 
 \begin{verbatim}
@@ -301,7 +301,7 @@ konwersja implicit, i uzyskamy pożądany typ. W powyższym przykładzie zadzia�
 \end{verbatim}
 
 Dzięki tej konwersji otrzymaliśmy obiekt RichString, na którym zostanie zawołana metoda toBoolean (\url{http://www.scala-lang.org/api/2.7.4/scala/runtime/RichString.html#toBoolean}).
-Zwracany typ tej metody to \textbf{scala.Double}. Ostatnim krokiem utworzenia tego kombinatora jest kolejna konwersja \textit{implicit} która zostanie 
+Zwracany typ tej metody to \textbf{scala.Boolean}. Ostatnim krokiem utworzenia tego kombinatora jest kolejna konwersja \textit{implicit} która zostanie 
 wywołana w momencie zwrócenia naszej funkcji anonimowej. Podczas gdy zwróciliśmy typ scala.Boolean (słowo kluczowe "\textbf{return}" jest w tym przypadku opcjonalne),
 def boolValue powinno być \textbf{Parser}em, dzięki kolejnej implicit konwersji ostatecznie boolValue otrzyma typ Parser[Boolean] i gdy będziemy chcieli pobrać wartość 
 tym sposobem przeparsowanego Tokena, otrzymamy wartość typu \textbf{scala.Boolean}. 
@@ -447,13 +447,13 @@ wpisanego fragmentu nazwy.
 \newpage
 \subsection{Przykłady wykrywanych błędów}
 ProtoDoc w obecnej wersji potrafi już wykrywać niektóre rodzaje błędów jakie może napotkać w plikach źródłowych.
-Poniżej zostaną przedstawione niektóre z nich. Poza przedstawionymi tutaj mechanizmami typowe "nie pasowanie do gramatyki" 
-na przykład poprzez definicję enumeracji jako "top level" jednostki również zostanie zgłoszone w analogiczny sposób. 
+Poniżej zostaną przedstawione niektóre z nich. Poza przedstawionymi tutaj mechanizmami typowe ,,nie pasowanie do gramatyki''  
+na przykład poprzez definicję enumeracji jako ,,top level'' jednostki również zostanie zgłoszone w analogiczny sposób. 
 Każdy z tych składniowych niesie ze sobą informację o miejscu gdzie błąd wystąpił (w postaci numeru linii i kolumny), 
 wraz dotyczącym błędu fragmentem kodu oraz wskazaniem znakiem \textbf{\^} miejsca wystąpienia problemu.
 
 \subsubsection{Wykrycie niepoprawnego modyfikatora}
-Poniższa wiadomość zawierająca błąd w słowie "optional", będącym modifykatorem pola ProtoBuf.
+Poniższa wiadomość zawierająca błąd w słowie ,,optional'', będącym modifykatorem pola ProtoBuf.
 \begin{verbatim}
 message Msg {
 zoptional int32 number = 12;
@@ -473,7 +473,7 @@ kwadratowymi nawiasami numeru wiersza oraz numeru kolumny gdzie problem wystąpi
 
 \subsubsection{Wykrycie zastosowanie nie zdefiniowanego typu}
 Poniższa definicja zawiera odwołanie do niezdefiniowanego typu - UnknownType. ProtoDoc jest w stanie wykryć ten problem oraz zareaguje 
-rzuceniem wyjatku typu "\textit{pl.project13.protodoc.exceptions.UnknownTypeException}" podając również przyczynę problemu.
+rzuceniem wyjatku typu ,,\textit{pl.project13.protodoc.exceptions.UnknownTypeException}'' podając również przyczynę problemu.
 \begin{verbatim}
 message Msg {
 required UnknownType field = 23;
