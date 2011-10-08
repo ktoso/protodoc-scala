@@ -77,4 +77,21 @@ class EnumsTest extends FlatSpec with ShouldMatchers
       """)
     } should produce [UnknownTypeException]
   }
+
+  it should "be usable even before it's type declaration" in {
+    val result = ProtoBufParser.parse("""
+      message Msg {
+      required SomeEnum field = 1;
+  
+      enum SomeEnum {
+        SMS = 1;
+      }
+    }
+    """)
+
+    result.fields should have size (1)
+    result.enums should have size (1)
+
+
+  }
 }
