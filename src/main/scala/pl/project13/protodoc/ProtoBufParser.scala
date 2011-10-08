@@ -12,12 +12,8 @@ import javax.management.remote.rmi._RMIConnection_Stub
  * @author Konrad Malawski
  */
 object ProtoBufParser extends RegexParsers with ImplicitConversions
-                                           with ParserConversions {
-
-  /**
-   * Defines if log messages should be printed or not
-   */
-  var verbose = false
+                                           with ParserConversions 
+                                           with Logger {
 
   def ID = """[a-zA-Z_]([a-zA-Z0-9_]*|_[a-zA-Z0-9]*)*""".r
 
@@ -29,6 +25,8 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
   var knownEnums: List[ProtoEnumType] = List()
   var knownMessages: List[ProtoMessage] = List()
 
+  var fieldsWithUncheckedTypes: List[ProtoMessageField] = List()
+
   /**
    * For now, just ignore whitespaces
    */
@@ -38,7 +36,7 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
   def pack: Parser[String] = "package" ~ repsep(ID, ".") ~ ";" ^^ {
     case p ~ packName ~ end =>
       val joinedName = packName.mkString(".")
-      log("detected package name: " + joinedName)
+      info("detected package name: " + joinedName)
 
       joinedName
   }
@@ -51,11 +49,13 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
 
       val processedFields = addOuterMessageInfo(id, pack, allFields)
 
-      log("Parsed message in '%s' named '%s'".format(pack, id))
-      log(" fields: " + list2messageFieldList(processedFields))
-      log(" enums: " + list2enumTypeList(processedFields))
-      log(" inner messages: " + list2messageList(processedFields))
-      log(" comment: " + comment)
+      
+
+      info("Parsed message in '%s' named '%s'".format(pack, id))
+      info("  fields: " + list2messageFieldList(processedFields))
+      info("  enums: " + list2enumTypeList(processedFields))
+      info("  inner messages: " + list2messageList(processedFields))
+      info("  comment: " + comment)
 
       val message = new ProtoMessage(messageName = id,
                                      packageName = pack,
@@ -95,12 +95,12 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
 
   def enumType: Parser[String] = ("""\w+""".r) ^^ {
     s =>
-      log("Trying to parse '" + s + "' as 'known' enum...")
+      info("Trying to parse '" + s + "' as 'known' enum...")
       val knownEnumNames = knownEnums.map(_.typeName)
-      log("Known enums are: " + knownEnumNames)
+      info("Known enums are: " + knownEnumNames.mkString(", "))
 
     knownEnumNames.find(_ == s).getOrElse {
-      throw new UnknownTypeException("Unable to link '" + s + "' to any known enum Type.")
+      throw new UnknownTypeException("Unable to link '" + s + "' to any known enum Type. Accepted types are: " + knownEnumNames.mkString(", ") + ".")
     }
   }
 
@@ -109,8 +109,8 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
   // enums --------------------------------------------------------------------
   def enumTypeDef: Parser[ProtoEnumType] = opt(comment) ~ "enum" ~ ID ~ "{" ~ rep(enumValue) ~ "}" ^^ {
     case maybeDoc ~ e ~ id ~ p1 ~ vals ~ p2 =>
-      log("detected enum type '" + id + "'...")
-      log("              values: " + vals)
+      info("detected enum type '" + id + "'...")
+      info("              values: " + vals)
 
       val comment = maybeDoc.getOrElse("")
 
@@ -125,7 +125,7 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
     case maybeDoc ~ id ~ eq ~ num ~ end =>
       val value = ProtoEnumValue(id, num)
       val comment = maybeDoc.getOrElse("")
-      log("enum value: '" + value + "', with comment: '" + comment + "'")
+      info("enum value: '" + value + "', with comment: '" + comment + "'")
 
       value.comment = comment
       value
@@ -164,7 +164,7 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
   // fields -------------------------------------------------------------------
   def instanceField = opt(comment) ~ modifier ~ (protoType | enumType /* | msgType*/) ~ ID ~ "=" ~ integerValue ~ opt(defaultValue) ~ ";" ^^ {
     case doc ~ mod ~ pType ~ id ~ eq ~ tag ~ defaultVal ~ end =>
-      log("parsing field '" + id + "'...")
+      info("parsing field '" + id + "'...")
       val comment = doc.getOrElse("")
 
       if(primitiveTypes.contains(pType)) { // it's a primitive field
@@ -187,7 +187,7 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
 
   def defaultValue: Parser[Any] = "[" ~ "default" ~ "=" ~ (ID | NUM | stringValue) ~ "]" ^^ {
     case b ~ d ~ eq ~ value ~ end =>
-      log("Default values: " + value)
+      info("Default values: " + value)
       value
   }
 
@@ -227,7 +227,7 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
     for(field <- innerFields) field match {
       case ProtoMessage(_, _, _, _, _) =>
         val f = field.asInstanceOf[ProtoMessage]
-        log("Adding package info to: " + f.fullName)
+        info("Adding package info to: " + f.fullName)
         val packageWithOuterClass: String = msgPack + "." + msgName
         val message = ProtoMessage(messageName = f.messageName,
                                    packageName = packageWithOuterClass,
@@ -249,7 +249,7 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
         protoEnumType.comment = e.comment
         processedFields ::= protoEnumType
       case f =>
-        log("Ignored field while fixing packages: " + f + ", appending 'as is'.")
+        info("Ignored field while fixing packages: " + f + ", appending 'as is'.")
         processedFields ::= f
     }
 
@@ -264,12 +264,6 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
     //    case Error(msg, _) => throw new RuntimeException(msg)
     case x: Failure => throw new ProtoDocParsingException(x.toString())
     case x: Error => throw new RuntimeException(x.toString())
-  }
-
-  def log(msg: String) {
-    if(verbose) {
-      Console.println(msg)
-    }
   }
 
   // some ansi helpers --------------------------------------------------------

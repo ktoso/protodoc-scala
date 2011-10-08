@@ -68,11 +68,11 @@ class EnumsTest extends FlatSpec with ShouldMatchers
     evaluating {
       ProtoBufParser.parse("""
         message Msg {
-        enum SomeEnum {
+        enum SomeZOMGEnum {
           SMS = 1;
         }
 
-        required UndefinedEnum field = 1;
+        required UndefinedndefinedEnum field = 1;
       }
       """)
     } should produce [UnknownTypeException]
@@ -81,17 +81,36 @@ class EnumsTest extends FlatSpec with ShouldMatchers
   it should "be usable even before it's type declaration" in {
     val result = ProtoBufParser.parse("""
       message Msg {
-      required SomeEnum field = 1;
+      required SomeSecondEnum field = 1;
   
-      enum SomeEnum {
+      enum SomeSecondEnum {
         SMS = 1;
       }
     }
-    """)
+    """) 
 
     result.fields should have size (1)
     result.enums should have size (1)
 
+    val enumType: ProtoEnumType = result.enums.head
+    val enumField: ProtoMessageField = result.fields.last // todo head and last are NOT really deterministic here!
+    enumField should have (
+      'fieldName ("field"),
+      'scalaTypeName (enumType.typeName),
+      'protoTypeName (enumType.typeName),
+      'tag (ProtoTag(1)),
+      'modifier (RequiredProtoModifier()),
+      'defaultValue (null)
+    )
+  }
 
+  "Undefined enum" should "be type checked, so an not existing enum type used as field type will fail compiling" in {
+    evaluating { 
+      ProtoBufParser.parse("""
+        message Msg {
+        required NFJHSFEnum field = 1;
+      }
+      """)
+    } should produce [UnknownTypeException] 
   }
 }
