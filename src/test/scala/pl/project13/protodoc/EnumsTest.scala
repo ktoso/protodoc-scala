@@ -35,7 +35,7 @@ class EnumsTest extends FlatSpec with ShouldMatchers
     result.enums should contain (expected)
   }
 
-  "Enum" should "be usable as field type" in {
+  it should "be usable as field type" in {
     val result: ProtoMessage = ProtoBufParser.parse("""
     message WiadomoscDwaPola {
 
@@ -64,7 +64,7 @@ class EnumsTest extends FlatSpec with ShouldMatchers
     )
   }
 
-  "Enum" should "stick to 'known' enums, and not allow random field types" in {
+  it should "stick to 'known' enums, and not allow random field types" in {
     evaluating {
       ProtoBufParser.parse("""
         message Msg {
