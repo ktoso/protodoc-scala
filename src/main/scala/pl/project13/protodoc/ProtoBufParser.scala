@@ -15,11 +15,11 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
                                            with ParserConversions 
                                            with Logger {
 
-  def ID = """[a-zA-Z_]([a-zA-Z0-9_]*|_[a-zA-Z0-9]*)*""".r
+  val ID = """[a-zA-Z_]([a-zA-Z0-9_]*|_[a-zA-Z0-9]*)*""".r
 
-  def NUM = """[1-9][0-9]*""".r
+  val NUM = """[1-9][0-9]*""".r
 
-  def CHAR = """[a-zA-Z0-9]""".r
+  val CHAR = """[a-zA-Z0-9]""".r
 
   // lists of "known types", to allow parsing of enum fields etc
   var knownEnums: List[ProtoEnumType] = List()

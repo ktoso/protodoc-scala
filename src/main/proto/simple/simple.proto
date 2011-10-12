@@ -30,4 +30,11 @@ message MessageWithInner {
          */
         optional string name = 3;
     }
+
+   optional OuterEnumeration instanceOfOuterEnum = 3;
+}
+
+enum OuterEnumeration {
+   OUTSIDE = 1;
+   INSIDE = 2;
 }
