@@ -258,13 +258,24 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
 
   /* ----------------- API methods ----------------------------------------- */
 
-  def parse(s: String): ProtoMessage = parseAll(message, s) match {
+  /**
+   * Parse the contents of one protocol buffer file
+   *
+   * todo return something more generic, enum can also be top level
+   */
+  def parse(protoContent: String): ProtoMessage = parseAll(message, protoContent) match {
     case Success(res, _) => res
-    //    case Failure(msg, _)  => throw new RuntimeException(msg)
-    //    case Error(msg, _) => throw new RuntimeException(msg)
     case x: Failure => throw new ProtoDocParsingException(x.toString())
     case x: Error => throw new RuntimeException(x.toString())
   }
+
+  /**
+   * Parse all contents of all protocol buffer files passed in,
+   * an List of ProtoMessages will be returned
+   *
+   * todo return something more generic, enum can also be top level
+   */
+  def parse(protoContents: List[String]): List[ProtoMessage] = protoContents.map { parse(_) }
 
   // some ansi helpers --------------------------------------------------------
   def ANSI(value: Any) = "\u001B[" + value + "m"

@@ -14,7 +14,7 @@ class MultipleProtoFilesTest extends FlatSpec with ProtoTagConversions
   package pl.project13.test;
 
   message SomeMessage {
-    required int aNumber = 1;
+    required int32 aNumber = 1;
   }
   """
   val SECOND_INDEPENDENT_FILE = """
@@ -25,13 +25,13 @@ class MultipleProtoFilesTest extends FlatSpec with ProtoTagConversions
     }
     """
 
+  behavior of  "Parser given multiple files"
+  
+  it should "parse multiple seperate (independent) files" in {
+    val protos = INDEPENDENT_FILE :: SECOND_INDEPENDENT_FILE :: Nil
+    
+    val parsedProtos = ProtoBufParser.parse(protos)
 
-  describe("Parsing for multiple files") {
-      "Parser" should {
-          "parse multiple seperate (independent) files" in {
-              ProtoBufParser.parse()
-          }
-      }
+    parsedProtos should have length (2)
   }
-
 }
