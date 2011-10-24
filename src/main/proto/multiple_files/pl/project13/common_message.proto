@@ -1,0 +1,6 @@
+package pl.project13;
+
+message CommonMessage {
+    optional string aName = 1;
+    optional string aSurname = 2;
+}
