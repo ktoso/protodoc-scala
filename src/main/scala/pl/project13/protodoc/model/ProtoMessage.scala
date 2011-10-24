@@ -8,9 +8,10 @@ case class ProtoMessage (messageName: String,
                          fields: List[ProtoMessageField] = List(),
                          enums: List[ProtoEnumType] = List(),
                          innerMessages: List[ProtoMessage] = List())
+
                          extends Commentable
-                         with HasFullName
-                         with RepresentsProtoElement {
+                            with HasFullName
+                            with ProtoType {
 
   override val fullName = packageName + "." + messageName
   override val representationOf = "message"

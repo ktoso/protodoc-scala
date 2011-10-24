@@ -1,28 +1,33 @@
 package pl.project13.protodoc
 
+import utils.AnsiCodes
+
 trait Logger {
 
-  var verbose = true 
+  var verbose = true
 
-  def info(msg: String) {
-    if(verbose) Console.println(msg)
+  def info(msg: Any) {
+    if (verbose) Console.println(msg)
   }
 
-  def log(msg: String) {
-    if(verbose) Console.println(Logger.GREEN + msg + Logger.RESET)
+  def log(msg: Any) {
+    info(msg)
   }
 
-  def error(msg: String) {
-    if(verbose) Console.println(msg)
+  def good(msg: Any) {
+    if (verbose) Console.println(Logger.green(msg))
   }
-  
+
+  def error(msg: Any) {
+    if (verbose) Console.println(Logger.red(msg))
+  }
+
 }
 
-object Logger {
-  def ANSI(style: Any, value: Any): Unit = ANSI(style + ";" + value)
-  def ANSI(value: Any): Unit             = "\u001B[" + value + "m"
+object Logger extends AnsiCodes {
+  implicit def any2string(any: Any): String = any.toString
 
-  val BOLD  = ANSI(1)
-  val GREEN = ANSI("0;32")
-  val RESET = ANSI(0)
-}
+  private def green(msg: Any) = Logger.RED + msg + Logger.RESET
+
+  private def red(msg: Any) = Logger.RED + msg + Logger.RESET
+} 

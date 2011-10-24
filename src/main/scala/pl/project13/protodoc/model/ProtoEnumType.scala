@@ -5,12 +5,10 @@ package pl.project13.protodoc.model
  * @author Konrad Malawski
  */
 
-case class ProtoEnumType(typeName: String,
-                         packageName: String = "",
-                         values: List[ProtoEnumValue])
+case class ProtoEnumType(typeName: String, packageName: String = "", values: List[ProtoEnumValue])
                          extends Commentable
-                         with HasFullName
-                         with RepresentsProtoElement{
+                            with HasFullName
+                            with ProtoType {
 
   def asScalaSourceCode() {
     """
