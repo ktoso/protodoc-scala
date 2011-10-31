@@ -1,10 +1,8 @@
 package pl.project13.protodoc
 
-import scala.io._
-import exceptions.{UnknownTypeException, ProtoDocParsingException}
+import exceptions.{ProtoDocVerificationException, ProtoDocParsingException, UnknownTypeException}
 import model._
-import scala.util.parsing.combinator._
-import scala.util.parsing.input.CharArrayReader
+import scala.io._
 import java.io.File
 
 /**
@@ -12,43 +10,49 @@ import java.io.File
  */
 object ProtoBufCompiler extends Logger {
 
-   
   /**
    * Parse all contents of all protocol buffer files passed in,
    * an List of ProtoMessages will be returned
    *
    * todo return something more generic, enum can also be top level
    */
-  def parse(protos: String*): Seq[ProtoType] = {
+  def compile(protos: List[String]): List[ProtoType] = {
 
-    // parse
-    val parsedProtos = parseNoVerify(protos:_*)
+    // compile
+    val parsedProtos = parseNoVerify(protos)
+    ok("Parsed "+parsedProtos.length+" proto types...")
 
     // verify
     val verification = ProtoBufVerifier.verify(parsedProtos)
+    ok("Verified proto types...")
 
     // print errors, stop execution
     if(verification.invalid) {
+      error("Contained errors, aborting execution")
       verification.errors.foreach(error(_))
+      throw new ProtoDocVerificationException(verification)
     }
 
-    // else return protos
+    ok("Verification finished, no errors found.")
+    // return protos
     parsedProtos
   }
+  
+  def compile(proto: String): List[ProtoType] = compile(List(proto))
 
-  def parseNoVerify(protos: String*) = {
+  private def parseNoVerify(protos: List[String]) = {
     for (proto <- protos ) yield ProtoBufParser.parse(proto)
   }
   
-  implicit def file2string(f: File): String = {
+  private implicit def file2string(f: File): String = {
     Source.fromFile(f).toString()
   }
   
-  implicit def files2strings(f: List[File]): List[String] = {
+  private implicit def files2strings(f: List[File]): List[String] = {
     f.map(file2string(_))
   }
 
-  implicit def file2fileList(f: File): List[File] = {
+  private implicit def file2fileList(f: File): List[File] = {
     List(f)
   }
    

@@ -15,7 +15,7 @@ class EnumsTest extends FlatSpec with ShouldMatchers
                                  with ProtoTagConversions {
 
   "Enum" should "be parseable inside of an Message" in {
-    val result: ProtoMessage = ProtoBufParser.parse("""
+    val result: ProtoMessageType = ProtoBufParser.parse("""
     message Wiadomosc {
       required string some_field = 1;
       required string some_field_zomg = 5;
@@ -36,7 +36,7 @@ class EnumsTest extends FlatSpec with ShouldMatchers
   }
 
   it should "be usable as field type" in {
-    val result: ProtoMessage = ProtoBufParser.parse("""
+    val result: ProtoMessageType = ProtoBufParser.parse("""
     message WiadomoscDwaPola {
 
       enum EnumType {

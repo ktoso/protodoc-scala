@@ -12,7 +12,7 @@ class FieldsTest extends FlatSpec with ProtoTagConversions
                                   with ShouldMatchers {
 
   "Message with 2 fields" should "in fact have 2 fields" in {
-    val result: ProtoMessage = ProtoBufParser.parse("""
+    val result: ProtoMessageType = ProtoBufParser.parse("""
     message WiadomoscDwaPola {
       required string pole = 23;
       required int32 last = 42 [default = 42];
@@ -28,7 +28,7 @@ class FieldsTest extends FlatSpec with ProtoTagConversions
   }
 
   "Parser" should "parse single int32 field" in {
-    val result: ProtoMessage = ProtoBufParser.parse("""
+    val result: ProtoMessageType = ProtoBufParser.parse("""
     message Wiadomosc {
       required int32 number = 1;
     }
@@ -39,7 +39,7 @@ class FieldsTest extends FlatSpec with ProtoTagConversions
   }
 
   it should "parse single fixed32 field" in {
-    val result: ProtoMessage = ProtoBufParser.parse("""
+    val result: ProtoMessageType = ProtoBufParser.parse("""
     message Wiadomosc {
       required fixed32 number = 1;
     }
@@ -50,7 +50,7 @@ class FieldsTest extends FlatSpec with ProtoTagConversions
   }
 
   it should "parse single sfixed64 field" in {
-    val result: ProtoMessage = ProtoBufParser.parse("""
+    val result: ProtoMessageType = ProtoBufParser.parse("""
     message Wiadomosc {
       required sfixed64 number = 1;
     }
@@ -61,7 +61,7 @@ class FieldsTest extends FlatSpec with ProtoTagConversions
   }
 
   it should "parse single int64 field" in {
-    val result: ProtoMessage = ProtoBufParser.parse("""
+    val result: ProtoMessageType = ProtoBufParser.parse("""
     message Wiadomosc {
       required int64 number = 1;
     }
@@ -72,7 +72,7 @@ class FieldsTest extends FlatSpec with ProtoTagConversions
   }
 
   it should "parse single fixed64 field" in {
-    val result: ProtoMessage = ProtoBufParser.parse("""
+    val result: ProtoMessageType = ProtoBufParser.parse("""
     message Wiadomosc {
       repeated fixed64 number = 1;
     }
@@ -83,7 +83,7 @@ class FieldsTest extends FlatSpec with ProtoTagConversions
   }
 
   it should "parse single optional string field" in {
-    val result: ProtoMessage = ProtoBufParser.parse("""
+    val result: ProtoMessageType = ProtoBufParser.parse("""
     message Wiadomosc {
       optional string name = 1;
     }
@@ -94,7 +94,7 @@ class FieldsTest extends FlatSpec with ProtoTagConversions
   }
 
   it should "parse single required string field with default value" in {
-    val result: ProtoMessage = ProtoBufParser.parse("""
+    val result: ProtoMessageType = ProtoBufParser.parse("""
     message Wiadomosc {
       required string name = 1 [default = "loremipsum"]; // thats ok, says the spec
     }

@@ -1,12 +1,13 @@
 package pl.project13.protodoc.runner
 
 import de.downgra.scarg._
-import pl.project13.protodoc.ProtoBufParser
 import pl.project13.protodoc.templating.ProtoDocTemplateEngine
 import io.Source
-import pl.project13.protodoc.model.ProtoMessage
 import java.io.{FilenameFilter, File, FileWriter}
 import java.lang.{Boolean => JBoolean}
+import pl.project13.protodoc.{ProtoBufCompiler, ProtoBufParser}
+import pl.project13.protodoc.model._
+import _root_.pl.project13.protodoc.Logger
 
 // we want to store three values, a boolean and two strings
 class Configuration(m: ValueMap) extends ConfigMap(m) {
@@ -24,18 +25,18 @@ case class ArgumentsParser() extends ArgumentParser(new Configuration(_))
   // define our expected arguments
   !"-v" | "--verbose" |% "active verbose output, [default = false]" |> "verbose"
   ("-" >>> 50)
-  +"proto_dir" |% "directory containing proto files to parse" |> 'proto_dir
+  +"proto_dir" |% "directory containing proto files to compile" |> 'proto_dir
   +"out_dir" |% "output directory for the protodoc html webpage" |> 'out_dir
 }
 
 
-object ProtoDocMain {
+object ProtoDocMain extends Logger {
 
-  val templateEngine = new ProtoDocTemplateEngine()
+  val templateEngine = new ProtoDocTemplateEngine
 
-  var parsedProtos: List[ProtoMessage] = List()
+  var allParsedProtos: List[ProtoType] = List()
 
-  val onlyProtos = new FilenameFilter() {
+  val endingWithProto = new FilenameFilter() {
     override def accept(dir: File, name: String) = name.endsWith(".proto")
   }
 
@@ -55,23 +56,20 @@ object ProtoDocMain {
   def generateProtoDoc(protoDir: String, outDir: String, verbose: Boolean) {
     ProtoBufParser.verbose = verbose;
 
-    for (file <- new File(protoDir).listFiles(onlyProtos)) {
-      Console.println("Parsing file: " + BOLD + file + RESET)
+    // todo will have to be changed, compiler should get all files
+    for (file <- new File(protoDir).listFiles(endingWithProto)) {
+      info("Parsing file: " + strong(file))
 
       val protoString = Source.fromFile(file).mkString
 
-      val parsedProto = ProtoBufParser.parse(protoString)
-      parsedProtos ::= parsedProto
-      templateEngine.renderMessagePage(parsedProto, outDir)
+      val parsedProtos = ProtoBufCompiler.compile(protoString)
+
+      allParsedProtos ++= parsedProtos
+
+      parsedProtos.foreach(templateEngine.renderTypePage(_, outDir))
     }
 
-    templateEngine.renderTableOfContents(parsedProtos, outDir)
+    templateEngine.renderTableOfContents(allParsedProtos, outDir)
   }
-
-  // some ansi helpers...
-  def ANSI(value: Any) = "\u001B[" + value + "m"
-
-  val BOLD = ANSI(1)
-  val RESET = ANSI(0)
 
 }

@@ -22,7 +22,7 @@ class MessageTemplateTest extends FlatSpec with ShouldMatchers {
     }
     """)
 
-    val page = templateEngine.renderMessagePage(message)
+    val page = templateEngine.renderTypePage(message)
 
     page should include ("pl.project13.protobuf")
     page should include ("AmazingMessage")
@@ -41,7 +41,7 @@ class MessageTemplateTest extends FlatSpec with ShouldMatchers {
     }
     """)
 
-    val page = templateEngine.renderMessagePage(message)
+    val page = templateEngine.renderTypePage(message)
 
     page should include ("pl.project13.protobuf")
     page should include ("AmazingMessage")

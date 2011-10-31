@@ -14,8 +14,8 @@ trait ParserConversions {
     li.filter(_.isInstanceOf[ProtoMessageField]).map(_.asInstanceOf[ProtoMessageField])
   }
 
-  implicit def list2messageList(li: List[Any]): List[ProtoMessage] = {
-    li.filter(_.isInstanceOf[ProtoMessage]).map(_.asInstanceOf[ProtoMessage])
+  implicit def list2messageList(li: List[Any]): List[ProtoMessageType] = {
+    li.filter(_.isInstanceOf[ProtoMessageType]).map(_.asInstanceOf[ProtoMessageType])
   }
 
   implicit def tag2long(tag: ProtoTag): Long = {

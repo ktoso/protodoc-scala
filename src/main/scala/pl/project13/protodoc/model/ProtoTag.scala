@@ -31,6 +31,8 @@ trait ProtoTagConversions {
     str2tag(anyValue.toString)
   }
 
+  implicit def type2msg(protoType: ProtoType): ProtoMessageType = protoType.asInstanceOf[ProtoMessageType]
+
   /**
    * Check the tag number is valid.
    * Please note that values between 1900 and 1999 are reserved for internal use, and can not be used.

@@ -13,7 +13,7 @@ object ProtoBufVerifier extends Logger {
    * Logs error messages to the console
    * @return true if the passed in ProtoTypes are valid, false otherwise
    */
-  def verify(protoTypes: Seq[ProtoType]): VerificationResult = {
+  def verify(protoTypes: List[ProtoType]): VerificationResult = {
     val errorLists: Seq[Seq[VerifierError]] = for (protoType <- protoTypes) yield check(protoType, protoTypes)
     val errors: Seq[VerifierError] = errorLists.flatten
 
@@ -22,17 +22,18 @@ object ProtoBufVerifier extends Logger {
     VerificationResult(errors)
   }
 
-  def check[T <: ProtoType](protoType: T, protoTypes: Seq[T]): Seq[VerifierError] = protoType match {
-    case ProtoMessage =>
-      val msgType = protoType.asInstanceOf[ProtoMessage]
+  def check[T <: ProtoType](protoType: T, protoTypes: List[T]): List[VerifierError] = protoType match {
+    case msgType: ProtoMessageType =>
+      info("Running verifications on "+strong(msgType.fullName))
 
-      val enumErrors = for (enum <- msgType.enums) yield check(enum, protoTypes) // todo cast? and validate each kind of field
-      val fieldErrors = for (field <- msgType.fields) yield check(field, protoTypes)
-
-      val innerMsgErrors = for (innerMsg <- msgType.innerMessages) yield check(protoType, protoTypes) // recursive is ok?
+      val enumErrors = for (enum <- msgType.enums) yield checkEnumType(enum, protoTypes) // todo cast? and validate each kind of field
+      val fieldErrors = for (field <- msgType.fields) yield checkField(field, protoTypes)
+      val innerMsgErrors = for (innerMsg <- msgType.innerMessages) yield checkInnerMsg(innerMsg, protoTypes)
       // todo more checks
 
       fieldErrors.flatten ::: enumErrors.flatten ::: innerMsgErrors.flatten ::: Nil
+    case enumType: ProtoEnumType =>
+      List() // empty errors list
     case _ =>
       List() // empty errors list
   }
@@ -40,8 +41,9 @@ object ProtoBufVerifier extends Logger {
   /**
    * Check if an enum has valid values etc
    */
-  def check(enum: ProtoEnumType, protoTypes: Seq[ProtoType]): Seq[VerifierError] = {
+  def checkEnumType(enum: ProtoEnumType, protoTypes: List[ProtoType]): List[VerifierError] = {
     // todo implement me
+    info("Checking enum "+enum+" for errors...")
 
     List()
   }
@@ -49,9 +51,17 @@ object ProtoBufVerifier extends Logger {
   /**
    * Check if an enum exists (is in scope)
    */
-  def check(field: ProtoMessageField, protoTypes: Seq[ProtoType]): Seq[VerifierError] = {
-    // todo implement me
+  def checkField(field: ProtoMessageField, protoTypes: List[ProtoType]): List[VerifierError] = {
+    info("Checking field "+field+" for errors...")
     List()
   }
 
+  /**
+   * Check an inner message
+   */
+  def checkInnerMsg(selfMsg: ProtoMessageType, protoTypes: List[ProtoType]): List[VerifierError] = {
+    info("Checking inner message "+selfMsg.fullName+" for errors...")
+    
+    List()
+  }
 }

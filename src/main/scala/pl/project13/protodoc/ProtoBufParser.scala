@@ -12,7 +12,7 @@ import javax.management.remote.rmi._RMIConnection_Stub
  * @author Konrad Malawski
  */
 object ProtoBufParser extends RegexParsers with ImplicitConversions
-                                           with ParserConversions 
+                                           with ParserConversions
                                            with Logger {
 
   val ID = """[a-zA-Z_]([a-zA-Z0-9_]*|_[a-zA-Z0-9]*)*""".r
@@ -23,7 +23,9 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
 
   // lists of "known types", to allow parsing of enum fields etc
   var knownEnums: List[ProtoEnumType] = List()
-  var knownMessages: List[ProtoMessage] = List()
+  var knownMessages: List[ProtoMessageType] = List()
+
+  var unresolvedTypes: List[_ <: ProtoType] = List()
 
   var fieldsWithUncheckedTypes: List[ProtoMessageField] = List()
 
@@ -41,7 +43,7 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
       joinedName
   }
 
-  def message: Parser[_ <: ProtoMessage] = opt(pack) ~ opt(comment) ~ "message" ~ ID ~ "{" ~ rep(enumTypeDef | instanceField | message) ~ "}" ^^ {
+  def message: Parser[_ <: ProtoMessageType] = opt(pack) ~ opt(comment) ~ "message" ~ ID ~ "{" ~ rep(enumTypeDef | instanceField | message) ~ "}" ^^ {
     case maybePack ~ maybeDoc ~ m ~ id ~ p1 ~ allFields ~ p2 =>
 
       val pack = maybePack.getOrElse("")
@@ -49,15 +51,13 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
 
       val processedFields = addOuterMessageInfo(id, pack, allFields)
 
-      
-
       info("Parsed message in '%s' named '%s'".format(pack, id))
       info("  fields: " + list2messageFieldList(processedFields))
       info("  enums: " + list2enumTypeList(processedFields))
       info("  inner messages: " + list2messageList(processedFields))
       info("  comment: " + comment)
 
-      val message = new ProtoMessage(messageName = id,
+      val message = new ProtoMessageType(messageName = id,
                                      packageName = pack,
                                      fields = processedFields /*will be implicitly filtered*/ ,
                                      enums = processedFields /*will be implicitly filtered*/ ,
@@ -100,8 +100,13 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
       info("Known enums are: " + knownEnumNames.mkString(", "))
 
     knownEnumNames.find(_ == s).getOrElse {
-      throw new UnknownTypeException("Unable to link '" + s + "' to any known enum Type. Accepted types are: " + knownEnumNames.mkString(", ") + ".")
+      val msg = "Unable to link '" + s + "' to any known enum Type. Accepted types are: " + knownEnumNames.mkString(", ") + "."
+//      throw new UnknownTypeException(msg)
+      warn(msg) // todo maybe something better
+      unresolvedTypes + s
     }
+
+    s
   }
 
   def anyField = enumTypeDef | instanceField //| enumField
@@ -181,7 +186,10 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
 //        ProtoMessageField.to // todo implement messages, the same way as enum fields
 //      }
       else {
-        throw new UnknownTypeException("Unable to create Field instance for field: '" + id + "', type: " + pType)
+         val msg = "Unable to create Field instance for field: '" + id + "', type: " + pType
+//         throw new UnknownTypeException(msg)
+         warn(msg) // todo maybe something better
+         unresolvedTypes + pType
       }
   }
 
@@ -192,10 +200,7 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
   }
 
   // field values -------------------------------------------------------------
-  def integerValue: Parser[Int] = ("[1-9][0-9]*".r) ^^ {
-    s =>
-      s.toInt
-  }
+  def integerValue: Parser[Int] = ("[1-9][0-9]*".r) ^^ { s => s.toInt }
 
   def stringValue: Parser[String] = "\"" ~ """\w+""".r ~ "\"" ^^ {
     case o ~ stringValue ~ end =>
@@ -225,11 +230,11 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
     var processedFields = List[Any]()
 
     for(field <- innerFields) field match {
-      case ProtoMessage(_, _, _, _, _) =>
-        val f = field.asInstanceOf[ProtoMessage]
+      case ProtoMessageType(_, _, _, _, _) =>
+        val f = field.asInstanceOf[ProtoMessageType]
         info("Adding package info to: " + f.fullName)
         val packageWithOuterClass: String = msgPack + "." + msgName
-        val message = ProtoMessage(messageName = f.messageName,
+        val message = ProtoMessageType(messageName = f.messageName,
                                    packageName = packageWithOuterClass,
                                    fields = f.fields,
                                    enums = addOuterMessageInfo(f.messageName,
@@ -263,7 +268,7 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
    *
    * todo return something more generic, enum can also be top level
    */
-  def parse(protoContent: String): ProtoMessage = parseAll(message, protoContent) match {
+  def parse(protoContent: String): ProtoType = parseAll(message, protoContent) match {
     case Success(res, _) => res
     case x: Failure => throw new ProtoDocParsingException(x.toString())
     case x: Error => throw new RuntimeException(x.toString())
@@ -275,7 +280,7 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
    *
    * todo return something more generic, enum can also be top level
    */
-  def parse(protoContents: List[String]): List[ProtoMessage] = protoContents.map { parse(_) }
+  def parse(protoContents: List[String]): List[_ <: ProtoType] = protoContents.map { parse(_) }
 
   // some ansi helpers --------------------------------------------------------
   def ANSI(value: Any) = "\u001B[" + value + "m"

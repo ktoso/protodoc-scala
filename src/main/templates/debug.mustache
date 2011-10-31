@@ -1,0 +1,120 @@
+<html>
+<head>
+    <title>ProtoDoc for: {{packageName}}.{{fieldName}}</title>
+    {{> styles_css}}
+    {{> message_styles_css}}
+</head>
+<body>
+<h1 class="message-header">
+    <img src="images/message-big.png" alt="msg"/> {{messageName}}
+</h1>
+<span class="top-level-comment">{{& comment}}</span>
+
+<!--todo add package pages or something, get rid of this if! vvvvv -->
+{{#isInnerMessage}}
+<h2>
+    defined in message: <a href="{{packageName}}.html">{{packageName}}</a>
+</h2>
+{{/isInnerMessage}}
+{{^isInnerMessage}}
+<h2>
+    defined in package: {{packageName}}
+</h2>
+{{/isInnerMessage}}
+<!--todo add package pages or something, get rid of this if! ^^^^^ -->
+
+<h2 class="fields-header sub-header">Fields:</h2>
+<ul class="fields">
+    {{#fields}}
+    <li>
+        <strong>{{fieldName}}</strong><br/>
+        <span class="comment">{{& comment}}</span><br/>
+
+        <dl>
+            {{#defaultValue}}
+            <dt>Default value:</dt>
+            <dd>{{defaultValue}}</dd>
+            {{/defaultValue}}
+
+            <dt>Modifier:</dt>
+            <dd>{{modifier}}</dd>
+
+            <dt>Tag:</dt>
+            <dd>{{tag}}</dd>
+
+            <dt>Defined as:</dt>
+            <dd>{{protoTypeName}}</dd>
+
+            <dt>Mapped to:</dt>
+            <dd>{{scalaTypeName}}</dd>
+        </dl>
+    </li>
+    {{/fields}}
+    {{^fields}}
+    <li>
+        This message defines no fields.
+    </li>
+    {{/fields}}
+</ul>
+
+<h2 class="inner-enums-header sub-header">Inner Enums:</h2>
+<ul class="inner-enums">
+    {{#enums}}
+    <li>
+        <strong>
+            <a class="msg-link" href="{{packageName}}.{{typeName}}.html">
+                {{typeName}}
+            </a>
+        </strong><br/>
+        <span class="comment">{{& comment}}</span>
+        Defines values:
+        <table>
+            <thead>
+            <tr>
+                <td>Value</td>
+                <td>TAG</td>
+                <td>Comment</td>
+            </tr>
+            </thead>
+            <tbody>
+            {{#values}}
+            <tr>
+                <td class="code">{{valueName}}</td>
+                <td>{{tag}}</td>
+                <td>{{& comment}}</td>
+            </tr>
+            {{/values}}
+            </tbody>
+        </table>
+    </li>
+    {{/enums}}
+    {{^enums}}
+    <li>
+        This message defines no enums.
+    </li>
+    {{/enums}}
+</ul>
+
+<h2 class="inner-msgs-header sub-header">Inner messages:</h2>
+<ul class="inner-msgs">
+    {{#innerMessages}}
+    <li>
+        <strong>
+            <a class="msg-link" href="{{packageName}}.{{messageName}}.html">
+                {{messageName}}
+            </a>
+        </strong>
+        <span class="comment">{{& comment}}</span>
+    </li>
+    {{/innerMessages}}
+    {{^innerMessages}}
+    <li>
+        This message defines no inner messages.
+    </li>
+    {{/innerMessages}}
+</ul>
+
+{{> fork_me }}
+<div class="footer-placemaker"/>
+</body>
+</html>
