@@ -3,14 +3,16 @@ package pl.project13.protodoc.templating
 import org.fusesource.scalate._
 import layout.DefaultLayoutStrategy
 import java.io.{FileWriter, File}
-import pl.project13.protodoc.model.{ProtoEnumType, ProtoMessage}
+import pl.project13.protodoc.model.{ProtoEnumType, ProtoMessage, ProtoType}
 import scala.annotation.tailrec
+import pl.project13.protodoc.Logger
 
 /**
  *
  * @author Konrad Malawski
  */
-class ProtoDocTemplateEngine extends AnsiTerminalTools {
+class ProtoDocTemplateEngine extends AnsiTerminalTools
+                                with Logger {
 
   var templatesDir = new File("/home/ktoso/coding/protodoc-scala/src/main/templates/")
 
@@ -39,7 +41,7 @@ class ProtoDocTemplateEngine extends AnsiTerminalTools {
     writeToFile(filename, html)
   }
 
-  def renderMessagePage(msg: ProtoMessage) = {
+  def renderTypePage(msg: ProtoMessage) = {
     val isInnerMessage = msg.packageName.find(c => c.isUpper)
 
     val data = Map("messageName" -> msg.messageName,
@@ -53,13 +55,16 @@ class ProtoDocTemplateEngine extends AnsiTerminalTools {
     engine.layout("/home/ktoso/coding/protodoc-scala/src/main/templates/message.mustache", data)
   }
 
-  def renderMessagePage(msg: ProtoMessage, outDir: String) {
-    val html = renderMessagePage(msg)
-    val filename: String = outDir + "/" + msg.fullName + ".html"
-    writeToFile(filename, html)
+  def renderTypePage(protoType: ProtoType, outDir: String) {
+    protoType match {
+      case msg :ProtoMessage =>
+        val html = renderTypePage(msg)
+        val filename: String = outDir + "/" + msg.fullName + ".html"
+        writeToFile(filename, html)
 
-    msg.innerMessages.foreach(renderMessagePage(_, outDir))
-    msg.enums.foreach(renderEnumPage(_, outDir))
+        msg.innerMessages.foreach(renderTypePage(_, outDir))
+        msg.enums.foreach(renderEnumPage(_, outDir))
+    }
   }
 
   def renderEnumPage(enum: ProtoEnumType) = {
@@ -94,6 +99,7 @@ class ProtoDocTemplateEngine extends AnsiTerminalTools {
       println("Inner:   " + msg.fullName + "." + BOLD + inner.messageName + RESET)
       all ++= allInnerMessagesOf(inner)
     }
+
     all
   }
 
@@ -101,9 +107,10 @@ class ProtoDocTemplateEngine extends AnsiTerminalTools {
   def allInnerMessagesOf(msgs: List[ProtoMessage]): List[ProtoMessage] = {
     var all: List[ProtoMessage] = List()
     for(msg <- msgs) {
-      println("Message: " + BOLD + msg.fullName + RESET)
+      info("Message: " + strong(msg.fullName))
       all ++= allInnerMessagesOf(msg)
     }
+
     all
   }
 
