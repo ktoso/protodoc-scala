@@ -93,18 +93,20 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
                                  | "bytes"
                                  )
 
-  def enumType: Parser[String] = ("""\w+""".r) ^^ {
+  def userDefinedType: Parser[String] = ("""\w+""".r) ^^ {
     s =>
-      info("Trying to parse '" + s + "' as 'known' enum...")
-      val knownEnumNames = knownEnums.map(_.typeName)
-      info("Known enums are: " + knownEnumNames.mkString(", "))
-
-    knownEnumNames.find(_ == s).getOrElse {
-      val msg = "Unable to link '" + s + "' to any known enum Type. Accepted types are: " + knownEnumNames.mkString(", ") + "."
+      info("Trying to parse '" + s + "' as user defined type name...")
+//      val knownEnumNames = knownEnums.map(_.typeName)
+//      info("Known enums are: " + knownEnumNames.mkString(", "))
+//
+//    knownEnumNames.find(_ == s).getOrElse {
+//      val msg = "Unable to link '" + s + "' to any known enum Type. Accepted types are: " + knownEnumNames.mkString(", ") + "."
 //      throw new UnknownTypeException(msg)
-      warn(msg) // todo maybe something better
-      unresolvedTypes + s
-    }
+//      warn(msg) // todo maybe something better
+//      warn("Adding it anyway...")
+//
+//      unresolvedTypes + s
+//    }
 
     s
   }
@@ -167,16 +169,20 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
   def chrExcept(cs: Char*): Parser[Char]  = elem("chrExcept", ch => (ch != CharArrayReader.EofCh) && (cs forall (ch !=)))
 
   // fields -------------------------------------------------------------------
-  def instanceField = opt(comment) ~ modifier ~ (protoType | enumType /* | msgType*/) ~ ID ~ "=" ~ integerValue ~ opt(defaultValue) ~ ";" ^^ {
+  def instanceField = opt(comment) ~ modifier ~ (protoType | userDefinedType) /*| msgType)*/ ~ ID ~ "=" ~ integerValue ~ opt(defaultValue) ~ ";" ^^ {
     case doc ~ mod ~ pType ~ id ~ eq ~ tag ~ defaultVal ~ end =>
       info("parsing field '" + id + "'...")
       val comment = doc.getOrElse("")
 
       if(primitiveTypes.contains(pType)) { // it's a primitive field
-        val field = ProtoMessageField.toTypedField(pType, id, tag, mod, defaultVal)
+        good("Found basic ("+pType+") field: "+b(id))
+
+        val field = ProtoMessageField.toProtoField(pType, id, tag, mod, defaultVal)
         field.comment = comment
         field
       } else if(knownEnums.map(_.typeName).contains(pType)) { // it's an enum
+        good("Found enum field for already defined enum ("+pType+") field: "+b(id))
+
         val itsEnumType = knownEnums.find(p => p.typeName == pType).get
         val field = ProtoMessageField.toEnumField(id, itsEnumType, tag, mod, defaultVal)
         field.comment = comment
@@ -190,6 +196,10 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
 //         throw new UnknownTypeException(msg)
          warn(msg) // todo maybe something better
          unresolvedTypes + pType
+
+        val field = ProtoMessageField.toUnresolvedField(pType, id, tag, mod, defaultVal)
+        field.comment = comment
+        field
       }
   }
 

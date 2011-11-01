@@ -6,7 +6,7 @@ trait Logger {
 
   var verbose = true
 
-  def strong(msg: Any) = Logger.BOLD + msg.toString + Logger.RESET
+  def b(msg: Any) = Logger.BOLD + msg.toString + Logger.RESET
   
   def info(msg: Any) {
     if (verbose) println("[INFO] " + msg)
@@ -29,7 +29,7 @@ trait Logger {
   }
 
   def error(msg: Any) {
-    if (verbose) println(Logger.red("[ERR] " + msg))
+    if (verbose) println(Logger.red("[ERR]  " + msg))
   }
 
 }

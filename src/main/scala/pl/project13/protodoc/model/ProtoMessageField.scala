@@ -3,14 +3,18 @@ package pl.project13.protodoc.model
 import ProtoModifier._
 
 /**
- *
+ * The base class for all other basic ProtoMessageFields, and also for itself, when a userdefined type is used.
+ * @author Konrad Malawski
  */
-abstract class ProtoMessageField(val fieldName: String,
-                                 val protoTypeName: String,
-                                 val scalaTypeName: String,
-                                 val tag: ProtoTag,
-                                 val modifier: ProtoModifier,
-                                 val defaultValue: Any = None) extends Commentable {
+class ProtoMessageField(val fieldName: String,
+                        val protoTypeName: String,
+                        val scalaTypeName: String,
+                        val tag: ProtoTag,
+                        val modifier: ProtoModifier,
+                        val defaultValue: Any = None,
+                        var unresolvedType: Boolean = false)
+                        extends ProtoField
+                           with Commentable {
 
 // todo protoc actually likes to get defaults here hmmm
 //   assure the message field is valid
@@ -87,15 +91,15 @@ case class ByteStringProtoMessageField(override val fieldName: String,
   extends ProtoMessageField(fieldName, "bytes", "com.google.protobuf.ByteString", tag, modifier, defaultValue)
 
 /**
- * Represent a Message property, that is of course also defined as Protocol Buffers resource
+ * Represent a Message property thats type is not yet resolved, the verifier should check it
  */
-case class MessageProtoMessageField(override val fieldName: String,
-                                    override val protoTypeName: String,
-                                    override val scalaTypeName: String,
-                                    override val tag: ProtoTag,
-                                    override val modifier: ProtoModifier,
-                                    override val defaultValue: Any = None)
-  extends ProtoMessageField(fieldName, scalaTypeName, protoTypeName,  tag, modifier, defaultValue)
+case class UnresolvedMessageProtoMessageField(override val fieldName: String,
+                                              override val protoTypeName: String,
+                                              override val scalaTypeName: String,
+                                              override val tag: ProtoTag,
+                                              override val modifier: ProtoModifier,
+                                              override val defaultValue: Any = None)
+  extends ProtoMessageField(fieldName, scalaTypeName, protoTypeName,  tag, modifier, defaultValue, true)
 
 /**
  * Represent a Enum property, that is of course also defined as Protocol Buffers resource
@@ -113,9 +117,26 @@ case class EnumProtoMessageField(override val fieldName: String,
  * Companion object, serves as factory, will be used by parser
  */
 object ProtoMessageField extends ProtoTagConversions {
-  def toTypedField(typeName: String,
+
+  def toUnresolvedField(typeName: String,
+                        fieldName: String,
+                        protoTag: Int,
+                        modifier: ProtoModifier,
+                        defaultValue: Option[Any] = None) = {
+    new UnresolvedMessageProtoMessageField(fieldName, typeName, typeName/*todo should be fully qualified?*/, protoTag, modifier, defaultValue.getOrElse(None))
+  }
+
+  def toMessageField(typeName: String,
+                     fieldName: String,
+                     protoTag: Int,
+                     modifier: ProtoModifier,
+                     defaultValue: Option[Any] = None) = {
+    new ProtoMessageField(fieldName, typeName, typeName/*todo should be fully qualified?*/, protoTag, modifier, defaultValue.getOrElse(None))
+  }
+
+  def toProtoField(typeName: String,
                    fieldName: String,
-                   protoTag: Any,
+                   protoTag: Int,
                    modifier: ProtoModifier,
                    defaultValue: Option[Any] = None) = typeName match {
     case "int32" | "uint32" | "sint32"| "fixed32" | "sfixed32" =>
@@ -138,7 +159,7 @@ object ProtoMessageField extends ProtoTagConversions {
 
   def toEnumField(fieldName: String,
                   isValueOfEnumType: ProtoEnumType,
-                  protoTag: Any,
+                  protoTag: Int,
                   modifier: ProtoModifier,
                   defaultValue: Option[Any] = None) = {
 //                  defaultValue: Option[ProtoEnumValue] = None) = { // todo would be awesome

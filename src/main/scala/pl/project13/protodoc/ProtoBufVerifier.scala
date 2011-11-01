@@ -24,16 +24,25 @@ object ProtoBufVerifier extends Logger {
 
   def check[T <: ProtoType](protoType: T, protoTypes: List[T]): List[VerifierError] = protoType match {
     case msgType: ProtoMessageType =>
-      info("Running verifications on "+strong(msgType.fullName))
+      info("Running verifications on "+b(msgType.fullName)+" message")
 
       val enumErrors = for (enum <- msgType.enums) yield checkEnumType(enum, protoTypes) // todo cast? and validate each kind of field
-      val fieldErrors = for (field <- msgType.fields) yield checkField(field, protoTypes)
-      val innerMsgErrors = for (innerMsg <- msgType.innerMessages) yield checkInnerMsg(innerMsg, protoTypes)
+      val fieldErrors = for (field <- msgType.fields) yield checkField(msgType, field, protoTypes)
+      val innerMsgErrors = for (innerMsg <- msgType.innerMessages) yield checkInnerMsg(msgType, innerMsg, protoTypes)
       // todo more checks
 
       fieldErrors.flatten ::: enumErrors.flatten ::: innerMsgErrors.flatten ::: Nil
+
     case enumType: ProtoEnumType =>
-      List() // empty errors list
+      info("Running verifications on "+b(enumType.fullName)+" enum")
+
+      var enumErrors = List()
+      
+      val enumValues = enumType.values
+      val tagUniquenessErrors = TagVerifier.validateTagUniqueness(enumType, enumValues.map(_.tag))
+
+      enumErrors ::: tagUniquenessErrors ::: Nil
+
     case _ =>
       List() // empty errors list
   }
@@ -51,15 +60,25 @@ object ProtoBufVerifier extends Logger {
   /**
    * Check if an enum exists (is in scope)
    */
-  def checkField(field: ProtoMessageField, protoTypes: List[ProtoType]): List[VerifierError] = {
-    info("Checking field "+field+" for errors...")
+  def checkField(context: ProtoMessageType,
+                 field: ProtoMessageField, 
+                 protoTypes: List[ProtoType]): List[VerifierError] = {
+    info("Checking field "+b(field)+" in "+b(context.fullName)+" context for errors...")
+    
+    if(field.unresolvedType) {
+      info("Type is still unresolved. Trying to resolve protoTypeName: "+b(field.protoTypeName))
+    }
+    
+    
     List()
   }
 
   /**
    * Check an inner message
    */
-  def checkInnerMsg(selfMsg: ProtoMessageType, protoTypes: List[ProtoType]): List[VerifierError] = {
+  def checkInnerMsg(context: ProtoMessageType, 
+                    selfMsg: ProtoMessageType, 
+                    protoTypes: List[ProtoType]): List[VerifierError] = {
     info("Checking inner message "+selfMsg.fullName+" for errors...")
     
     List()

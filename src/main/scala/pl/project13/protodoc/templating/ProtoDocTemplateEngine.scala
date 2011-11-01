@@ -118,7 +118,7 @@ class ProtoDocTemplateEngine extends AnsiTerminalTools
     msgs.flatMap(allInnerMessagesOf(_))
 
 //    for(msg <- msgs) {
-//      info("Message: " + strong(msg.fullName))
+//      info("Message: " + b(msg.fullName))
 //      all ++= allInnerMessagesOf(msg)
 //    }
 //

@@ -58,7 +58,7 @@ object ProtoDocMain extends Logger {
 
     // todo will have to be changed, compiler should get all files
     for (file <- new File(protoDir).listFiles(endingWithProto)) {
-      info("Parsing file: " + strong(file))
+      info("Parsing file: " + b(file))
 
       val protoString = Source.fromFile(file).mkString
 

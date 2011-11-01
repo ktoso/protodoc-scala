@@ -5,10 +5,10 @@ package pl.project13.protodoc.model
  * @author Konrad Malawski
  */
 
-case class ProtoEnumType(typeName: String, packageName: String = "", values: List[ProtoEnumValue])
-                         extends Commentable
-                            with HasFullName
-                            with ProtoType {
+case class ProtoEnumType(typeName: String, packageName: String = "",
+                         values: List[ProtoEnumValue] = List())
+                         extends ProtoType
+                            with Commentable {
 
   def asScalaSourceCode() {
     """
@@ -32,11 +32,5 @@ case class ProtoEnumType(typeName: String, packageName: String = "", values: Lis
 
   override val fullName = packageName + "." + typeName
   override val representationOf = "enum"
+  override def protoFields = values
 }
-
-/**
- * Represents a value of an enum field
- */
-case class ProtoEnumValue(valueName: String,
-                          tag: ProtoTag)
-                          extends Commentable
