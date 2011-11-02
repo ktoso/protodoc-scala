@@ -24,7 +24,6 @@ object ProtoBufCompiler extends Logger {
 
     // verify
     val verification = ProtoBufVerifier.verify(parsedProtos)
-    ok("Verified proto types...")
 
     // print errors, stop execution
     if(verification.invalid) {

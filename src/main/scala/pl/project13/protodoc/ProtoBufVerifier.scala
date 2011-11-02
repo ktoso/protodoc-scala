@@ -24,55 +24,86 @@ object ProtoBufVerifier extends Logger {
 
   def check[T <: ProtoType](protoType: T, protoTypes: List[T]): List[VerifierError] = protoType match {
     case msgType: ProtoMessageType =>
-      info("Running verifications on "+b(msgType.fullName)+" message")
-
-      val enumErrors = for (enum <- msgType.enums) yield checkEnumType(enum, protoTypes) // todo cast? and validate each kind of field
-      val fieldErrors = for (field <- msgType.fields) yield checkField(msgType, field, protoTypes)
-      val innerMsgErrors = for (innerMsg <- msgType.innerMessages) yield checkInnerMsg(msgType, innerMsg, protoTypes)
-      // todo more checks
-
-      fieldErrors.flatten ::: enumErrors.flatten ::: innerMsgErrors.flatten ::: Nil
+      checkMessageType(msgType, protoTypes)
 
     case enumType: ProtoEnumType =>
-      info("Running verifications on "+b(enumType.fullName)+" enum")
-
-      var enumErrors = List()
-      
-      val enumValues = enumType.values
-      val tagUniquenessErrors = TagVerifier.validateTagUniqueness(enumType, enumValues.map(_.tag))
-
-      enumErrors ::: tagUniquenessErrors ::: Nil
+      checkEnumType(enumType, protoTypes)
 
     case _ =>
-      List() // empty errors list
+      warn("Got unsupported ProtoType: "+b(protoType)+", unable to verify.")
+      List.empty // empty errors list
+  }
+  
+  def checkMessageType(msgType: ProtoMessageType, protoTypes: List[ProtoType]) = {
+    info("Running verifications on "+b(msgType)+" message")
+
+    val tagErrors = TagVerifier.validateTags(msgType, msgType.fields.map(_.tag))
+
+    val enumErrors = for (enum <- msgType.enums) yield checkEnumType(enum, protoTypes)
+    val fieldErrors = for (field <- msgType.fields) yield checkField(msgType, field, protoTypes)
+    val innerMsgErrors = for (innerMsg <- msgType.innerMessages) yield checkInnerMsg(msgType, innerMsg, protoTypes)
+    // todo more checks
+
+    tagErrors ::: fieldErrors.flatten ::: enumErrors.flatten ::: innerMsgErrors.flatten ::: Nil
   }
 
   /**
    * Check if an enum has valid values etc
    */
-  def checkEnumType(enum: ProtoEnumType, protoTypes: List[ProtoType]): List[VerifierError] = {
+  def checkEnumType(enumType: ProtoEnumType, protoTypes: List[ProtoType]): List[VerifierError] = {
     // todo implement me
-    info("Checking enum "+enum+" for errors...")
+    info("Running verifications on enum "+b(enumType)+"")
 
-    List()
+    var enumErrors = List() // todo implement me
+
+    val enumValues = enumType.values
+    val tagUniquenessErrors = TagVerifier.validateTags(enumType, enumValues.map(_.tag))
+
+    enumErrors ::: tagUniquenessErrors ::: Nil
   }
 
   /**
    * Check if an enum exists (is in scope)
    */
-  def checkField(context: ProtoMessageType,
+  def checkField(context: ProtoMessageType, 
                  field: ProtoMessageField, 
                  protoTypes: List[ProtoType]): List[VerifierError] = {
-    info("Checking field "+b(field)+" in "+b(context.fullName)+" context for errors...")
+    var errors = List()
+    
+    info("Checking field "+b(field)+" in "+b(context)+" context for errors...")
     
     if(field.unresolvedType) {
       info("Type is still unresolved. Trying to resolve protoTypeName: "+b(field.protoTypeName))
+      
+      // todo should know about imports etc
+      errors ::= checkFieldTypeVisible(field = field, from = context, allParsed = protoTypes)
     }
     
-    
-    List()
+    errors
   }
 
+  // todo should understand imports, lets add Imports to prototype?
+  def checkFieldTypeVisible(field: ProtoMessageField, 
+                            from: ProtoType, 
+                            allParsed: List[ProtoType]): List[UndefinedTypeVerifierError] = {
+    var errors = List()
+
+    val typeName = field.protoTypeName
+    
+    // try to find by fully qualified name
+    val fullyQualifiedMatch = allParsed.find(_.fullName == typeName)
+    if(fullyQualifiedMatch.isDefined) {
+      field resolveTypeTo(fullyQualifiedMatch.get)
+    } else {
+      errors ::= UndefinedTypeVerifierError(field.fieldName, "Unable to resolve type "+typeName+" from "+from+" context.")
+
+    }
+    
+    // todo check imports in all from
+
+    errors
+  }
+  
   /**
    * Check an inner message
    */

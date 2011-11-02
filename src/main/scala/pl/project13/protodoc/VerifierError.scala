@@ -7,6 +7,11 @@ package pl.project13.protodoc
  */
 case class VerifierError(about: String, msg: String)
 
-case class DuplicateTagVerifierError(override val about:String,
-                                     details: String)
-                                     extends VerifierError(about, "Protocol Buffer tags, must be unique in the range of one Type (message, enumeration)." + details)
+case class UndefinedTypeVerifierError(override val about: String, override val details: String)
+  extends VerifierError(about, "Unable to resolve this type. Maybe you simply forgot to import it? "+details)
+
+case class TagVerifierError(override val about: String, override val msg: String)
+  extends VerifierError(about, msg)
+
+case class DuplicateTagVerifierError(override val about: String, details: String)
+  extends TagVerifierError(about, "Protocol Buffer tags, must be unique in the range of one Type (message, enumeration). "+details)

@@ -4,11 +4,14 @@ import ProtoModifier._
 
 /**
  * The base class for all other basic ProtoMessageFields, and also for itself, when a userdefined type is used.
+ * @param unresolvedType is used to mark that this fields type was unable to link during parsing,
+ *        the {@link ProtoBufVerifier} should take care of resolving this fields type.
+ *        
  * @author Konrad Malawski
  */
 class ProtoMessageField(val fieldName: String,
-                        val protoTypeName: String,
-                        val scalaTypeName: String,
+                        var protoTypeName: String,
+                        var scalaTypeName: String,
                         val tag: ProtoTag,
                         val modifier: ProtoModifier,
                         val defaultValue: Any = None,
@@ -16,13 +19,22 @@ class ProtoMessageField(val fieldName: String,
                         extends ProtoField
                            with Commentable {
 
-// todo protoc actually likes to get defaults here hmmm
-//   assure the message field is valid
-//  modifier match {
-//    case RequiredProtoModifier() =>
-//      if(defaultValue != None)
-//        throw new RequiredFieldMayNotHaveDefaultValueException(fieldName, tag)
-//  }
+  // todo may need to know if it's a message or enum???
+  // todo will have to be improved when we allow option java_package etc
+  def resolveTypeTo(resolvedType: ProtoType) = resolveTypeTo(resolvedType.fullName, resolvedType.fullName)
+
+  def resolveTypeTo(fullyQualifiedProtoTypeName: String,
+                    fullyQualifiedScalaTypeName: String) = {
+    unresolvedType = false
+    protoTypeName = fullyQualifiedProtoTypeName
+    scalaTypeName = fullyQualifiedScalaTypeName
+
+    this
+  }
+  
+  val protoFormat = {
+    (modifier, protoTypeName)
+  }
 }
 
 /**
@@ -91,17 +103,6 @@ case class ByteStringProtoMessageField(override val fieldName: String,
   extends ProtoMessageField(fieldName, "bytes", "com.google.protobuf.ByteString", tag, modifier, defaultValue)
 
 /**
- * Represent a Message property thats type is not yet resolved, the verifier should check it
- */
-case class UnresolvedMessageProtoMessageField(override val fieldName: String,
-                                              override val protoTypeName: String,
-                                              override val scalaTypeName: String,
-                                              override val tag: ProtoTag,
-                                              override val modifier: ProtoModifier,
-                                              override val defaultValue: Any = None)
-  extends ProtoMessageField(fieldName, scalaTypeName, protoTypeName,  tag, modifier, defaultValue, true)
-
-/**
  * Represent a Enum property, that is of course also defined as Protocol Buffers resource
  */
 case class EnumProtoMessageField(override val fieldName: String,
@@ -123,7 +124,7 @@ object ProtoMessageField extends ProtoTagConversions {
                         protoTag: Int,
                         modifier: ProtoModifier,
                         defaultValue: Option[Any] = None) = {
-    new UnresolvedMessageProtoMessageField(fieldName, typeName, typeName/*todo should be fully qualified?*/, protoTag, modifier, defaultValue.getOrElse(None))
+    new ProtoMessageField(fieldName, typeName, typeName/*todo should be fully qualified?*/, protoTag, modifier, defaultValue.getOrElse(None), true)
   }
 
   def toMessageField(typeName: String,

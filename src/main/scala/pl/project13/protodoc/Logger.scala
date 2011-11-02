@@ -1,11 +1,13 @@
 package pl.project13.protodoc
 
+import model.ProtoType
 import utils.AnsiCodes
 
 trait Logger {
 
   var verbose = true
 
+  def b(msg: ProtoType) = Logger.BOLD + msg.fullName + Logger.RESET
   def b(msg: Any) = Logger.BOLD + msg.toString + Logger.RESET
   
   def info(msg: Any) {

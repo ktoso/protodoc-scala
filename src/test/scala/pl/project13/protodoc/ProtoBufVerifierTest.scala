@@ -17,7 +17,7 @@ class ProtoBufVerifierTest extends FeatureSpec
   
   feature("The Verifier should validate field types") {
 
-    scenario("an unresolvable field should be detected") {
+    scenario("Detect an unresolvable field") {
       given("a message with an invalid fieldtype")
       val msg = """
       message HasErrorField {
@@ -26,7 +26,7 @@ class ProtoBufVerifierTest extends FeatureSpec
 
       when("the message is parsed and verified")
       val exception = intercept[ProtoDocVerificationException] {
-        val messages = ProtoBufCompiler.compile(msg)
+        ProtoBufCompiler.compile(msg)
       }
 
       exception.verificationResult

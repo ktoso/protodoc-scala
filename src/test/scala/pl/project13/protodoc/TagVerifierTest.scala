@@ -9,7 +9,7 @@ class TagVerifierTest extends FlatSpec
                          with ProtoTagConversions
                          with ShouldMatchers {
   
-  "validateTagUniqueness" should "detect duplicated tags" in {
+  "validateTags" should "detect duplicated tags" in {
     given("an message with duplicated field tags")
     val fields = List(IntProtoMessageField("first", "int32", 1, RequiredProtoModifier()),
                       IntProtoMessageField("second", "int32", 2, RequiredProtoModifier()),
@@ -21,7 +21,7 @@ class TagVerifierTest extends FlatSpec
     val context = ProtoMessageType("Sample", "pl.project13", fields)
 
     when("tags are validated")
-    val uniquenessErrors = TagVerifier.validateTagUniqueness(context, tags)
+    val uniquenessErrors = TagVerifier.validateTags(context, tags)
     
     then("it should detect duplicates")
     uniquenessErrors.length should equal (1)
@@ -32,13 +32,13 @@ class TagVerifierTest extends FlatSpec
     aboutFields should include("fail")
   }
 
-  "validateTagUniqueness" should "should 'OK' a valid tags list" in {
+  "validateTags" should "should 'OK' a valid tags list" in {
       given("a valid message")
       val context = ProtoMessageType("Sample", "pl.project13", List())
       val tags: List[ProtoTag]= List(1, 2, 3)
 
       when("tags are validated")
-      val uniquenessErrors = TagVerifier.validateTagUniqueness(context, tags)
+      val uniquenessErrors = TagVerifier.validateTags(context, tags)
 
       then("it have not detected any problems")
       uniquenessErrors.length should equal (0)
