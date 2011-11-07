@@ -68,15 +68,15 @@ object ProtoBufVerifier extends Logger {
   def checkField(context: ProtoMessageType, 
                  field: ProtoMessageField, 
                  protoTypes: List[ProtoType]): List[VerifierError] = {
-    var errors = List()
-    
+    var errors: List[VerifierError] = Nil
+
     info("Checking field "+b(field)+" in "+b(context)+" context for errors...")
-    
-    if(field.unresolvedType) {
-      info("Type is still unresolved. Trying to resolve protoTypeName: "+b(field.protoTypeName))
+
+    if (field.unresolvedType) {
+      info("Type is still unresolved. Trying to resolve protoTypeName: " + b(field.protoTypeName))
       
       // todo should know about imports etc
-      errors :: checkFieldTypeVisible(field = field, from = context, allParsed = protoTypes)
+      errors = errors ::: checkFieldTypeVisible(field = field, from = context, allParsed = protoTypes)
     }
     
     errors
