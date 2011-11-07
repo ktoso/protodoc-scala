@@ -76,7 +76,7 @@ object ProtoBufVerifier extends Logger {
       info("Type is still unresolved. Trying to resolve protoTypeName: "+b(field.protoTypeName))
       
       // todo should know about imports etc
-      errors ::= checkFieldTypeVisible(field = field, from = context, allParsed = protoTypes)
+      errors :: checkFieldTypeVisible(field = field, from = context, allParsed = protoTypes)
     }
     
     errors
@@ -86,22 +86,18 @@ object ProtoBufVerifier extends Logger {
   def checkFieldTypeVisible(field: ProtoMessageField, 
                             from: ProtoType, 
                             allParsed: List[ProtoType]): List[UndefinedTypeVerifierError] = {
-    var errors = List()
-
     val typeName = field.protoTypeName
     
     // try to find by fully qualified name
     val fullyQualifiedMatch = allParsed.find(_.fullName == typeName)
+
     if(fullyQualifiedMatch.isDefined) {
       field resolveTypeTo(fullyQualifiedMatch.get)
+      List.empty
     } else {
-      errors ::= UndefinedTypeVerifierError(field.fieldName, "Unable to resolve type "+typeName+" from "+from+" context.")
-
+      UndefinedTypeVerifierError(field.fieldName, "Unable to resolve type "+typeName+" from "+from+" context.") :: Nil
     }
-    
     // todo check imports in all from
-
-    errors
   }
   
   /**

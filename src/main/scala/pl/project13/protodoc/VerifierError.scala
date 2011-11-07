@@ -7,7 +7,7 @@ package pl.project13.protodoc
  */
 case class VerifierError(about: String, msg: String)
 
-case class UndefinedTypeVerifierError(override val about: String, override val details: String)
+case class UndefinedTypeVerifierError(override val about: String, details: String)
   extends VerifierError(about, "Unable to resolve this type. Maybe you simply forgot to import it? "+details)
 
 case class TagVerifierError(override val about: String, override val msg: String)
