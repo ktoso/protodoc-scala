@@ -39,8 +39,12 @@ object ProtoBufCompiler extends Logger {
   
   def compile(proto: String): List[ProtoType] = compile(List(proto))
 
+  /**
+   * It's like this because each String (proto file, may contain more
+   * than one message, so we'll need to flatten them in the end
+   */
   private def parseNoVerify(protos: List[String]) = {
-    for (proto <- protos ) yield ProtoBufParser.parse(proto)
+    (for (proto <- protos ) yield ProtoBufParser.parse(proto)).flatten
   }
   
   private implicit def file2string(f: File): String = {

@@ -5,7 +5,8 @@ package pl.project13.protodoc.model
  * @author Konrad Malawski
  */
 
-case class ProtoEnumType(typeName: String, packageName: String = "",
+case class ProtoEnumType(typeName: String,
+                         override val packageName: String = "",
                          values: List[ProtoEnumValue] = List())
                          extends ProtoType
                             with Commentable {
@@ -33,4 +34,13 @@ case class ProtoEnumType(typeName: String, packageName: String = "",
   override val fullName = packageName + "." + typeName
   override val representationOf = "enum"
   override def protoFields = values
+
+  def moveToPackage(moveIntoHere: String) = {
+    val newPackage = moveIntoHere // todo needs ".Something" checking
+    ProtoEnumType(typeName = typeName,
+                  packageName = newPackage,
+                  values = values)
+  }
+
+  override def toString = "ProtoEnumType '%s' in %s, with: %s".format(typeName, packageName, values)
 }

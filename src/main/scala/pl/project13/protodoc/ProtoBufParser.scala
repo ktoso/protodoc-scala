@@ -43,11 +43,21 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
       joinedName
   }
 
-  def message: Parser[_ <: ProtoMessageType] = opt(pack) ~ opt(comment) ~ "message" ~ ID ~ "{" ~ rep(enumTypeDef | instanceField | message) ~ "}" ^^ {
-    case maybePack ~ maybeDoc ~ m ~ id ~ p1 ~ allFields ~ p2 =>
+  def protoFile: Parser[List[_ <: ProtoType]] = opt(pack) ~ rep(enumTypeDef | messageTypeDef) ^^ {
+    case maybePack ~ allTypeDefs =>
 
       val pack = maybePack.getOrElse("")
+
+      ok("Parsed proto file contained [%s] types".format(allTypeDefs.length))
+
+      // todo prepend package to all types in here
+      allTypeDefs map { protoType => protoType.moveToPackage(pack)}
+  }
+
+  def messageTypeDef: Parser[/*_ <: */ProtoMessageType] = opt(comment) ~ "message" ~ ID ~ "{" ~ rep(enumTypeDef | instanceField | messageTypeDef) ~ "}" ^^ {
+    case maybeDoc ~ m ~ id ~ p1 ~ allFields ~ p2 =>
       val comment = maybeDoc.getOrElse("")
+
 
       val processedFields = addOuterMessageInfo(id, pack, allFields)
 
@@ -58,18 +68,17 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
       info("  comment: " + comment)
 
       val message = new ProtoMessageType(messageName = id,
-                                     packageName = pack,
-                                     fields = processedFields /*will be implicitly filtered*/ ,
-                                     enums = processedFields /*will be implicitly filtered*/ ,
-                                     innerMessages = processedFields /*will be implicitly filtered*/)
+                                         packageName = pack,
+                                         fields = processedFields /*will be implicitly filtered*/ ,
+                                         enums = processedFields /*will be implicitly filtered*/ ,
+                                         innerMessages = processedFields /*will be implicitly filtered*/)
       message.comment = comment
 
       message
   }
 
   def modifier: Parser[ProtoModifier] = ("optional" | "required" | "repeated") ^^ {
-    s =>
-      ProtoModifier.str2modifier(s)
+    s => ProtoModifier.str2modifier(s)
   }
 
   // todo make these two fields use the same list
@@ -218,8 +227,7 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
   }
 
   def booleanValue: Parser[Boolean] = ("true" | "false") ^^ {
-    s =>
-      s.toBoolean
+    s => s.toBoolean
   }
 
   /* -------------------- helper methods ----------------------------------- */
@@ -278,7 +286,7 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
    *
    * todo return something more generic, enum can also be top level
    */
-  def parse(protoContent: String): ProtoType = parseAll(message, protoContent) match {
+  def parse(protoContent: String): List[ProtoType] = parseAll(protoFile, protoContent) match {
     case Success(res, _) => res
     case x: Failure => throw new ProtoDocParsingException(x.toString())
     case x: Error => throw new RuntimeException(x.toString())
@@ -287,10 +295,8 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
   /**
    * Parse all contents of all protocol buffer files passed in,
    * an List of ProtoMessages will be returned
-   *
-   * todo return something more generic, enum can also be top level
    */
-  def parse(protoContents: List[String]): List[_ <: ProtoType] = protoContents.map { parse(_) }
+  def parse(protoContents: List[String]): List[_ <: ProtoType] = protoContents.map { parse(_) }.flatten
 
   // some ansi helpers --------------------------------------------------------
   def ANSI(value: Any) = "\u001B[" + value + "m"
