@@ -25,7 +25,7 @@ class EnumsTest extends FlatSpec with ShouldMatchers
         OTHER = 4;
         LAST = 5;
       }
-    }""")
+    }""").head
 
     result.fields should have size (2)
     result.enums should have size (1)
@@ -47,7 +47,7 @@ class EnumsTest extends FlatSpec with ShouldMatchers
       required EnumType theEnum = 2;
 //      optional string pole = 1;
 //      ^^^^^^^^^^^^^^^^^^^^^^^^^ it's commented out
-    }""")
+    }""").head
 
     result.fields should have size (1)
     result.enums should have size (1)
@@ -87,7 +87,7 @@ class EnumsTest extends FlatSpec with ShouldMatchers
         SMS = 1;
       }
     }
-    """) 
+    """).head
 
     result.fields should have size (1)
     result.enums should have size (1)

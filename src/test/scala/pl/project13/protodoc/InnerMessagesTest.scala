@@ -12,7 +12,7 @@ class InnerMessagesTest extends FlatSpec with ProtoTagConversions
                                          with ShouldMatchers {
 
   "Inner message" should "be parsed properly" in {
-    val result: ProtoMessageType = ProtoBufParser.parse("""
+    val result: ProtoMessageType = ProtoBufParser.parseOne("""
     message MyMessage {
       message InnerMessage {
         required int32 number = 1;

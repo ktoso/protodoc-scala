@@ -13,7 +13,7 @@ class MessageTemplateTest extends FlatSpec with ShouldMatchers {
   val templateEngine = new ProtoDocTemplateEngine
 
   "ProtoDocTemplateEngine" should "render simple message page" in {
-    val message = ProtoBufParser.parse("""
+    val message = ProtoBufParser.parseOne("""
     package pl.project13.protobuf;
 
     message AmazingMessage {
@@ -39,7 +39,7 @@ class MessageTemplateTest extends FlatSpec with ShouldMatchers {
      optional string name = 1;
      optional uint32 age = 2;
     }
-    """)
+    """).head
 
     val page = templateEngine.renderTypePage(message)
 

@@ -8,15 +8,16 @@ import org.scalatest.matchers.ShouldMatchers
 *
 * @author Konrad Malawski
 */
-class ProtoBufParserTest extends FlatSpec with ShouldMatchers
-                                          with ProtoTagConversions {
+class ProtoBufParserTest extends FlatSpec
+                            with ShouldMatchers
+                            with ProtoTagConversions {
 
   "Parser" should "parse single simple message" in {
-    val result: ProtoMessageType = ProtoBufParser.parse("""
+    val result = ProtoBufParser.parse("""
     message Wiadomosc {
       required string name = 1;
     }
-    """)
+    """).head
 
     result.fields.head should have (
       'tag (ProtoTag(1)),
@@ -28,7 +29,7 @@ class ProtoBufParserTest extends FlatSpec with ShouldMatchers
   }
 
   it should "parse single message with enum" in {
-    val result: ProtoMessageType = ProtoBufParser.parse("""
+    val result = ProtoBufParser.parse("""
     message Wiadomosc {
       required string name = 1;
 
@@ -37,7 +38,7 @@ class ProtoBufParserTest extends FlatSpec with ShouldMatchers
         SMS = 2;
       }
     }
-    """)
+    """).head
 
     result.enums should have size (1)
 
@@ -55,7 +56,7 @@ class ProtoBufParserTest extends FlatSpec with ShouldMatchers
       required int32 three = 3;
       required int32 four = 4 [default = 42];
       repeated bool five = 5;
-    }""")
+    }""").head
 
     result
 

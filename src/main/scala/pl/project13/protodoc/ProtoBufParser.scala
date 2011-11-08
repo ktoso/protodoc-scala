@@ -57,9 +57,9 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
   def messageTypeDef: Parser[/*_ <: */ProtoMessageType] = opt(comment) ~ "message" ~ ID ~ "{" ~ rep(enumTypeDef | instanceField | messageTypeDef) ~ "}" ^^ {
     case maybeDoc ~ m ~ id ~ p1 ~ allFields ~ p2 =>
       val comment = maybeDoc.getOrElse("")
+      val pack = "" // todo fix me, I'm a hack for wrong packages
 
-
-      val processedFields = addOuterMessageInfo(id, pack, allFields)
+      val processedFields = addOuterMessageInfo(id, pack, allFields) // todo this will fail!!!!!!!!
 
       info("Parsed message in '%s' named '%s'".format(pack, id))
       info("  fields: " + list2messageFieldList(processedFields))
@@ -250,7 +250,7 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
     for(field <- innerFields) field match {
       case ProtoMessageType(_, _, _, _, _) =>
         val f = field.asInstanceOf[ProtoMessageType]
-        info("Adding package info to: " + f.fullName)
+        info("Adding package info to ["+f.fullName+"]")
         val packageWithOuterClass: String = msgPack + "." + msgName
         val message = ProtoMessageType(messageName = f.messageName,
                                    packageName = packageWithOuterClass,
@@ -297,6 +297,18 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
    * an List of ProtoMessages will be returned
    */
   def parse(protoContents: List[String]): List[_ <: ProtoType] = protoContents.map { parse(_) }.flatten
+  
+  def parseOne(protoContents: String): ProtoType = {
+    val protoTypes = parse(protoContents)
+    if(protoTypes.length  == 1) {
+      protoTypes.head
+    } else {
+      val msg = "Found invalid number of ProtoTypes in passed in protoContents string. Expected [1], but [" + protoTypes.length + "] found."
+
+      error(msg)
+      throw new RuntimeException(msg)
+    } 
+  }
 
   // some ansi helpers --------------------------------------------------------
   def ANSI(value: Any) = "\u001B[" + value + "m"

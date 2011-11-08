@@ -26,11 +26,14 @@ case class ProtoMessageType (messageName: String,
 
   def moveToPackage(moveToHere: String) = {
     val newPackage = moveToHere // todo needs ".Something" checking
-    ProtoMessageType(messageName = messageName,
-                     packageName = newPackage,
-                     fields = fields,
-                     enums = enums,
-                     innerMessages = innerMessages)
+    val msg = ProtoMessageType(messageName = messageName,
+                               packageName = newPackage,
+                               fields = fields,
+                               enums = enums,
+                               innerMessages = innerMessages)
+    msg.comment = comment
+
+    msg
   }
 
   override def toString = "ProtoMessageType '%s' in %s, with: %s".format(messageName, packageName, fields)

@@ -37,9 +37,12 @@ case class ProtoEnumType(typeName: String,
 
   def moveToPackage(moveIntoHere: String) = {
     val newPackage = moveIntoHere // todo needs ".Something" checking
-    ProtoEnumType(typeName = typeName,
-                  packageName = newPackage,
-                  values = values)
+    val enum = ProtoEnumType(typeName = typeName,
+                             packageName = newPackage,
+                             values = values)
+    enum.comment = comment
+
+    enum
   }
 
   override def toString = "ProtoEnumType '%s' in %s, with: %s".format(typeName, packageName, values)

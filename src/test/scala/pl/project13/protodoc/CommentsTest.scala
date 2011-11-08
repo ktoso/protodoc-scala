@@ -13,16 +13,16 @@ class CommentsTest extends FlatSpec with ShouldMatchers
                                     with ProtoTagConversions {
 
   "Comment on top level message" should "be parsed properly" in {
-    val message = ProtoBufParser.parse("""/** This is a test comment */
-    message HasDocumentedEnum {}""")
+    val message = ProtoBufParser.parseOne("""/** This is a test comment 000 */
+    message HasDocumentationOnIt {}""")
 
-    message.comment should include ("This is a test comment")
+    message.comment should include ("This is a test comment 000")
   }
 
   "Comment on field" should "be parsed properly" in {
-    val message = ProtoBufParser.parse("""
+    val message = ProtoBufParser.parseOne("""
     message HasDocumentedEnum {
-      /* This is my comment */ optional string name = 1;
+      /* This is my comment 111 */ optional string name = 1;
     }""")
 
     val field = message.fields.head
@@ -32,9 +32,9 @@ class CommentsTest extends FlatSpec with ShouldMatchers
   }
 
   it should "be parsed properly, even if inline" in {
-    val message = ProtoBufParser.parse("""
+    val message = ProtoBufParser.parseOne("""
     message HasDocumentedEnum {
-      /* This is my comment */
+      /* This is my comment 333 */
       optional string name = 1;
     }""")
 
@@ -45,9 +45,9 @@ class CommentsTest extends FlatSpec with ShouldMatchers
   }
 
   it should "be parsed properly, using JavaDoc style markers" in {
-    val message = ProtoBufParser.parse("""
+    val message = ProtoBufParser.parseOne("""
     message HasDocumentedEnum {
-      /** This is my comment */
+      /** This is my comment 444 */
       optional string name = 1;
     }""")
 
@@ -58,11 +58,11 @@ class CommentsTest extends FlatSpec with ShouldMatchers
   }
 
   it should "be parsed properly, even if spanning multiple lines" in {
-    val message = ProtoBufParser.parse("""
+    val message = ProtoBufParser.parseOne("""
     message HasDocumentedEnum {
       /**
        * This is my comment
-       * Second comment line
+       * Second comment line 555
        */
        optional string name = 1;
     }""")
@@ -74,21 +74,22 @@ class CommentsTest extends FlatSpec with ShouldMatchers
   }
 
   "Multi Line Comment on top level message" should "be parsed properly" in {
-    val message = ProtoBufParser.parse("""
+    val message = ProtoBufParser.parseOne("""
     /**
-     * This is a test comment
+     * This is a test comment 666
      */
-    message HasDocumentedEnum {}""")
+    message HasDocumentedEnum {}
+    """)
 
     message.comment should include ("This is a test comment")
   }
 
   "Multi Line Comment on inner enum" should "be parsed properly" in {
-    val message = ProtoBufParser.parse("""
+    val message = ProtoBufParser.parseOne("""
     message HasDocumentedEnum {
       /**
        * This is my comment
-       * Second comment line
+       * Second comment line 777
        */
        enum SomeEnum {
          /** Comment on an enum value */
@@ -108,16 +109,19 @@ class CommentsTest extends FlatSpec with ShouldMatchers
   }
 
   "Comment on enum value" should "be parsed properly" in {
-    val message = ProtoBufParser.parse("""
+    val message = ProtoBufParser.parseOne("""
     message HasDocumentedEnum {
        enum SomeEnum {
-         /** Comment on an enum value */
+         /** Comment on an enum value 888 */
          EMAIL = 1;
        }
     }""")
 
+    message.messageName should equal ("HasDocumentedEnum")
+    
     val enum = message.enums.head
     enum.values should have size (1)
+
     val EMAIL = enum.values.head
     EMAIL.valueName should equal ("EMAIL")
     EMAIL.tag should equal (ProtoTag(1))

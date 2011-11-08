@@ -25,9 +25,10 @@ class MultipleProtoFilesTest extends FlatSpec with ProtoTagConversions
     }
     """
 
-  behavior of  "Parser given multiple files"
-  
+  behavior of "Parser given multiple files"
+
   it should "parse multiple seperate (independent) files" in {
+
     val protos = INDEPENDENT_FILE :: SECOND_INDEPENDENT_FILE :: Nil
     
     val parsedProtos = ProtoBufParser.parse(protos)
