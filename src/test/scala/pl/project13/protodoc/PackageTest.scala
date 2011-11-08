@@ -12,18 +12,19 @@ class PackageTest extends FlatSpec with ProtoTagConversions
                                    with ShouldMatchers {
 
   "Package name" should "be read from proto file with it" in {
-    val result: ProtoMessageType = ProtoBufParser.parse("""
+    val results = ProtoBufParser.parse("""
     package pl.project13;
 
     message Wiadomosc {
     }
     """)
 
-    result.packageName should equal ("pl.project13")
+    val proto = results.head
+    proto.packageName should equal ("pl.project13")
   }
 
   "InnerInnerMsg package" should "contain it's super Messages in package name" in {
-    val msg: ProtoMessageType = ProtoBufParser.parse("""
+    val protos = ProtoBufParser.parse("""
     package pl.project13;
 
     message Msg {
@@ -37,6 +38,7 @@ class PackageTest extends FlatSpec with ProtoTagConversions
     }
     """)
 
+    val msg = protos.head
     msg.packageName should equal ("pl.project13")
 
     val innerMsg = msg.innerMessages.head
