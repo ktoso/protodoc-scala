@@ -64,20 +64,6 @@ class EnumsTest extends FlatSpec with ShouldMatchers
     )
   }
 
-  it should "stick to 'known' enums, and not allow random field types" in {
-    evaluating {
-      ProtoBufParser.parse("""
-        message Msg {
-        enum SomeZOMGEnum {
-          SMS = 1;
-        }
-
-        required UndefinedndefinedEnum field = 1;
-      }
-      """)
-    } should produce [UnknownTypeException]
-  }
-
   it should "be usable even before it's type declaration" in {
     val result = ProtoBufParser.parse("""
       message Msg {
