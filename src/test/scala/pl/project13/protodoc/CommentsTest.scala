@@ -26,7 +26,7 @@ class CommentsTest extends FlatSpec with ShouldMatchers
     }""")
 
     val field = message.fields.head
-    field.comment should include ("This is my comment")
+    field.comment should include ("This is my comment 111")
     field.tag should equal (ProtoTag(1))
     field.fieldName should equal ("name")
   }
@@ -52,7 +52,7 @@ class CommentsTest extends FlatSpec with ShouldMatchers
     }""")
 
     val field = message.fields.head
-    field.comment should equal (" This is my comment ")
+    field.comment should equal (" This is my comment 444 ")
     field.tag should equal (ProtoTag(1))
     field.fieldName should equal ("name")
   }

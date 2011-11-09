@@ -1,0 +1,85 @@
+\documentclass[pdflatex,11pt]{aghdpl}
+% \documentclass{aghdpl}               % przy kompilacji programem latex
+% \documentclass[pdflatex,en]{aghdpl}  % praca w jêzyku angielskim
+\usepackage[polish]{babel}
+\usepackage[latin2]{inputenc}
+
+% dodatkowe pakiety
+\usepackage{enumerate}
+\usepackage{listings}
+\lstloadlanguages{TeX}
+
+%---------------------------------------------------------------------------
+
+\author{Konrad Malawski}
+\shortauthor{K. Malawski}
+
+\titlePL{Przygotowanie pracy dyplomowej w~systemie \LaTeX}
+\titleEN{Thesis in \LaTeX}
+
+\shorttitlePL{Przygotowanie pracy dyplomowej w~systemie \LaTeX} % skrócona wersja tytu³u je¶li jest bardzo d³ugi
+\shorttitleEN{Thesis in \LaTeX}
+
+\thesistypePL{Praca magisterska}
+\thesistypeEN{Master of Science Thesis}
+
+\supervisorPL{dr hab. Marcin Szpyrka}
+\supervisorEN{Marcin Szpyrka Ph.D}
+
+\date{2011}
+
+\departmentPL{Katedra Automatyki}
+\departmentEN{Department of Automatics}
+
+\facultyPL{Wydzia³ Elektrotechniki, Automatyki, Informatyki i Elektroniki}
+\facultyEN{Faculty of Electrical Engineering, Automatics, Computer Science and Electronics}
+
+\acknowledgements{Serdecznie dziêkujê \dots tu ci±g dalszych podziêkowañ np. dla promotora, ¿ony, s±siada itp.}
+
+
+
+\setlength{\cftsecnumwidth}{10mm}
+
+%---------------------------------------------------------------------------
+
+\begin{document}
+
+\titlepages
+
+\tableofcontents
+\clearpage
+
+\include{rozdzial1}
+\include{rozdzial2}
+
+
+
+% itd.
+% \appendix
+% \include{dodatekA}
+% \include{dodatekB}
+% itd.
+
+\bibliographystyle{alpha}
+\bibliography{bibliografia}
+%\begin{thebibliography}{1}
+%
+%\bibitem{Dil00}
+%A.~Diller.
+%\newblock {\em LaTeX wiersz po wierszu}.
+%\newblock Wydawnictwo Helion, Gliwice, 2000.
+%
+%\bibitem{Lam92}
+%L.~Lamport.
+%\newblock {\em LaTeX system przygotowywania dokumentów}.
+%\newblock Wydawnictwo Ariel, Krakow, 1992.
+%
+%\bibitem{Alvis2011}
+%M.~Szpyrka.
+%\newblock {\em {On Line Alvis Manual}}.
+%\newblock AGH University of Science and Technology, 2011.cccccc
+%\newblock \\\texttt{http://fm.ia.agh.edu.pl/alvis:manual}.
+%
+%\end{thebibliography}
+
+\end{document}

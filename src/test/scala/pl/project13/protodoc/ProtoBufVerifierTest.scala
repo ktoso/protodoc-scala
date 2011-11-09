@@ -52,17 +52,22 @@ class ProtoBufVerifierTest extends Spec
         required int32 it = 23;
       }
 
-      message HasResolvableField {
+      message HasResolvableField2234 {
         required MisticTypeBefore errorField = 41;
       }"""
+      val HAS_RESOLVABLE_FIELD_MSG_NAME = "HasResolvableField2234"
 
       when("the message is parsed and verified")
       val protos = ProtoBufCompiler.compile(msg)
 
-      then("the result should have a resolved HasResolvableField message")
-      val hasResolvableField = protos find (_.messageName == "HasResolveableField")
+      then("the result should contain one HasResolvableField message")
+      val messageNames = protos map { _.messageName }
+       messageNames should contain (HAS_RESOLVABLE_FIELD_MSG_NAME)
 
-      hasResolvableField should be (defined)
+      then("the field should be resolved to the propper type")
+      val hasResolvableFieldMsg = protos.find({_.messageName == HAS_RESOLVABLE_FIELD_MSG_NAME})
+      hasResolvableFieldMsg should be ('defined)
+      hasResolvableFieldMsg.asInstanceOf[ProtoMessageType].fields should have length (1)
     }
   }
 }

@@ -38,6 +38,8 @@ class ProtoMessageField(val fieldName:      String,
   val protoFormat = {
     (modifier, protoTypeName)
   }
+
+  override def toString = "ProtoMessageField["+fieldName+": "+protoTypeName+"]"
 }
 
 /**
