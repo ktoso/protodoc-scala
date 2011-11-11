@@ -1,0 +1,25 @@
+\chapter{Google Protocol Buffers}
+\label{cha:appendixB}
+W tym dodatku zostanie omówiona idea oraz szczegóły implementacyjne stojące za Google Protocol Buffers.
+
+%---------------------------------------------------------------------------
+\section{Krótka historia języka}
+\label{sec:protobuf_history}
+
+%---------------------------------------------------------------------------
+\section{Przykładowe definicje wiadomości}
+\label{sec:proto_file_examples}
+
+%---------------------------------------------------------------------------
+\section{Dostępne narzędzia}
+\label{sec:protobuf_available_tools}
+\begin{figure}
+\label{Najprostsza możliwa wiadomość ProtoBuf}
+\begin{lstlisting}
+message Person {
+  required int32 id = 1;
+  required string name = 2;
+  optional string email = 3;
+}
+\end{lstlisting}
+\end{figure}

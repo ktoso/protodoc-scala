@@ -1,0 +1,92 @@
+\documentclass[pdflatex,11pt]{aghdpl}
+% \documentclass{aghdpl}               % przy kompilacji programem latex
+% \documentclass[pdflatex,en]{aghdpl}  % praca w jêzyku angielskim
+\usepackage[polish]{babel}
+\usepackage{polski}
+\usepackage[utf8]{inputenc}
+
+% dodatkowe pakiety
+\usepackage{enumerate}
+% Listings ------------------------------------------------------------
+\usepackage{listings}
+% Scala listings
+
+% IntelliJ Colors for listings
+\usepackage{color}
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+ 
+% Default settings for code listings
+\lstset{
+  frame=tb,
+  language=scala,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  frame=single,
+  breaklines=true,
+  breakatwhitespace=true
+  tabsize=3
+}
+
+\lstloadlanguages{TeX}
+
+%---------------------------------------------------------------------------
+
+\author{Konrad Malawski}
+\shortauthor{K. Malawski}
+
+\titlePL{ProtoDoc\\Implementacja odpowiednika narzędzia JavaDoc dla jęzka definicji interfejsów Google~Protocol~Buffers}
+\titleEN{ProtoDoc\\Development of a JavaDoc tool equivalent for the Google Protocol Buffers Interface~Description~Language}
+
+\shorttitlePL{ProtoDoc - impl. odpowiednika JavaDoc dla Google~Protocol~Buffers} 
+\shorttitleEN{ProtoDoc - impl. of JavaDoc like tool for Google~Protocol~Buffers}
+
+\thesistypePL{Praca inżynierska}
+\thesistypeEN{Bachelor of Science Thesis}
+
+\supervisorPL{dr inż. Jacek Piwowarczyk}
+\supervisorEN{Jacek Piwowarczyk Ph.D}
+
+\date{2011}
+
+\departmentPL{Katedra Automatyki}
+\departmentEN{Department of Automatics}
+
+\facultyPL{Wydział Elektrotechniki, Automatyki, Informatyki i Elektroniki}
+\facultyEN{Faculty of Electrical Engineering, Automatics, Computer Science and Electronics}
+
+\acknowledgements{Chciałem serdecznie podziękować }
+
+\setlength{\cftsecnumwidth}{10mm}
+
+%---------------------------------------------------------------------------
+
+\begin{document}
+
+\titlepages
+
+\tableofcontents
+\clearpage
+
+%---------------------------------------------------------------------------
+\include{intro}
+
+%---------------------------------------------------------------------------
+\appendix
+\include{appendixA}
+\include{appendixB}
+
+%---------------------------------------------------------------------------
+\bibliographystyle{alpha}
+\bibliography{myrefs}
+
+\end{document}

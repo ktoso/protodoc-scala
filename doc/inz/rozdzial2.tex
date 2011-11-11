@@ -1,86 +1,34 @@
 \chapter{Pierwszy dokument}
 \label{cha:pierwszyDokument}
 
-W rozdziale tym przedstawiono podstawowe informacje dotycz±ce struktury prostych plików \LaTeX a. Omówiono równie¿ metody kompilacji plików z zastosowaniem programów \emph{latex} oraz \emph{pdflatex}.
+dfgdfgdfgdf gdfgdfgdfgdfg
 
 %---------------------------------------------------------------------------
 
 \section{Struktura dokumentu}
 \label{sec:strukturaDokumentu}
 
-Plik \LaTeX owy jest plikiem tekstowym, który oprócz tekstu zawiera polecenia formatuj±ce ten tekst (analogicznie do jêzyka HTML). Plik sk³ada siê z dwóch czê¶ci:
-\begin{enumerate}%[1)]
-\item Preambu³y -- okre¶laj±cej klasê dokumentu oraz zawieraj±cej m.in. polecenia do³±czaj±cej dodatkowe pakiety;
-
-\item Czê¶ci g³ównej -- zawieraj±cej zasadnicz± tre¶æ dokumentu.
-\end{enumerate}
-
-
 
 \begin{lstlisting}
-\documentclass[a4paper,12pt]{article}      % preambu³a
+\documentclass[a4paper,12pt]{article}      
 \usepackage[polish]{babel}
 \usepackage[latin2]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{times}
 
-\begin{document}                           % czê¶æ g³ówna
+\begin{document}                           
 
 \section{Sztuczne ¿ycie}
 
-% tre¶æ
 
 \end{document}
 \end{lstlisting}
 
-Nie ma ¿adnych przeciwskazañ do tworzenia dokumentów w~\LaTeX u w~jêzyku polskim. Plik ¼ród³owy jest zwyk³ym plikiem tekstowym i~do jego przygotowania mo¿na u¿yæ dowolnego edytora tekstów, a~polskie znaki wprowadzaæ u¿ywaj±c prawego klawisza \texttt{Alt}. Je¿eli po kompilacji dokumentu polskie znaki nie s± wy¶wietlane poprawnie, to na 95\% ¼le okre¶lono sposób kodowania znaków (nale¿y zmieniæ opcje wykorzystywanych pakietów).
-
 
 %---------------------------------------------------------------------------
 
-\section{Kompilacja}
-\label{sec:kompilacja}
-
-
-Za³ó¿my, ¿e przygotowany przez nas dokument zapisany jest w pliku \texttt{test.tex}. Kolejno wykonane poni¿sze polecenia (pod warunkiem, ¿e w pierwszym przypadku nie wykryto b³êdów i kompilacja zakoñczy³a siê sukcesem) pozwalaj± uzyskaæ nasz dokument w formacie pdf:
-\begin{lstlisting}
-latex test.tex
-dvips test.dvi -o test.ps
-ps2pdf test.ps
-\end{lstlisting}
-%
-lub za pomoc± PDF\LaTeX:
-\begin{lstlisting}
-pdflatex test.tex
-\end{lstlisting}
-
-Przy pierwszej kompilacji po zmiane tekstu, dodaniu nowych etykiet itp., \LaTeX~tworzy sobie spis rozdzia³ów, obrazków, tabel itp., a dopiero przy nastêpnej kompilacji korzysta z tych informacji.
-
-W pierwszym przypadku rysunki powinny byæ przygotowane w~formacie eps, a~w~drugim w~formacie pdf. Ponadto, je¿eli u¿ywamy polecenia \texttt{pdflatex test.tex} mo¿na wstawiaæ grafikê bitow± (np. w formacie jpg).
-
-
-
-%---------------------------------------------------------------------------
-
-\section{Narzêdzia}
+\section{Narz?dzia}
 \label{sec:narzedzia}
-
-
-Do przygotowania pliku ¼ród³owego mo¿e zostaæ wykorzystany dowolny edytor tekstowy. Niektóre edytory, np. Emacs, maj± wbudowane modu³y u³atwiaj±ce sk³adanie tekstów w LaTeXu (kolorowanie sk³adni, skrypty kompilacji, itp.).
-
-Jednym z bardziej znanych ¶rodowisk do sk³adania dokumentów  \LaTeX a jest {\em Kile}. Aplikacja dostêpna jest dla ¶rodowiska KDE pocz±wszy od wersji 2. Zawiera edytor z pod¶wietlan± sk³adni±, zestawy poleceñ \LaTeX a, zestawy symboli matematycznych, kreatory tabel, macierzy, skrypty kompiluj±ce i konwertuj±ce podpiête s± do poleceñ w menu aplikacji (i pasków narzêdziowych), dostêpne jest sprawdzanie pisowni, edytor obs³uguje projekty (tzn. dokumenty sk³adaj±ce siê z~wielu plików), umo¿liwia przygotowanie i~zarz±dzanie bibliografi±, itp.
-
-Na stronie \underline{\texttt{http://kile.sourceforge.net/screenshots.php}} zamieszczono kilkana¶cie zrzutów ekranu ¶rodowiska {\em Kile}, które warto przejrzeæ, by wstêpnie zapoznaæ siê z~mo¿liwo¶ciami programu.
-
-Bardzo dobrym ¶rodowiskiem jest równie¿ edytor gEdit z wtyczk± obs³uguj±c± \LaTeX a. Jest to standardowy edytor ¶rodowiska Gnome. Po instalacji wtyczki obs³uguj±cej \LaTeX a, edytor nie ustêpuje funkcjonalno¶ciom ¶rodowisku Kile, a jest zdecydowanie szybszy w dzia³aniu. Lista dostêpnych wtyczek dla tego edytora znajduje siê pod adresem \underline{\texttt{http://live.gnome.org/Gedit/Plugins}}. Inne polecane wtyczki to: 
-\begin{itemize}
-\item Edit shortcuts -- definiowanie w³asnych klawiszy skrótu;
-\item Line Tools -- dodatkowe operacje na liniach tekstu;
-\item Multi-edit -- mo¿liwo¶æ jednoczesnej edycji w wielu miejscach tekstu;
-\item Zoom -- zmiana wielko¶ci czcionki edytora z u¿yciem rolki myszy;
-\item Split View -- mo¿liwo¶æ podzia³u okna edytora na 2 czê¶ci. 
-\end{itemize}
-
 
 
 %---------------------------------------------------------------------------
@@ -88,23 +36,5 @@ Bardzo dobrym ¶rodowiskiem jest równie¿ edytor gEdit z wtyczk± obs³uguj±c± \LaTe
 \section{Przygotowanie dokumentu}
 \label{sec:przygotowanieDokumentu}
 
-Plik ¼ród³owy \LaTeX a jest zwyk³ym plikiem tekstowym. Przygotowuj±c plik
-¼ród³owy warto wiedzieæ o kilku szczegó³ach:
-
-\begin{itemize}
-\item
-Poszczególne s³owa oddzielamy spacjami, przy czym ilo¶æ spacji nie ma znaczenia.
-Po kompilacji wielokrotne spacje i tak bêd± wygl±da³y jak pojedyncza spacja.
-Aby uzyskaæ {\em tward± spacjê}, zamiast znaku spacji nale¿y u¿yæ znaku {\em
-tyldy}.
-
-\item
-Znakiem koñca akapitu jest pusta linia (ilo¶æ pusty linii nie ma znaczenia), a
-nie znaki przej¶cia do nowej linii.
-
-\item
-\LaTeX~sam formatuje tekst. \textbf{Nie starajmy siê go poprawiaæ}, chyba, ¿e
-naprawdê wiemy co robimy.
-\end{itemize} 
-
+Plik ?ród?owy jest zwyk?ym plikiem.
 
