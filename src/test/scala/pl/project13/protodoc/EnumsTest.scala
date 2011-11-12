@@ -1,11 +1,11 @@
 package pl.project13.protodoc
 
+import exceptions.{ProtoDocVerificationException, UnknownTypeException}
 import model._
 import model.IntProtoMessageField._
 import model.StringProtoMessageField._
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
-import pl.project13.protodoc.exceptions.UnknownTypeException
 
 /**
 *
@@ -92,11 +92,11 @@ class EnumsTest extends FlatSpec with ShouldMatchers
 
   "Undefined enum" should "be type checked, so an not existing enum type used as field type will fail compiling" in {
     evaluating { 
-      ProtoBufParser.parse("""
+      ProtoBufCompiler compile """
         message Msg {
         required NFJHSFEnum field = 1;
       }
-      """)
-    } should produce [UnknownTypeException] 
+      """
+    } should produce [ProtoDocVerificationException]
   }
 }
