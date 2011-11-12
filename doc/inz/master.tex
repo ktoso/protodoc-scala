@@ -10,6 +10,23 @@
 % Listings ------------------------------------------------------------
 \usepackage{listings}
 % Scala listings
+% "define" Scala
+\lstdefinelanguage{scala}{
+  morekeywords={abstract,case,catch,class,def,%
+    do,else,extends,false,final,finally,%
+    for,if,implicit,import,match,mixin,%
+    new,null,object,override,package,%
+    private,protected,requires,return,sealed,%
+    super,this,throw,trait,true,try,%
+    type,val,var,while,with,yield},
+  otherkeywords={=>,<-,<\%,<:,>:,\#,@},
+  sensitive=true,
+  morecomment=[l]{//},
+  morecomment=[n]{/*}{*/},
+  morestring=[b]",
+  morestring=[b]',
+  morestring=[b]"""
+}
 
 % IntelliJ Colors for listings
 \usepackage{color}
@@ -20,7 +37,7 @@
 % Default settings for code listings
 \lstset{
   frame=tb,
-  language=scala,
+  language=Scala,
   aboveskip=3mm,
   belowskip=3mm,
   showstringspaces=false,
@@ -29,8 +46,8 @@
   numbers=none,
   numberstyle=\tiny\color{gray},
   keywordstyle=\color{blue},
-  commentstyle=\color{dkgreen},
-  stringstyle=\color{mauve},
+  commentstyle=\color{gray},
+  stringstyle=\color{dkgreen},
   frame=single,
   breaklines=true,
   breakatwhitespace=true
@@ -79,6 +96,7 @@
 
 %---------------------------------------------------------------------------
 \include{intro}
+\include{parser}
 
 %---------------------------------------------------------------------------
 \appendix

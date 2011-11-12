@@ -1,0 +1,13 @@
+\chapter{Budowa parsera}
+\label{cha:parser}
+Parser w tym projekcie budowany jest za pomocą części języka \textit{Scala} zwaną \textit{,,Parser Combinators''}.
+
+\begin{lstlisting}
+def messageTypeDef: Parser[ProtoMessageType] = opt(comment) 
+                                               ~ "message" ~ ID ~ "{" 
+                                               ~ rep(enumTypeDef | instanceField | messageTypeDef) 
+                                               ~ "}" ^^ {
+  case maybeDoc ~ m ~ id ~ p1 ~ allFields ~ p2 =>
+    // utworzenie instancji ProtoMessageType
+}
+\end{lstlisting}

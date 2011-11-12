@@ -18,6 +18,32 @@ Jako konkretnych ,,rodziców'' można by wskazać:
 %---------------------------------------------------------------------------
 \section{Podstawy}
 \label{sec:scala_basics}
+Ta sekcja służy przybliżeniu czyletnikowi języka \textit{Scala} na poziomie wystatczającym aby swobodnie czytać przykłady
+kodu umieszczone w tej pracy. W niektórych przykładach pomijane są przypadki skrajne lub nietypowe, celem szybkiego oraz 
+jasnego przedstawienia minimum wiedzy na temat języka aby móc swobodnie go ,,czytać''.
+
+\textit{Scala} jest językiem statycznie typowanym posiadającym lokalne ,,Type Inferrence''. Pozwala to kompilatorowi 
+\textit{scalac} na ,,odnajdywanie'' typów wszystkich zmiennych oraz typów zwracanych przez metody podczas kompilacji,
+bez potrzeby definiowania ich wprost. System ten
+
+Użycie nawiasów \verb|()|, średnika \verb|;| oraz kropki \verb|.| jest analogiczne jak w przypadku Javy, 
+jednak w wielu przypadkach opcjonalne gdyż kompilator jest w stanie wydedukować gdzie powinny się znaleźć.
+\begin{lstlisting}
+ val value = Option(42);
+ val other = value.orElse(0);
+
+ // moze zostac zastąpione
+ val value = Option(42)
+ val other = value orElse 0
+\end{lstlisting}
+
+Jednym z ciekawych przykładów stosowania notacji bez nawiasów i kropek jest \textit{ScalaTest}\footnote{ScalaTest - framework do testowania - http://www.scalatest.org}
+(przy którego pomocy pisano testy w tym projekcie). Przykładowa \textit{asercja} napisana w \textit{DSL}u definiowanym przez tą bibliotekę wygląda następująco:
+\begin{lstlisting}
+ messages should (contain key ("Has") and not contain value ("NoSuchMsg"))
+\end{lstlisting}
+
+
 
 %---------------------------------------------------------------------------
 \section{Scala Parser Combinators}
