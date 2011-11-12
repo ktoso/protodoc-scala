@@ -30,7 +30,7 @@ class MultipleMessagesInOneFileTest extends Spec
       }"""
 
       when("the messages are parsed and verified")
-      val protos = ProtoBufCompiler.compile(msg)
+      val protos = ProtoBufCompiler compile msg
 
       then("the result should contain two messages")
       protos should have length (2)

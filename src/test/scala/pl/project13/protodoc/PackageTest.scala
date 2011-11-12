@@ -5,26 +5,26 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
 
 /**
-*
-* @author Konrad Malawski
-*/
+ *
+ * @author Konrad Malawski
+ */
 class PackageTest extends FlatSpec with ProtoTagConversions
                                    with ShouldMatchers {
 
   "Package name" should "be read from proto file with it" in {
-    val results = ProtoBufParser.parse("""
+    val proto = ProtoBufParser parseOne """
     package pl.project13;
 
     message Wiadomosc {
     }
-    """)
+    """
 
-    val proto = results.head
     proto.packageName should equal ("pl.project13")
+    proto.fullName should equal ("pl.project13.Wiadomosc")
   }
 
   "InnerInnerMsg package" should "contain it's super Messages in package name" in {
-    val protos = ProtoBufParser.parse("""
+    val msg = ProtoBufParser parseOne """
     package pl.project13;
 
     message Msg {
@@ -36,9 +36,8 @@ class PackageTest extends FlatSpec with ProtoTagConversions
         }
       }
     }
-    """)
+    """
 
-    val msg = protos.head
     msg.packageName should equal ("pl.project13")
 
     val innerMsg = msg.innerMessages.head

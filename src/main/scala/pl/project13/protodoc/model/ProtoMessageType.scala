@@ -1,5 +1,7 @@
 package pl.project13.protodoc.model
 
+import scala.List.empty
+
 /**
  * Represents a proto message type, such as:
  * <pre>
@@ -11,18 +13,23 @@ package pl.project13.protodoc.model
  * </pre>
  * @author Konrad Malawski
  */
-case class ProtoMessageType (messageName: String,
-                             override val packageName: String = "",
-                             fields: List[ProtoMessageField] = List(),
-                             enums: List[ProtoEnumType] = List(),
-                             innerMessages: List[ProtoMessageType] = List())
-                             extends ProtoType
-                                with Commentable {
+case class ProtoMessageType(messageName: String,
+                            override val packageName: String = "",
+                            fields: List[ProtoMessageField] = empty,
+                            var enums: List[ProtoEnumType] = empty,
+                            var innerMessages: List[ProtoMessageType] = empty)
+                            extends ProtoType
+                               with Commentable {
 
 
   override val fullName = if(packageName == "") messageName else packageName+"."+messageName
   override val representationOf = "message"
   override def protoFields = fields
+
+  // map inner messages to contain this message as "package"
+  innerMessages = innerMessages map { _.moveToPackage(fullName) }
+  // enum to proper "package"
+  enums = enums map { _.moveToPackage(fullName) }
 
   def moveToPackage(moveToHere: String) = {
     val newPackage = moveToHere // todo needs ".Something" checking
@@ -36,5 +43,5 @@ case class ProtoMessageType (messageName: String,
     msg
   }
 
-  override def toString = "ProtoMessageType '%s' in %s, with: %s".format(messageName, packageName, fields)
+  override def toString = "ProtoMessageType [%s] in package: [%s], with fields: [%s] and inner messages: [%s]".format(messageName, packageName, fields, innerMessages)
 }

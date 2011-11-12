@@ -13,8 +13,6 @@ object ProtoBufCompiler extends Logger {
   /**
    * Parse all contents of all protocol buffer files passed in,
    * an List of ProtoMessages will be returned
-   *
-   * todo return something more generic, enum can also be top level
    */
   def compile(protos: List[String]): List[ProtoType] = {
 

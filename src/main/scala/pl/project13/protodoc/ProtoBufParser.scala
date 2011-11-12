@@ -54,10 +54,10 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
       allTypeDefs map { protoType => protoType.moveToPackage(pack)}
   }
 
-  def messageTypeDef: Parser[/*_ <: */ProtoMessageType] = opt(comment) ~ "message" ~ ID ~ "{" ~ rep(enumTypeDef | instanceField | messageTypeDef) ~ "}" ^^ {
+  def messageTypeDef: Parser[ProtoMessageType] = opt(comment) ~ "message" ~ ID ~ "{" ~ rep(enumTypeDef | instanceField | messageTypeDef) ~ "}" ^^ {
     case maybeDoc ~ m ~ id ~ p1 ~ allFields ~ p2 =>
       val comment = maybeDoc.getOrElse("")
-      val pack = "" // todo fix me, I'm a hack for wrong packages
+      val pack = ""
 
       val processedFields = addOuterMessageInfo(id, pack, allFields) // todo this will fail!!!!!!!!
 
