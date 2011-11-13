@@ -1,6 +1,8 @@
 package pl.project13.protodoc.verifier
 
 import pl.project13.protodoc.model.{ProtoType, ProtoMessageType}
+import pl.project13.protodoc.exceptions.{ProtoDocVerificationException}
+import pl.project13.protodoc.{VerificationError, VerificationResult}
 
 
 /**
@@ -26,7 +28,41 @@ class ProtoTypeLookup(typeNameToResolve: String) {
   /**
    * Check if a type is resolvable within another type
    */
-  def isDefinedWithin(context: ProtoMessageType) = context.innerMessages.map { _.messageName } contains typeNameToResolve
+  def isDefinedWithin(context: ProtoMessageType) = {
+    val innerMessageNames = context.innerMessages.map {_.messageName}
+    val innerEnumNames = context.enums.map {_.typeName}
 
-  def getResolvedTypeWithin(context: ProtoMessageType) = context.innerMessages.find { _.messageName == typeNameToResolve }
+    (innerMessageNames contains typeNameToResolve) || (innerEnumNames contains typeNameToResolve)
+  }
+
+  @throws(classOf[ProtoDocVerificationException])
+  def getResolvedTypeWithin(context: ProtoMessageType) = {
+    val resolvedMessage = context.innerMessages.find {_.messageName == typeNameToResolve}
+    val resolvedEnum = context.enums.find {_.typeName == typeNameToResolve}
+
+    // check and throw if some problems found
+    val bothDefined = resolvedMessage.isDefined && resolvedEnum.isDefined
+    if(bothDefined) throwDueToDuplicateType(typeNameToResolve, context)
+
+    val bothUndefined = resolvedMessage.isEmpty && resolvedEnum.isEmpty
+    if(bothUndefined) throwDueToDuplicateType(typeNameToResolve, context)
+    
+    if(resolvedMessage.isDefined) {
+      resolvedMessage.get
+    } else {
+      resolvedEnum.get
+    }
+  }
+
+  @throws(classOf[ProtoDocVerificationException])
+  private def throwDueToDuplicateType(typeNameToResolve: String, context: ProtoMessageType) {
+
+    val msg = """|Unable to resolve ["""+typeNameToResolve+"""] due to a "duplicate resolution" of this type.
+                 |Are you sure you didn't define this type two times in the same scope?""".stripMargin
+
+    val error = VerificationError(typeNameToResolve, msg) :: Nil
+    val result = VerificationResult(error)
+
+    throw new ProtoDocVerificationException(result)
+  }
 }

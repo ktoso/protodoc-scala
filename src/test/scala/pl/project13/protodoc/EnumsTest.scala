@@ -1,18 +1,16 @@
 package pl.project13.protodoc
 
-import exceptions.{ProtoDocVerificationException, UnknownTypeException}
+import exceptions.ProtoDocVerificationException
 import model._
-import model.IntProtoMessageField._
-import model.StringProtoMessageField._
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
 
 /**
-*
-* @author Konrad Malawski
-*/
+ *
+ * @author Konrad Malawski
+ */
 class EnumsTest extends FlatSpec with ShouldMatchers
-                                 with ProtoTagConversions {
+                        with ProtoTagConversions {
 
   "Enum" should "be parseable inside of an Message" in {
     val msg = ProtoBufCompiler.compileOne("""
@@ -31,7 +29,7 @@ class EnumsTest extends FlatSpec with ShouldMatchers
     msg.enums should have size (1)
 
     val values = ProtoEnumValue("VALUE", 2) :: ProtoEnumValue("OTHER", 4) :: ProtoEnumValue("LAST", 5) :: Nil
-    val expected = ProtoEnumType("MyEnum", ".Wiadomosc", values)
+    val expected = ProtoEnumType("MyEnum", "Wiadomosc", values)
     msg.enums should contain (expected)
   }
 
@@ -80,18 +78,35 @@ class EnumsTest extends FlatSpec with ShouldMatchers
 
     val enumType: ProtoEnumType = result.enums.head
     val enumField: ProtoMessageField = result.fields.last
-    enumField should have (
+    enumField should have(
       'fieldName ("field"),
-      'scalaTypeName (enumType.typeName),
-      'protoTypeName (enumType.typeName),
+      'scalaTypeName (enumType.fullName),
+      'protoTypeName (enumType.fullName),
       'tag (ProtoTag(1)),
       'modifier (RequiredProtoModifier()),
-      'defaultValue (null)
+      'defaultValue (None)
     )
   }
 
+  it should "detect an unresolvable enum or message type reference" in {
+    val ex = intercept[ProtoDocVerificationException] {
+      ProtoBufCompiler compileOne """
+        message Msg {
+          required MagicType field = 1;
+
+          enum MagicType {
+            SMS = 1;
+          }
+          message MagicType { }
+        }
+      """
+    }
+
+    val verification = ex.verificationResult
+  }
+
   "Undefined enum" should "be type checked, so an not existing enum type used as field type will fail compiling" in {
-    evaluating { 
+    evaluating {
       ProtoBufCompiler compile """
         message Msg {
         required NFJHSFEnum field = 1;

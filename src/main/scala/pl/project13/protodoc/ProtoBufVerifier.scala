@@ -19,15 +19,15 @@ object ProtoBufVerifier extends Logger {
    * @return true if the passed in ProtoTypes are valid, false otherwise
    */
   def verify(protoTypes: List[ProtoType]): VerificationResult = {
-    val errorLists: Seq[Seq[VerifierError]] = for (protoType <- protoTypes) yield check(protoType, protoTypes)
-    val errors: Seq[VerifierError] = errorLists.flatten
+    val errorLists: Seq[Seq[VerificationError]] = for (protoType <- protoTypes) yield check(protoType, protoTypes)
+    val errors: Seq[VerificationError] = errorLists.flatten
 
     errors.foreach(error(_))
 
     VerificationResult(errors)
   }
 
-  def check[T <: ProtoType](protoType: T, protoTypes: List[T]): List[VerifierError] = protoType match {
+  def check[T <: ProtoType](protoType: T, protoTypes: List[T]): List[VerificationError] = protoType match {
     case msgType: ProtoMessageType =>
       checkMessageType(msgType, protoTypes)
 
@@ -55,7 +55,7 @@ object ProtoBufVerifier extends Logger {
   /**
    * Check if an enum has valid values etc
    */
-  def checkEnumType(enumType: ProtoEnumType, protoTypes: List[ProtoType]): List[VerifierError] = {
+  def checkEnumType(enumType: ProtoEnumType, protoTypes: List[ProtoType]): List[VerificationError] = {
     // todo implement me
     info("Running verifications on enum "+b(enumType)+"")
 
@@ -72,8 +72,8 @@ object ProtoBufVerifier extends Logger {
    */
   def checkField(context: ProtoMessageType, 
                  field: ProtoMessageField, 
-                 protoTypes: List[ProtoType]): List[VerifierError] = {
-    var errors: List[VerifierError] = Nil
+                 protoTypes: List[ProtoType]): List[VerificationError] = {
+    var errors: List[VerificationError] = Nil
 
     info("Checking field "+b(field)+" in "+b(context)+" context for errors...")
 
@@ -90,7 +90,7 @@ object ProtoBufVerifier extends Logger {
   // todo should understand imports, lets add Imports to prototype?
   def checkFieldTypeVisible(field: ProtoMessageField, 
                             fromContext: ProtoMessageType,
-                            allParsed: List[ProtoType]): List[UndefinedTypeVerifierError] = {
+                            allParsed: List[ProtoType]): List[UndefinedTypeVerificationError] = {
     val typeName = field.protoTypeName
     
     // try to find by fully qualified name
@@ -101,10 +101,10 @@ object ProtoBufVerifier extends Logger {
       NoErrorsEncountered
     } else if(typeName isDefinedWithin fromContext) {
       val resolvedType = typeName getResolvedTypeWithin fromContext
-      field resolveTypeTo resolvedType.get
+      field resolveTypeTo(resolvedType)
       NoErrorsEncountered
     } else {
-      UndefinedTypeVerifierError(field.fieldName, "Unable to resolve type ["+typeName+"] from ["+fromContext+"] context.") :: Nil
+      UndefinedTypeVerificationError(field.fieldName, "Unable to resolve type ["+typeName+"] from ["+fromContext+"] context.") :: Nil
     }
     // todo check imports in all from
   }
@@ -114,9 +114,9 @@ object ProtoBufVerifier extends Logger {
    */
   def checkInnerMsg(context: ProtoMessageType, 
                     selfMsg: ProtoMessageType, 
-                    protoTypes: List[ProtoType]): List[VerifierError] = {
+                    protoTypes: List[ProtoType]): List[VerificationError] = {
     info("Checking inner message "+selfMsg.fullName+" for errors...")
     
-    List()
+    NoErrorsEncountered
   }
 }

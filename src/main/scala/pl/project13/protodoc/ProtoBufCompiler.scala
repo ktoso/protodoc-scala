@@ -27,6 +27,7 @@ object ProtoBufCompiler extends Logger {
     if(verification.invalid) {
       error("Contained errors, aborting execution")
       verification.errors.foreach(error(_))
+      println(verification)
       throw new ProtoDocVerificationException(verification)
     }
 

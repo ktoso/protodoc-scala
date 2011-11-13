@@ -7,9 +7,9 @@ import model._
  */
 object TagVerifier extends Logger {
 
-  def validateTags(context: ProtoType, tags: List[ProtoTag]): List[TagVerifierError] = {
+  def validateTags(context: ProtoType, tags: List[ProtoTag]): List[TagVerificationError] = {
     info("Verifying Proto Tag uniqueness of fields in context "+b(context))
-    var errors: List[TagVerifierError]= List()
+    var errors: List[TagVerificationError]= List()
 
     // has duplicate tags?
     errors :::= validateDuplicateTags(context, tags)
@@ -19,7 +19,7 @@ object TagVerifier extends Logger {
     errors
   }
   
-  def validateDuplicateTags(context: ProtoType, tags: List[ProtoTag]): List[DuplicateTagVerifierError] = {
+  def validateDuplicateTags(context: ProtoType, tags: List[ProtoTag]): List[DuplicateTagVerificationError] = {
     val distinctTags = tags.distinct
     val duplicatesCount = tags.lengthCompare(distinctTags.length)
 
@@ -34,7 +34,7 @@ object TagVerifier extends Logger {
     
     val duplicates = context.protoFields.filter(_.tag.tagNumber == duplicate.tagNumber)
     
-    DuplicateTagVerifierError(duplicates.mkString(", "),
+    DuplicateTagVerificationError(duplicates.mkString(", "),
                               "These fields all have the Tag Number equal to " + duplicate.tagNumber)
   }
 }
