@@ -1,11 +1,16 @@
 package pl.project13.protodoc
 
+import scala.List.empty
 import model._
+import verifier.VerifierConversions._
+import verifier._
 
 /**
  * @author Konrad Malawski
  */
 object ProtoBufVerifier extends Logger {
+
+  val NoErrorsEncountered = empty
 
   /**
    * Checks ProtoTypes for errors (invalid type references etc) and return true if a fileset is valid.
@@ -31,7 +36,7 @@ object ProtoBufVerifier extends Logger {
 
     case _ =>
       warn("Got unsupported ProtoType: "+b(protoType)+", unable to verify.")
-      List.empty // empty errors list
+      NoErrorsEncountered
   }
   
   def checkMessageType(msgType: ProtoMessageType, protoTypes: List[ProtoType]) = {
@@ -72,11 +77,11 @@ object ProtoBufVerifier extends Logger {
 
     info("Checking field "+b(field)+" in "+b(context)+" context for errors...")
 
-    if (field.unresolvedType) {
+    if (field.unresolvedType && context.representationOf == "message") {
       info("Type is still unresolved. Trying to resolve protoTypeName: " + b(field.protoTypeName))
       
       // todo should know about imports etc
-      errors = errors ::: checkFieldTypeVisible(field = field, from = context, allParsed = protoTypes)
+      errors = errors ::: checkFieldTypeVisible(field = field, fromContext = context, allParsed = protoTypes)
     }
     
     errors
@@ -84,7 +89,7 @@ object ProtoBufVerifier extends Logger {
 
   // todo should understand imports, lets add Imports to prototype?
   def checkFieldTypeVisible(field: ProtoMessageField, 
-                            from: ProtoType, 
+                            fromContext: ProtoMessageType,
                             allParsed: List[ProtoType]): List[UndefinedTypeVerifierError] = {
     val typeName = field.protoTypeName
     
@@ -93,9 +98,13 @@ object ProtoBufVerifier extends Logger {
 
     if(fullyQualifiedMatch.isDefined) {
       field resolveTypeTo(fullyQualifiedMatch.get)
-      List.empty
+      NoErrorsEncountered
+    } else if(typeName isDefinedWithin fromContext) {
+      val resolvedType = typeName getResolvedTypeWithin fromContext
+      field resolveTypeTo resolvedType.get
+      NoErrorsEncountered
     } else {
-      UndefinedTypeVerifierError(field.fieldName, "Unable to resolve type "+typeName+" from "+from+" context.") :: Nil
+      UndefinedTypeVerifierError(field.fieldName, "Unable to resolve type ["+typeName+"] from ["+fromContext+"] context.") :: Nil
     }
     // todo check imports in all from
   }

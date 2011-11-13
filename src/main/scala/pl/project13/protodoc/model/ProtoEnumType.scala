@@ -1,10 +1,5 @@
 package pl.project13.protodoc.model
 
-/**
- *
- * @author Konrad Malawski
- */
-
 case class ProtoEnumType(typeName: String,
                          override val packageName: String = "",
                          values: List[ProtoEnumValue] = List())
