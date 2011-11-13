@@ -67,7 +67,7 @@ class ProtoBufVerifierTest extends Spec
       then("the field should be resolved to the propper type")
       val hasResolvableFieldMsg = protos.find({_.messageName == HAS_RESOLVABLE_FIELD_MSG_NAME})
       hasResolvableFieldMsg should be ('defined)
-      hasResolvableFieldMsg.asInstanceOf[ProtoMessageType].fields should have length (1)
+      hasResolvableFieldMsg.get.asInstanceOf[ProtoMessageType].fields should have length (1)
     }
   }
 }
