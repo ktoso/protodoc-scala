@@ -6,5 +6,5 @@ sbt clean
 sbt collect-jars
 sbt package
 
-cd target/scala_2.9.1
-java -jar protodoc-1.0.jar $@
+cd target/scala-2.9.1
+java -jar protodoc-scala_2.9.1-1.0.jar $@
