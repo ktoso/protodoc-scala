@@ -19,6 +19,10 @@ class MessageTemplateTest extends FlatSpec with ShouldMatchers {
     message AmazingMessage {
      optional string name = 1;
      optional uint32 age = 2;
+
+     enum Enumeration {
+       IT = 54;
+     }
     }
     """)
 
@@ -26,27 +30,28 @@ class MessageTemplateTest extends FlatSpec with ShouldMatchers {
 
     page should include ("pl.project13.protobuf")
     page should include ("AmazingMessage")
+    page should include ("pl.project13.protobuf.AmazingMessage")
     page should include ("name")
     page should include ("age")
   }
 
-  it should "render top level message comment" in {
-    val message = ProtoBufParser.parse("""
-    package pl.project13.protobuf;
-
-    /** I'm a protodoc comment */
-    message AmazingMessage {
-     optional string name = 1;
-     optional uint32 age = 2;
-    }
-    """).head
-
-    val page = templateEngine.renderTypePage(message)
-
-    page should include ("pl.project13.protobuf")
-    page should include ("AmazingMessage")
-    page should include ("name")
-    page should include ("age")
-    page should include ("I'm a protodoc comment")
-  }
+//  it should "render top level message comment" in {
+//    val message = ProtoBufParser.parse("""
+//    package pl.project13.protobuf;
+//
+//    /** I'm a protodoc comment */
+//    message AmazingMessage {
+//     optional string name = 1;
+//     optional uint32 age = 2;
+//    }
+//    """).head
+//
+//    val page = templateEngine.renderTypePage(message)
+//
+//    page should include ("pl.project13.protobuf")
+//    page should include ("AmazingMessage")
+//    page should include ("name")
+//    page should include ("age")
+//    page should include ("I'm a protodoc comment")
+//  }
 }

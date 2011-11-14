@@ -1,11 +1,11 @@
 package pl.project13.protodoc.templating
 
-import org.fusesource.scalate._
-import layout.DefaultLayoutStrategy
 import java.io.{FileWriter, File}
 import pl.project13.protodoc.model.{ProtoEnumType, ProtoMessageType, ProtoType}
 import scala.annotation.tailrec
 import pl.project13.protodoc.Logger
+import org.fusesource.scalate.layout.DefaultLayoutStrategy
+import org.fusesource.scalate._
 
 /**
  *

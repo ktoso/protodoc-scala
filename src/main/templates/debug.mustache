@@ -1,69 +1,69 @@
 <html>
 <head>
-    <title>ProtoDoc for: {{packageName}}.{{fieldName}}</title>
+    <title>ProtoDoc for: {{data.packageName}}.{{data.fieldName}}</title>
     {{> styles_css}}
     {{> message_styles_css}}
 </head>
 <body>
 <h1 class="message-header">
-    <img src="images/message-big.png" alt="msg"/> {{messageName}}
+    <img src="images/message-big.png" alt="msg"/> {{data.messageName}}
 </h1>
 <span class="top-level-comment">{{& comment}}</span>
 
 <!--todo add package pages or something, get rid of this if! vvvvv -->
-{{#isInnerMessage}}
+{{#data.isInnerMessage}}
 <h2>
-    defined in message: <a href="{{packageName}}.html">{{packageName}}</a>
+    defined in message: <a href="{{data.packageName}}.html">{{data.packageName}}</a>
 </h2>
-{{/isInnerMessage}}
-{{^isInnerMessage}}
+{{/data.isInnerMessage}}
+{{^data.isInnerMessage}}
 <h2>
-    defined in package: {{packageName}}
+    defined in package: {{data.packageName}}
 </h2>
-{{/isInnerMessage}}
+{{/data.isInnerMessage}}
 <!--todo add package pages or something, get rid of this if! ^^^^^ -->
 
 <h2 class="fields-header sub-header">Fields:</h2>
 <ul class="fields">
-    {{#fields}}
+    {{#data.fields}}
     <li>
-        <strong>{{fieldName}}</strong><br/>
+        <strong>{{data.fieldName}}</strong><br/>
         <span class="comment">{{& comment}}</span><br/>
 
         <dl>
-            {{#defaultValue}}
+            {{#data.defaultValue}}
             <dt>Default value:</dt>
-            <dd>{{defaultValue}}</dd>
-            {{/defaultValue}}
+            <dd>{{data.defaultValue}}</dd>
+            {{/data.defaultValue}}
 
             <dt>Modifier:</dt>
-            <dd>{{modifier}}</dd>
+            <dd>{{data.modifier}}</dd>
 
             <dt>Tag:</dt>
-            <dd>{{tag}}</dd>
+            <dd>{{data.tag}}</dd>
 
             <dt>Defined as:</dt>
-            <dd>{{protoTypeName}}</dd>
+            <dd>{{data.protoTypeName}}</dd>
 
             <dt>Mapped to:</dt>
-            <dd>{{scalaTypeName}}</dd>
+            <dd>{{data.scalaTypeName}}</dd>
         </dl>
     </li>
-    {{/fields}}
-    {{^fields}}
+    {{/data.fields}}
+    {{^data.fields}}
     <li>
         This message defines no fields.
     </li>
-    {{/fields}}
+    {{/data.fields}}
 </ul>
 
 <h2 class="inner-enums-header sub-header">Inner Enums:</h2>
 <ul class="inner-enums">
-    {{#enums}}
+    {{#data.enums}}
     <li>
         <strong>
-            <a class="msg-link" href="{{packageName}}.{{typeName}}.html">
-                {{typeName}}
+            <a class="msg-link" href="{{data.packageName}}.{{data.typeName}}.html">
+                {{data.typeName}}
             </a>
         </strong><br/>
         <span class="comment">{{& comment}}</span>
@@ -77,41 +77,41 @@
             </tr>
             </thead>
             <tbody>
-            {{#values}}
+            {{#data.values}}
             <tr>
-                <td class="code">{{valueName}}</td>
-                <td>{{tag}}</td>
+                <td class="code">{{data.valueName}}</td>
+                <td>{{data.tag}}</td>
                 <td>{{& comment}}</td>
             </tr>
-            {{/values}}
+            {{/data.values}}
             </tbody>
         </table>
     </li>
-    {{/enums}}
-    {{^enums}}
+    {{/data.enums}}
+    {{^data.enums}}
     <li>
         This message defines no enums.
     </li>
-    {{/enums}}
+    {{/data.enums}}
 </ul>
 
 <h2 class="inner-msgs-header sub-header">Inner messages:</h2>
 <ul class="inner-msgs">
-    {{#innerMessages}}
+    {{#data.innerMessages}}
     <li>
         <strong>
-            <a class="msg-link" href="{{packageName}}.{{messageName}}.html">
-                {{messageName}}
+            <a class="msg-link" href="{{data.packageName}}.{{data.messageName}}.html">
+                {{data.messageName}}
             </a>
         </strong>
         <span class="comment">{{& comment}}</span>
     </li>
-    {{/innerMessages}}
-    {{^innerMessages}}
+    {{/data.innerMessages}}
+    {{^data.innerMessages}}
     <li>
         This message defines no inner messages.
     </li>
-    {{/innerMessages}}
+    {{/data.innerMessages}}
 </ul>
 
 {{> fork_me }}

@@ -45,5 +45,9 @@ proguardOptions ++= List(keepMain("pl.project13.protodoc.runner.ProtoDocMain"),
                          "-keepclasseswithmembers public class * { public static void main(java.lang.String[]); }",
                          "-dontoptimize",
                          "-dontobfuscate",
+                         "-keep class **",
+                         "-dontwarn **$$anonfun$*",
+                         "-dontwarn scala.collection.immutable.RedBlack$Empty",
+                         "-dontwarn scala.tools.**,plugintemplate.**",
                          "-keep interface scala.ScalaObject"
 )
