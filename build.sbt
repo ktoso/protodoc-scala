@@ -1,4 +1,4 @@
-name := "ProtoDoc - Scala"
+name := "ProtoDoc Scala"
 
 organization := "pl.project13.protodoc"
 
