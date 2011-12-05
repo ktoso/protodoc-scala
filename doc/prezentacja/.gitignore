@@ -1,0 +1,11 @@
+*.tmp
+*~
+*.bak
+*.backup
+*.toc
+*.vrb
+*.aux
+*.snm
+*.out
+*.log
+*.nav

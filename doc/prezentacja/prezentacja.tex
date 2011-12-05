@@ -1,0 +1,179 @@
+\documentclass{beamer}
+\usepackage{graphicx}
+\usepackage{times}
+\usepackage[polish]{babel}
+\usepackage{polski}
+\usepackage[utf8]{inputenc}
+
+% dodatkowe pakiety
+\usepackage{enumerate}
+% Listings ------------------------------------------------------------
+\usepackage{listings}
+% Scala listings
+% "define" Scala
+\lstdefinelanguage{scala} {
+  morekeywords={abstract,case,catch,class,def,%
+    do,else,extends,false,final,finally,%
+    for,if,implicit,import,match,mixin,%
+    new,null,object,override,package,%
+    private,protected,requires,return,sealed,%
+    super,this,throw,trait,true,try,%
+    type,val,var,while,with,yield},
+  otherkeywords={=>,<-,<\%,<:,>:,\#,@},
+  sensitive=true,
+  morecomment=[l]{//},
+  morecomment=[n]{/*}{*/},
+  morestring=[b]",
+  morestring=[b]',
+  morestring=[b]"""
+}
+
+% IntelliJ Colors for listings
+\usepackage{color}
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+ 
+% Default settings for code listings
+\lstset{
+  frame=tb,
+  language=Scala,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{gray},
+  stringstyle=\color{dkgreen},
+  frame=single,
+  breaklines=true,
+  breakatwhitespace=true
+  tabsize=3
+}
+
+\lstloadlanguages{TeX}
+
+\usetheme{AGH}
+
+\title[ProtoDoc - odpowiednik JavaDoc dla Google Protocol Buffers]{ProtoDoc - \\ odpowiednik JavaDoc\\ dla Google Protocol Buffers}
+
+\author[K. Malawski]{Konrad Malawski}
+
+\date[2011]{22.01.2011}
+
+\institute[AGH-UST]
+{Faculty of EEACSE\\ 
+Department of Automatics
+}
+
+\setbeamertemplate{itemize item}{$\maltese$}
+
+\begin{document}
+
+%---------------------------------------------------------------------------
+
+
+{
+\usebackgroundtemplate{\includegraphics[width=\paperwidth]{titlepage}} % wersja angielska
+%\usebackgroundtemplate{\includegraphics[width=\paperwidth]{titlepagepl}} % wersja polska
+ \begin{frame}
+   \titlepage
+ \end{frame}
+}
+
+%---------------------------------------------------------------------------
+
+
+\begin{frame}
+\frametitle{Plan prezentacji}
+ \begin{block}{Plan prezentacji}
+  \begin{itemize}
+   \item omówienie problemu
+   \item omówienie zastosowanego rozwiązania
+   \item porównanie z innymi parserami
+   \item prezentacja wyniku działania aplikacji
+   \item podsumowanie
+  \end{itemize}
+ \end{block}
+\end{frame}
+
+%---------------------------------------------------------------------------
+
+
+\begin{frame}
+\frametitle{Some AGH-UST Faculties}
+
+\begin{itemize}
+\item Faculty of Mining and Geoengineering
+\item Faculty of Metals Engineering and Industrial Computer Science
+\item Faculty of Electrical Engineering, Automatics, Computer Science and Electronics
+\item Faculty of Mechanical Engineering and Robotics
+\item Faculty of Geology, Geophysics and Environment Protection
+\item \dots
+\end{itemize}
+
+\end{frame}
+
+%---------------------------------------------------------------------------
+
+
+\begin{frame}
+\frametitle{Scala Parser Combinators}
+
+\begin{columns}
+\column{0.45\textwidth}
+ \begin{block}{Za}
+  
+ \end{block}
+
+\column{0.45\textwidth}
+ \begin{block}{Przeciw}
+  
+ \end{block}
+\end{columns}
+
+\end{frame}
+
+
+%---------------------------------------------------------------------------
+
+
+\begin{frame}[fragile]
+\frametitle{Fragment kodu parsera}
+
+\begin{verbatim}
+  def messageTypeDef: Parser[ProtoMessageType] = opt(comment) ~ "message" ~ ID ~ "{" ~ rep(enumTypeDef | instanceField | messageTypeDef) ~ "}" ^^ {
+    case maybeDoc ~ m ~ id ~ p1 ~ allFields ~ p2 =>
+      val comment = maybeDoc.getOrElse("")
+      val pack = ""
+
+      val processedFields = addOuterMessageInfo(id, pack, allFields) 
+
+      new ProtoMessageType(messageName = id,
+                           packageName = pack,
+                           fields = processedFields /*will be implicitly filtered*/ ,
+                           enums = processedFields /*will be implicitly filtered*/ ,
+                           innerMessages = processedFields /*will be implicitly filtered*/)
+  }
+\end{verbatim}
+
+
+\end{frame}
+
+%---------------------------------------------------------------------------
+
+
+\begin{frame}
+\frametitle{Podsumowanie}
+
+
+\end{frame}
+
+%---------------------------------------------------------------------------
+
+
+\end{document}
+
