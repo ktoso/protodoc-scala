@@ -109,8 +109,8 @@ im. Stanis\l{}awa Staszica w Krakowie}}}
 
 \begin{center}
 
-{\sffamily{\Large{\bfseries{\textsc AGH\\[2mm]
-University of Science and Technology in Krakow}}}
+{\sffamily{\Large{\bfseries{\textsc Akademia Górniczo-Hutnicza\\[2mm]
+im. Stanis?awa Staszica w Krakowie}}}
 
 \vspace*{1mm}\rule{\textwidth}{1mm}\vspace*{1mm}
 
