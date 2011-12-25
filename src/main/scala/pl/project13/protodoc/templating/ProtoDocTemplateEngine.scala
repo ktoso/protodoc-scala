@@ -7,29 +7,34 @@ import pl.project13.protodoc.Logger
 import org.fusesource.scalate.layout.DefaultLayoutStrategy
 import org.fusesource.scalate._
 
+import Mustache._
+
 /**
  *
  * @author Konrad Malawski
  */
-class ProtoDocTemplateEngine extends AnsiTerminalTools
-                                with Logger {
+class ProtoDocTemplateEngine
+  extends AnsiTerminalTools
+  with Logger {
 
-  var templatesDir = new File("/home/ktoso/coding/protodoc-scala/src/main/templates/")
+  var templatesDir = new File(Mustache.TemplatesDirPath)
 
   val engine = new TemplateEngine(List(templatesDir))
-  engine.layoutStrategy = new DefaultLayoutStrategy(engine, "mylayout.mustache")
+  import engine._
+
+  layoutStrategy = new DefaultLayoutStrategy(engine, "mylayout".mustache)
 
   // default bindings
-  engine.bindings = List(Binding(name = "protodoc_version",
-                                 className = "String",
-                                 defaultValue = Option(""""v1.0"""")))
+  bindings = List(Binding(name = "protodoc_version",
+                          className = "String",
+                          defaultValue = Option(""""v1.0"""")))
 
   def renderTableOfContents(contents: List[_ >: ProtoType]) = contents match {
       case msgs : List[ProtoMessageType] =>
         val all = (allInnerMessagesOf(msgs) ++ allInnerEnumsOf(msgs)).sortBy(m => m.fullName)
 
         val data = Map("contents" -> all)
-        engine.layout("/home/ktoso/coding/protodoc-scala/src/main/templates/index.mustache", data)
+        layout("index".mustache, data)
 
       case _ =>
         throw new RuntimeException("Tried to render table of contents for "+contents+" which are not")
@@ -55,13 +60,13 @@ class ProtoDocTemplateEngine extends AnsiTerminalTools
                    "enums" -> msg.enums,
                    "innerMessages" -> msg.innerMessages)
 
-    engine.layout("/home/ktoso/coding/protodoc-scala/src/main/templates/message.mustache", data)
+    engine.layout("/home/ktoso/code/protodoc-scala/src/main/templates/message.mustache", data)
   }
 
   def renderTypePage(msg: ProtoType) = {
     val data = Map("data" -> msg)
 
-    engine.layout("/home/ktoso/coding/protodoc-scala/src/main/templates/debug.mustache", data)
+    engine.layout("/home/ktoso/code/protodoc-scala/src/main/templates/debug.mustache", data)
   }
 
   def renderTypePage(protoType: ProtoType, outDir: String) {
@@ -82,7 +87,7 @@ class ProtoDocTemplateEngine extends AnsiTerminalTools
                    "comment" -> enum.comment,
                    "values" -> enum.values)
 
-    engine.layout("/home/ktoso/coding/protodoc-scala/src/main/templates/enum.mustache", data)
+    engine.layout("/home/ktoso/code/protodoc-scala/src/main/templates/enum.mustache", data)
   }
 
   def renderEnumPage(enum: ProtoEnumType, outDir: String) {
@@ -95,7 +100,7 @@ class ProtoDocTemplateEngine extends AnsiTerminalTools
     val fw = new FileWriter(path)
     fw.write(contents)
     fw.close()
-//    Console.println("Saved ProtoDoc file to: " + path)
+//    info("Saved ProtoDoc file to: " + path)
   }
 
   // traversal methods
@@ -104,7 +109,7 @@ class ProtoDocTemplateEngine extends AnsiTerminalTools
   def allInnerMessagesOf(msg: ProtoMessageType): List[ProtoMessageType] = {
     var all: List[ProtoMessageType] = List(msg)
     for (inner <- msg.innerMessages) {
-      println("Inner:   " + msg.fullName + "." + BOLD + inner.messageName + RESET)
+      info("Inner:   " + msg.fullName + "." + BOLD + inner.messageName + RESET)
       all ++= allInnerMessagesOf(inner)
     }
 

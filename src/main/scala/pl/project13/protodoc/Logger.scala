@@ -5,7 +5,7 @@ import utils.AnsiCodes
 
 trait Logger {
 
-  var verbose = true
+  var verbose = Option(System.getenv("VERBOSE")).getOrElse("true").toBoolean
 
   def b(msg: ProtoType) = Logger.BOLD + msg.fullName + Logger.RESET
   def b(msg: Any) = Logger.BOLD + msg.toString + Logger.RESET

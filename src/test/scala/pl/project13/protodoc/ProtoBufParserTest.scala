@@ -10,7 +10,8 @@ import org.scalatest.matchers.ShouldMatchers
 */
 class ProtoBufParserTest extends FlatSpec
                             with ShouldMatchers
-                            with ProtoTagConversions {
+                            with ProtoTagConversions 
+                            with Logger {
 
   "Parser" should "parse single simple message" in {
     val result = ProtoBufParser.parse("""
@@ -74,7 +75,7 @@ class ProtoBufParserTest extends FlatSpec
   "addOuterMessageInfo" should "fix package info of inner enums/msgs" in {
     val data = List(ProtoMessageType("InnerMessage", "", innerMessages = ProtoMessageType("InnerInnerMessage", "") :: Nil))
 
-    println("Will fix packages of: " + data)
+    info("Will fix packages of: " + data)
 
     val fixedData = ProtoBufParser.addOuterMessageInfo("Outer", "pl.project13", data)
 

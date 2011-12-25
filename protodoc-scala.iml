@@ -3,8 +3,8 @@
   <component name="FacetManager">
     <facet type="scala" name="Scala">
       <configuration>
-        <option name="compilerLibraryLevel" value="Global" />
-        <option name="compilerLibraryName" value="scala-compiler-2.9.0.RC1" />
+        <option name="compilerLibraryLevel" value="Project" />
+        <option name="compilerLibraryName" value="scala-2.9" />
         <option name="explainTypeErrors" value="true" />
         <option name="fsc" value="true" />
       </configuration>
