@@ -1,4 +1,6 @@
+import java.io.{FileWriter, File}
 import sbt._
+import Keys._
 
 object PluginDef extends Build {
   override def projects = Seq(root)
