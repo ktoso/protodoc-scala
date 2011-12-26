@@ -26,7 +26,7 @@ case class ProtoEnumType(typeName: String,
                values.map(_.valueName).reduceLeft(_ + ", " + _))
   }
 
-  override val fullName = packageName + "." + typeName
+  override val fullName = if(packageName == "") typeName else packageName + "." + typeName
   override val representationOf = "enum"
   override def protoFields = values
 
