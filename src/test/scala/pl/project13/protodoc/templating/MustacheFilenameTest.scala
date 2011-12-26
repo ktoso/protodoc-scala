@@ -17,7 +17,7 @@ class MustacheFilenameTest
     val mustache = template.mustache
 
     // then
-    mustache should equal(Mustache.TemplatesDirPath + "/" + template + ".mustache")
+    mustache should equal(Mustache.TemplatesDirPath + "/templates/" + template + ".mustache")
   }
 
 }

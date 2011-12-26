@@ -33,11 +33,8 @@ case class ProtoMessageType(messageName: String,
 
   def moveToPackage(moveToHere: String) = {
     val newPackage = moveToHere // todo needs ".Something" checking
-    val msg = ProtoMessageType(messageName = messageName,
-                               packageName = newPackage,
-                               fields = fields,
-                               enums = enums,
-                               innerMessages = innerMessages)
+
+    val msg = copy(packageName = newPackage)
     msg.comment = comment
 
     msg

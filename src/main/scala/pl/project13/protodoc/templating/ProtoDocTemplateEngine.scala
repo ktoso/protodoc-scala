@@ -1,13 +1,20 @@
 package pl.project13.protodoc.templating
 
-import java.io.{FileWriter, File}
 import pl.project13.protodoc.model.{ProtoEnumType, ProtoMessageType, ProtoType}
 import scala.annotation.tailrec
+import scala.collection.JavaConversions
+import scala.collection.JavaConverters._
 import pl.project13.protodoc.Logger
+import com.google.common.io.{Files => GFiles}
 import org.fusesource.scalate.layout.DefaultLayoutStrategy
 import org.fusesource.scalate._
 
 import Mustache._
+import java.util.regex.Pattern
+import java.io.{InputStreamReader, FileWriter, File}
+import com.google.common.io.CharStreams
+import com.google.common.base.Charsets
+import java.nio.file.{StandardCopyOption, CopyOption, Paths, Files}
 
 /**
  *
@@ -16,6 +23,8 @@ import Mustache._
 class ProtoDocTemplateEngine
   extends AnsiTerminalTools
   with Logger {
+
+  ProtoDocTemplateEngine.copyTemplatesToTmp()
 
   var templatesDir = new File(Mustache.TemplatesDirPath)
 
@@ -60,19 +69,13 @@ class ProtoDocTemplateEngine
                    "enums" -> msg.enums,
                    "innerMessages" -> msg.innerMessages)
 
-    engine.layout("/home/ktoso/code/protodoc-scala/src/main/templates/message.mustache", data)
-  }
-
-  def renderTypePage(msg: ProtoType) = {
-    val data = Map("data" -> msg)
-
-    engine.layout("/home/ktoso/code/protodoc-scala/src/main/templates/debug.mustache", data)
+    engine.layout("message".mustache, data)
   }
 
   def renderTypePage(protoType: ProtoType, outDir: String) {
     protoType match {
-      case msg :ProtoMessageType =>
-        val html = renderTypePage(msg)
+      case msg: ProtoMessageType =>
+        val html = renderTypePage(msg.asInstanceOf[ProtoMessageType])
         val filename: String = outDir + "/" + msg.fullName + ".html"
         writeToFile(filename, html)
 
@@ -82,12 +85,14 @@ class ProtoDocTemplateEngine
   }
 
   def renderEnumPage(enum: ProtoEnumType) = {
-    val data = Map("enumName" -> enum.typeName,
-                   "packageName" -> enum.packageName,
-                   "comment" -> enum.comment,
-                   "values" -> enum.values)
+    import enum._
 
-    engine.layout("/home/ktoso/code/protodoc-scala/src/main/templates/enum.mustache", data)
+    val data = Map("enumName" -> typeName,
+                   "packageName" -> packageName,
+                   "comment" -> comment,
+                   "values" -> values)
+
+    engine.layout("enum".mustache, data)
   }
 
   def renderEnumPage(enum: ProtoEnumType, outDir: String) {
@@ -116,21 +121,40 @@ class ProtoDocTemplateEngine
     all
   }
 
-  // todo @pbadenski: why not flatMap ?
   def allInnerMessagesOf(msgs: List[ProtoMessageType]): List[ProtoMessageType] = {
-//    var all: List[ProtoMessageType] = List()
-
     msgs.flatMap(allInnerMessagesOf(_))
-
-//    for(msg <- msgs) {
-//      info("Message: " + b(msg))
-//      all ++= allInnerMessagesOf(msg)
-//    }
-//
-//    all
   }
 
   def allInnerEnumsOf(msgs: List[ProtoMessageType]): List[ProtoEnumType] = {
     msgs.map(_.enums).flatten
+  }
+}
+
+object ProtoDocTemplateEngine extends Logger {
+  
+  def copyTemplatesToTmp() {
+    info("Preparing templates working directory...")
+
+    val dir = Paths.get(Mustache.TemplatesDirPath)
+    if(! Files.exists(dir)) {
+      Files.createDirectory(dir) // create tmp dir
+    }
+
+    val classLoader = getClass.getClassLoader
+    val fileIndex = classLoader.getResourceAsStream("file_index")
+
+    val indexSource = io.Source.fromInputStream(fileIndex)
+    indexSource.getLines().foreach(fileName => {
+      val fileStream = classLoader.getResourceAsStream(fileName)
+
+      val targetFile = Paths.get(Mustache.TemplatesDirPath + "/" + fileName)
+      
+      info("Preparing file: " + targetFile)
+
+      GFiles.createParentDirs(targetFile.toFile)
+      Files.copy(fileStream, targetFile, StandardCopyOption.REPLACE_EXISTING)
+    })
+
+    ok("Done preparing temporary working directory...")
   }
 }

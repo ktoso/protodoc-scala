@@ -1,10 +1,8 @@
 #!/bin/sh
 
-alias sbt="java -Xmx512M -jar $HOME/coding/sbt/sbt-launch.jar '$@'"
+alias sbt="java -Xmx512M -XX:MaxPermSize=256m -jar $HOME/opt/tools/sbt/sbt-launch.jar '$@'"
 
-sbt clean
-sbt collect-jars
-sbt package
+sbt clean export-jars package
 
 cd target/scala-2.9.1
 java -jar protodoc-scala_2.9.1-1.0.jar $@

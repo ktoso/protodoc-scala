@@ -30,9 +30,15 @@ libraryDependencies += "de.downgra" % "scarg_2.8.1" % "1.0.0-SNAPSHOT"
 
 libraryDependencies += "org.fusesource.scalate" % "scalate-core" % "1.5.2"
 
+libraryDependencies += "com.google.guava" % "guava" % "11.0"
+
 libraryDependencies += "org.scalatest" %% "scalatest" % "1.6.1" % "test"
 
 libraryDependencies += "junit" % "junit" % "4.8" % "test"
+
+// additional classpath
+
+unmanagedClasspath in Runtime <+= (baseDirectory) map { bd => Attributed.blank(bd / "resources") }
 
 
 // proguard config

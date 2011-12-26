@@ -4,11 +4,15 @@ import _root_.pl.project13.protodoc.ProtoBufParser
 import _root_.pl.project13.protodoc.model._
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
+import java.io.File
 
 /**
  * @author Konrad Malawski
  */
-class MessageTemplateTest extends FlatSpec with ShouldMatchers {
+class MessageTemplateTest
+  extends FlatSpec
+  with ShouldMatchers
+  with PrintToFile {
 
   val templateEngine = new ProtoDocTemplateEngine
 
@@ -24,9 +28,12 @@ class MessageTemplateTest extends FlatSpec with ShouldMatchers {
        IT = 54;
      }
     }
-    """)
+    """).asInstanceOf[ProtoMessageType] // we're sure of that here
 
     val page = templateEngine.renderTypePage(message)
+
+    // debug print
+    printToFile(new File("/tmp/message.html")) { p => page.foreach(p.print(_)) }
 
     page should include ("pl.project13.protobuf")
     page should include ("AmazingMessage")
