@@ -5,7 +5,9 @@ package pl.project13.protodoc
  * @param about which the field name of the source of this error
  * @param msg a detailed message explaining the error
  */
-case class VerificationError(about: String, msg: String)
+case class VerificationError(about: String, msg: String) {
+  override def toString = "Error on field ["+about+"]: "+msg
+}
 
 case class UndefinedTypeVerificationError(override val about: String, details: String)
   extends VerificationError(about, "Unable to resolve this type. Maybe you simply forgot to import it? "+details)

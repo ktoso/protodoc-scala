@@ -57,10 +57,12 @@ class RealSimpleParsingTest
     |}
     |""".stripMargin
 
-  describe("A real message, with outer enum") {
+  describe("Parsing of an real message, with outer enum") {
 
     it("should be parsed properly") {
       given("A real proto file")
+
+      when("it is parsed")
       val result = ProtoBufParser.parse(TestString)
 
       then("parsed size should be 2")
@@ -69,8 +71,19 @@ class RealSimpleParsingTest
       and("the inner message should be detected")
       val withInner = result.head
       withInner.fullName should equal("pl.project13.MessageWithInner")
+
       and("the inner message should be named properly")
       withInner.innerMessages.head.fullName should equal("pl.project13.MessageWithInner.InnerMessage")
+
+      and("the enum field should have the proper type resolved")
+      val instanceOfOuterEnum = withInner.fields.find(_.fieldName == "instanceOfOuterEnum")
+      instanceOfOuterEnum should be ('defined)
+
+      and("it's tag should be equal 3")
+      instanceOfOuterEnum.get.tag should equal (ProtoTag(3))
+      
+      and("it's resolved type should be the outer enumeration")
+      instanceOfOuterEnum.get.protoTypeName should equal ("pl.project13.OuterEnumeration")
 
       and("the outer enum should be parsed and named properly")
       val outerEnum = result(1)
