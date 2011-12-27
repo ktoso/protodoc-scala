@@ -59,7 +59,7 @@ object ProtoBufVerifier extends Logger {
     // todo implement me
     info("Running verifications on enum "+b(enumType)+"")
 
-    var enumErrors = List() // todo implement me
+    var enumErrors = Nil // todo implement me
 
     val enumValues = enumType.values
     val tagUniquenessErrors = TagVerifier.validateTags(enumType, enumValues.map(_.tag))

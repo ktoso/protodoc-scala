@@ -29,7 +29,7 @@ object ProtoBufCompiler extends Logger {
       verification.errors.foreach(error(_))
       error("Got verification result: " + verification)
 
-//      throw new ProtoDocVerificationException(verification) // todo enable this!!!!!!!!!
+      throw new ProtoDocVerificationException(verification)
     }
 
     ok("Verification finished, no errors found.")

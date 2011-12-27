@@ -41,5 +41,5 @@ case class ProtoEnumType(
   }
 
 //  override def toString = "ProtoEnumType '%s' in %s, with: %s".format(typeName, packageName, values)
-  override def toString = "ProtoEnumType '%s'".format(typeName)
+  override def toString = "ProtoEnumType named: '%s'".format(typeName)
 }

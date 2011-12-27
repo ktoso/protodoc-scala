@@ -15,7 +15,6 @@ import java.io.{InputStreamReader, FileWriter, File}
 import com.google.common.io.CharStreams
 import com.google.common.base.Charsets
 import java.nio.file.{StandardCopyOption, CopyOption, Paths, Files}
-import javax.swing.filechooser.GenericFileSystemView
 
 /**
  *
@@ -41,124 +40,129 @@ class ProtoDocTemplateEngine
     defaultValue = Option(""""v1.0"""")))
 
   def renderTableOfContents(contents: List[ProtoType]) = {
-    Console.println("TRY TO DO TO: " + contents.mkString("[", ",", "]"))
-    
-    contents match {
-      case msgs: List[ProtoMessageType] =>
-        val allMsgs = allInnerMessagesOf(msgs)
-        val allEnums = allInnerEnumsOf(msgs)
+    var all: List[ProtoType] = Nil
+
+    for(topLevelType <- contents) topLevelType match {
+      case msgType: ProtoMessageType =>
+        val allMsgs = allInnerMessagesOf(msgType)
+        val allEnums = allInnerEnumsOf(msgType)
         val sum = allMsgs ++ allEnums
 
-        val all = sum.sortBy(m => m.fullName)
-
-        val data = Map("contents" -> all)
-        layout("index".mustache, data)
+        all :::= sum.sortBy(m => m.fullName)
+      case enumType: ProtoEnumType =>
+        all ::= enumType
 
       case _ =>
         throw new RuntimeException("Tried to render table of contents for " + contents + " which are not")
     }
+
+    val data = Map("contents" -> all)
+    layout("index".mustache, data)
   }
 
-/**
- * Renders the HTML with all Messages, a table of contents so to say
- */
-def renderTableOfContents (contents: List[ProtoType], outDir: String) {
-val html = renderTableOfContents (contents)
-val filename: String = outDir + "/index.html"
-writeToFile (filename, html)
-}
+  /**
+   * Renders the HTML with all Messages, a table of contents so to say
+   */
+  def renderTableOfContents(contents: List[ProtoType], outDir: String) {
+    val html = renderTableOfContents(contents)
+    val filename: String = outDir + "/index.html"
+    writeToFile(filename, html)
+  }
 
-def renderTypePage (msg: ProtoMessageType) = {
-val isInnerMessage = msg.packageName.find (c => c.isUpper)
+  def renderTypePage(msg: ProtoMessageType) = {
+    val isInnerMessage = msg.packageName.find(c => c.isUpper)
 
-val data = Map ("messageName" -> msg.messageName,
-"packageName" -> msg.packageName,
-"isInnerMessage" -> isInnerMessage,
-"comment" -> msg.comment,
-"fields" -> msg.fields,
-"enums" -> msg.enums,
-"innerMessages" -> msg.innerMessages)
+    val data = Map("messageName" -> msg.messageName,
+      "packageName" -> msg.packageName,
+      "isInnerMessage" -> isInnerMessage,
+      "comment" -> msg.comment,
+      "fields" -> msg.fields,
+      "enums" -> msg.enums,
+      "innerMessages" -> msg.innerMessages)
 
-engine.layout ("message".mustache, data)
-}
+    engine.layout("message".mustache, data)
+  }
 
-def renderTypePage (protoType: ProtoType, outDir: String) {
-protoType match {
-// messages and inner-{messages, enums}
-case msg: ProtoMessageType =>
-val html = renderTypePage (msg)
-val filename: String = outDir + "/" + msg.fullName + ".html"
-writeToFile (filename, html)
+  def renderTypePage(protoType: ProtoType, outDir: String) {
+    protoType match {
+      // messages and inner-{messages, enums}
+      case msg: ProtoMessageType =>
+        val html = renderTypePage(msg)
+        val filename: String = outDir + "/" + msg.fullName + ".html"
+        writeToFile(filename, html)
 
-msg.innerMessages.foreach (renderTypePage (_, outDir) )
-msg.enums.foreach (renderEnumPage (_, outDir) )
+        msg.innerMessages.foreach(renderTypePage(_, outDir))
+        msg.enums.foreach(renderEnumPage(_, outDir))
 
-// outer enums
-case enum: ProtoEnumType =>
-val html = renderEnumPage (enum)
-val filename: String = outDir + "/" + enum.fullName + ".html"
-writeToFile (filename, html)
-}
-}
+      // outer enums
+      case enum: ProtoEnumType =>
+        val html = renderEnumPage(enum)
+        val filename: String = outDir + "/" + enum.fullName + ".html"
+        writeToFile(filename, html)
+    }
+  }
 
-def renderEnumPage (enum: ProtoEnumType) = {
+  def renderEnumPage(enum: ProtoEnumType) = {
+    import enum._
 
-import enum._
+    val data = Map("enumName" -> typeName,
+      "packageName" -> packageName,
+      "comment" -> comment,
+      "values" -> values)
 
-val data = Map ("enumName" -> typeName,
-"packageName" -> packageName,
-"comment" -> comment,
-"values" -> values)
+    engine.layout("enum".mustache, data)
+  }
 
-engine.layout ("enum".mustache, data)
-}
+  def renderEnumPage(enum: ProtoEnumType, outDir: String) {
+    val html = renderEnumPage(enum)
+    val filename: String = outDir + "/" + enum.fullName + ".html"
+    writeToFile(filename, html)
+  }
 
-def renderEnumPage (enum: ProtoEnumType, outDir: String) {
-val html = renderEnumPage (enum)
-val filename: String = outDir + "/" + enum.fullName + ".html"
-writeToFile (filename, html)
-}
+  def writeToFile(path: String, contents: String) {
+    val file = new File(path)
+    GFiles.createParentDirs(file)
+    file.createNewFile()
 
-def writeToFile (path: String, contents: String) {
-val file = new File (path)
-GFiles.createParentDirs (file)
-file.createNewFile ()
+    val fw = new FileWriter(path)
+    fw.write(contents)
+    fw.close()
+    //    info("Saved ProtoDoc file to: " + path)
+  }
 
-val fw = new FileWriter (path)
-fw.write (contents)
-fw.close ()
-//    info("Saved ProtoDoc file to: " + path)
-}
+  // traversal methods
 
-// traversal methods
+  // todo @pbadenski: why not flatMap ?
+  def allInnerMessagesOf(m: ProtoType): List[ProtoMessageType] = {
+    if (m.isInstanceOf[ProtoMessageType]) {
+      val msg = m.asInstanceOf[ProtoMessageType]
+      
+      var all: List[ProtoMessageType] = List(msg)
 
-// todo @pbadenski: why not flatMap ?
-def allInnerMessagesOf (m: ProtoType): List[ProtoMessageType] = {
-if (m.isInstanceOf[ProtoMessageType] ) {
-val msg = m.asInstanceOf[ProtoMessageType]
+      val inners = msg.innerMessages
+      for (inner <- inners) {
+        info("Inner:   " + msg.fullName + "." + BOLD + inner.messageName + RESET)
+        all ++= allInnerMessagesOf(inner)
+      }
 
-var all: List[ProtoMessageType] = List (msg)
+      all
+    } else {
+      Nil
+    }
 
-val inners = msg.innerMessages
-for (inner <- inners) {
-info ("Inner:   " + msg.fullName + "." + BOLD + inner.messageName + RESET)
-all ++= allInnerMessagesOf (inner)
-}
+  }
 
-all
-} else {
-Nil
-}
+  def allInnerMessagesOf(msgs: List[ProtoMessageType]): List[ProtoType] = {
+    msgs.flatMap(allInnerMessagesOf(_))
+  }
 
-}
+  def allInnerEnumsOf(msg: ProtoMessageType): List[ProtoEnumType] = {
+    allInnerEnumsOf(List(msg))
+  }
 
-def allInnerMessagesOf (msgs: List[ProtoMessageType] ): List[ProtoType] = {
-msgs.flatMap (allInnerMessagesOf (_) )
-}
-
-def allInnerEnumsOf (msgs: List[ProtoMessageType] ): List[ProtoEnumType] = {
-msgs.map (_.enums).flatten
-}
+  def allInnerEnumsOf(msgs: List[ProtoMessageType]): List[ProtoEnumType] = {
+    msgs.map(_.enums).flatten
+  }
 }
 
 object ProtoDocTemplateEngine extends Logger {

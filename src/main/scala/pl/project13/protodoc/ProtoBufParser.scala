@@ -56,7 +56,7 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
       val comment = maybeDoc.getOrElse("")
       val pack = ""
 
-      val processedFields = addOuterMessageInfo(id, pack, allFields) // todo this will fail!!!!!!!!
+      val processedFields = addOuterMessageInfo(id, pack, allFields) // todo this can fail
 
       info("Parsed message in '%s' named '%s'".format(pack, id))
       info("  fields: " + list2messageFieldList(processedFields))

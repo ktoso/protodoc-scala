@@ -7,7 +7,7 @@ package pl.project13.protodoc
  */
 case class VerifierWarning(about: String, msg: String)
 
-// todo should be a warning, not an error
-case class EnumHasNoValuesVerificationWarning(override val about:String,
-                                        override val msg: String = "The enum has no values")
-                                        extends VerificationError(about, msg)
+case class EnumHasNoValuesVerificationWarning(
+    override val about:String,
+    override val msg: String = "The enum has no values")
+  extends VerificationError(about, msg)
