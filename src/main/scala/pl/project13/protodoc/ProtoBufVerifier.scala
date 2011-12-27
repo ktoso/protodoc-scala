@@ -80,7 +80,6 @@ object ProtoBufVerifier extends Logger {
     if (field.unresolvedType && context.representationOf == "message") {
       info("Type is still unresolved. Trying to resolve protoTypeName: " + b(field.protoTypeName))
       
-      // todo should know about imports etc
       errors = errors ::: checkFieldTypeVisible(field = field, fromContext = context, allParsed = protoTypes)
     }
     
@@ -98,15 +97,27 @@ object ProtoBufVerifier extends Logger {
 
     if(fullyQualifiedMatch.isDefined) {
       field resolveTypeTo(fullyQualifiedMatch.get)
-      NoErrorsEncountered
-    } else if(typeName isDefinedWithin fromContext) {
+      
+      return NoErrorsEncountered
+    } 
+    
+    if(typeName isDefinedWithin fromContext) {
       val resolvedType = typeName getResolvedTypeWithin fromContext
       field resolveTypeTo(resolvedType)
-      NoErrorsEncountered
-    } else {
-      UndefinedTypeVerificationError(field.fieldName, "Unable to resolve type ["+typeName+"] from ["+fromContext+"] context.") :: Nil
+      
+      return NoErrorsEncountered
     }
-    // todo check imports in all from
+    
+    val resolvedType = typeName.isDefinedWithinSamePackage(fromContext, allParsed)
+    if(resolvedType.isDefined) {
+      field resolveTypeTo(resolvedType.get)
+
+      return NoErrorsEncountered
+    }
+
+    // unable to resolve, report error
+    error("the field: ["+field.fieldName+"] was unresolvable at this point...")
+    UndefinedTypeVerificationError(field.fieldName, "Unable to resolve type ["+typeName+"] from ["+fromContext+"] context.") :: Nil
   }
   
   /**

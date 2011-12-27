@@ -35,6 +35,29 @@ class ProtoTypeLookup(typeNameToResolve: String) {
     (innerMessageNames contains typeNameToResolve) || (innerEnumNames contains typeNameToResolve)
   }
 
+  /**
+   * Check if the type is defined within the same package. Example:
+   * <pre>
+   * <code>
+   *   package pl.project13;
+   *
+   *   message Msg {
+   *     required MyEnumeration enumeration = 123;
+   *   }
+   *
+   *   enum MyEnumeration { // so it should resolve to this type
+   *     ONE = 1;
+   *   }
+   * </code>
+   * </pre>
+   */
+  def isDefinedWithinSamePackage(context: ProtoMessageType, allTypes: List[ProtoType]): Option[ProtoType] = {
+    val packageName = context.packageName
+    val targetTypeFullName = packageName+"."+typeNameToResolve
+
+    allTypes.find(_.fullName == targetTypeFullName)
+  }
+
   @throws(classOf[ProtoDocVerificationException])
   def getResolvedTypeWithin(context: ProtoMessageType) = {
     val resolvedMessage = context.innerMessages.find {_.messageName == typeNameToResolve}

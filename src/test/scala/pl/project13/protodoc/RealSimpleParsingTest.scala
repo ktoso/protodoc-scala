@@ -59,11 +59,16 @@ class RealSimpleParsingTest
 
   describe("Parsing of an real message, with outer enum") {
 
+    ProtoBufParser.verbose = true
+
     it("should be parsed properly") {
       given("A real proto file")
 
       when("it is parsed")
       val result = ProtoBufParser.parse(TestString)
+
+      and("it is verified")
+      ProtoBufVerifier.verify(result)
 
       then("parsed size should be 2")
       result.size should equal(2)

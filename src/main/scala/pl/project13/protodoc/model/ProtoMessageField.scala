@@ -9,15 +9,16 @@ import ProtoModifier._
  *
  * @author Konrad Malawski
  */
-class ProtoMessageField(val fieldName:      String,
-                        var protoTypeName:  String,
-                        var scalaTypeName:  String,
-                        val tag:            ProtoTag,
-                        val modifier:       ProtoModifier,
-                        val defaultValue:   Any = None,
-                        var unresolvedType: Boolean = false)
-                        extends ProtoField
-                           with Commentable {
+class ProtoMessageField(
+    val fieldName:      String,
+    var protoTypeName:  String,
+    var scalaTypeName:  String,
+    val tag:            ProtoTag,
+    val modifier:       ProtoModifier,
+    val defaultValue:   Any = None,
+    var unresolvedType: Boolean = false)
+  extends ProtoField
+  with Commentable {
 
   // todo may need to know if it's a message or enum???
   // todo will have to be improved when we allow option java_package etc
