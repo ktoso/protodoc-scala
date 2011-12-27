@@ -27,12 +27,13 @@ object ProtoBufCompiler extends Logger {
     if(verification.invalid) {
       error("Contained errors, aborting execution")
       verification.errors.foreach(error(_))
-      println(verification)
-      throw new ProtoDocVerificationException(verification)
+      error("Got verification result: " + verification)
+
+//      throw new ProtoDocVerificationException(verification) // todo enable this!!!!!!!!!
     }
 
     ok("Verification finished, no errors found.")
-    // return protos
+
     parsedProtos
   }
   

@@ -1,12 +1,9 @@
 package pl.project13.protodoc
 
-import scala.util.parsing.combinator.{ PackratParsers, ImplicitConversions }
 import exceptions.{UnknownTypeException, ProtoDocParsingException}
 import model._
 import scala.util.parsing.combinator._
 import scala.util.parsing.input.CharArrayReader
-import com.sun.org.apache.xpath.internal.operations.Variable
-import javax.management.remote.rmi._RMIConnection_Stub
 
 /**
  * @author Konrad Malawski
@@ -248,7 +245,7 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
     var processedFields = List[Any]()
 
     for(field <- innerFields) field match {
-      case ProtoMessageType(_, _, _, _, _) =>
+      case field: ProtoMessageType =>
         val f = field.asInstanceOf[ProtoMessageType]
         info("Adding package info to ["+f.fullName+"]")
         val packageWithOuterClass: String = msgPack + "." + msgName
@@ -263,7 +260,7 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
                                                                        f.innerMessages))
         message.comment = f.comment
         processedFields ::= message
-      case ProtoEnumType(_, _, _) =>
+      case field: ProtoEnumType =>
         val e = field.asInstanceOf[ProtoEnumType]
         val packageWithOuterClass: String = msgPack + "." + msgName
         val protoEnumType = ProtoEnumType(typeName = e.typeName,
@@ -310,9 +307,4 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
     } 
   }
 
-  // some ansi helpers --------------------------------------------------------
-  def ANSI(value: Any) = "\u001B[" + value + "m"
-
-  val BOLD = ANSI(1)
-  val RESET = ANSI(0)
 }

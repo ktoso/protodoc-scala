@@ -34,7 +34,7 @@ object ProtoDocMain extends Logger {
 
   val templateEngine = new ProtoDocTemplateEngine
 
-  var allParsedProtos: List[ProtoType] = List()
+  var allParsedProtos: List[ProtoType] = Nil
 
   val endingWithProto = new FilenameFilter() {
     override def accept(dir: File, name: String) = name.endsWith(".proto")
@@ -49,16 +49,16 @@ object ProtoDocMain extends Logger {
 
         generateProtoDoc(c.proto_dir, c.out_dir, c.verbose)
       case _ =>
-
     }
   }
 
   def generateProtoDoc(protoDir: String, outDir: String, verbose: Boolean) {
-    ProtoBufParser.verbose = verbose;
+    ProtoBufParser.verbose = verbose
 
     // todo will have to be changed, compiler should get all files
-    for (file <- new File(protoDir).listFiles(endingWithProto)) {
-      info("Parsing file: " + b(file))
+    val files = new File(protoDir).listFiles(endingWithProto)
+    for (file <- files) {
+      ok("Parsing file: " + b(file))
 
       val protoString = Source.fromFile(file).mkString
 

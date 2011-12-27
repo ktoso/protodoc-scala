@@ -13,13 +13,15 @@ import scala.List.empty
  * </pre>
  * @author Konrad Malawski
  */
-case class ProtoMessageType(messageName: String,
-                            override val packageName: String = "",
-                            fields: List[ProtoMessageField] = empty,
-                            var enums: List[ProtoEnumType] = empty,
-                            var innerMessages: List[ProtoMessageType] = empty)
-                            extends ProtoType
-                               with Commentable {
+case class ProtoMessageType(
+    messageName: String,
+    override val packageName: String = "",
+    fields: List[ProtoMessageField] = empty,
+    var enums: List[ProtoEnumType] = empty,
+    var innerMessages: List[ProtoMessageType] = empty,
+    override var comment: String = "")
+  extends ProtoType
+  with Commentable {
 
 
   override val fullName = if(packageName == "") messageName else packageName+"."+messageName
@@ -34,11 +36,9 @@ case class ProtoMessageType(messageName: String,
   def moveToPackage(moveToHere: String) = {
     val newPackage = moveToHere // todo needs ".Something" checking
 
-    val msg = copy(packageName = newPackage)
-    msg.comment = comment
-
-    msg
+    copy(packageName = newPackage, comment = comment)
   }
 
-  override def toString = "ProtoMessageType [%s] in package: [%s], with fields: [%s] and inner messages: [%s]".format(messageName, packageName, fields, innerMessages)
+//  override def toString = "ProtoMessageType [%s] in package: [%s], with fields: [%s] and inner messages: [%s]".format(messageName, packageName, fields, innerMessages)
+  override def toString = "ProtoMessageType [%s] in package: [%s]".format(messageName, packageName)
 }

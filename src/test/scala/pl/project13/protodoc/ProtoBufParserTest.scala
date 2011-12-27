@@ -79,7 +79,7 @@ class ProtoBufParserTest extends FlatSpec
 
     val fixedData = ProtoBufParser.addOuterMessageInfo("Outer", "pl.project13", data)
 
-    println("Fix resulted in: " + fixedData)
+    info("Fix resulted in: " + fixedData)
 
     val fixedMessage = fixedData.head.asInstanceOf[ProtoMessageType]
     fixedMessage should have (

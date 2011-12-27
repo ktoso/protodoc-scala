@@ -1,10 +1,14 @@
 package pl.project13.protodoc.model
 
-case class ProtoEnumType(typeName: String,
-                         override val packageName: String = "",
-                         values: List[ProtoEnumValue] = List())
-                         extends ProtoType
-                            with Commentable {
+import scala.List.empty
+
+case class ProtoEnumType(
+    typeName: String,
+    override val packageName: String = "",
+    values: List[ProtoEnumValue] = empty,
+    override var comment: String = "")
+  extends ProtoType
+  with Commentable {
 
   def asScalaSourceCode() {
     """
@@ -32,13 +36,10 @@ case class ProtoEnumType(typeName: String,
 
   def moveToPackage(moveIntoHere: String) = {
     val newPackage = moveIntoHere // todo needs ".Something" checking
-    val enum = ProtoEnumType(typeName = typeName,
-                             packageName = newPackage,
-                             values = values)
-    enum.comment = comment
 
-    enum
+    copy(packageName = newPackage, comment = comment)
   }
 
-  override def toString = "ProtoEnumType '%s' in %s, with: %s".format(typeName, packageName, values)
+//  override def toString = "ProtoEnumType '%s' in %s, with: %s".format(typeName, packageName, values)
+  override def toString = "ProtoEnumType '%s'".format(typeName)
 }

@@ -31,7 +31,10 @@ trait Logger {
   }
 
   def error(msg: Any) {
-    if (verbose) println(Logger.red("[ERR]  " + msg))
+    if (verbose) {
+      System.out.println(Logger.red("[ERR]  " + msg))
+      System.out.flush()
+    }
   }
 
 }
