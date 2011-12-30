@@ -51,8 +51,12 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
       allTypeDefs map { protoType => protoType.moveToPackage(pack)}
   }
 
-  def messageTypeDef: Parser[ProtoMessageType] = opt(comment) ~ "message" ~ ID ~ "{" ~ rep(enumTypeDef | instanceField | messageTypeDef) ~ "}" ^^ {
-    case maybeDoc ~ m ~ id ~ p1 ~ allFields ~ p2 =>
+  def messageTypeName = "message" ~> ID
+
+  def messageBody = "{" ~> rep(enumTypeDef | instanceField | messageTypeDef) <~ "}"
+
+  def messageTypeDef: Parser[ProtoMessageType] = opt(comment) ~ messageTypeName ~ messageBody ^^ {
+    case maybeDoc ~ id ~ allFields =>
       val comment = maybeDoc.getOrElse("")
       val pack = ""
 
