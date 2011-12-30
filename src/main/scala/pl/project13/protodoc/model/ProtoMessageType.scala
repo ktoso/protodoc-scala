@@ -19,9 +19,11 @@ case class ProtoMessageType(
     fields: List[ProtoMessageField] = empty,
     var enums: List[ProtoEnumType] = empty,
     var innerMessages: List[ProtoMessageType] = empty,
-    override var comment: String = "")
+    override var comment: String = "",
+    override var deprecated: Boolean = false)
   extends ProtoType
-  with Commentable {
+  with Commentable
+  with Deprecatable {
 
 
   override val fullName = if(packageName == "") messageName else packageName+"."+messageName
@@ -36,7 +38,7 @@ case class ProtoMessageType(
   def moveToPackage(moveToHere: String) = {
     val newPackage = moveToHere // todo needs ".Something" checking
 
-    copy(packageName = newPackage, comment = comment)
+    copy(packageName = newPackage, comment = comment, deprecated = deprecated)
   }
 
 //  override def toString = "ProtoMessageType [%s] in package: [%s], with fields: [%s] and inner messages: [%s]".format(messageName, packageName, fields, innerMessages)

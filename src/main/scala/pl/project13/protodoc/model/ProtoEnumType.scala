@@ -6,9 +6,11 @@ case class ProtoEnumType(
     typeName: String,
     override val packageName: String = "",
     values: List[ProtoEnumValue] = empty,
-    override var comment: String = "")
+    override var comment: String = "",
+    override var deprecated: Boolean = false)
   extends ProtoType
-  with Commentable {
+  with Commentable
+  with Deprecatable {
 
   def asScalaSourceCode() {
     """
@@ -37,7 +39,7 @@ case class ProtoEnumType(
   def moveToPackage(moveIntoHere: String) = {
     val newPackage = moveIntoHere // todo needs ".Something" checking
 
-    copy(packageName = newPackage, comment = comment)
+    copy(packageName = newPackage, comment = comment, deprecated = deprecated)
   }
 
 //  override def toString = "ProtoEnumType '%s' in %s, with: %s".format(typeName, packageName, values)

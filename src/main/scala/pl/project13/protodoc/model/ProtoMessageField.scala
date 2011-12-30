@@ -18,7 +18,8 @@ class ProtoMessageField(
     val defaultValue:   Any = None,
     var unresolvedType: Boolean = false)
   extends ProtoField
-  with Commentable {
+  with Commentable
+  with Deprecatable {
 
   // todo may need to know if it's a message or enum???
   // todo will have to be improved when we allow option java_package etc

@@ -42,27 +42,60 @@ object ProtoBufVerifier extends Logger {
   def checkMessageType(msgType: ProtoMessageType, protoTypes: List[ProtoType]) = {
     info("Running verifications on "+b(msgType)+" message")
 
+    // errors 
     val tagErrors = TagVerifier.validateTags(msgType, msgType.fields.map(_.tag))
 
     val enumErrors = for (enum <- msgType.enums) yield checkEnumType(enum, protoTypes)
     val fieldErrors = for (field <- msgType.fields) yield checkField(msgType, field, protoTypes)
     val innerMsgErrors = for (innerMsg <- msgType.innerMessages) yield checkInnerMsg(msgType, innerMsg, protoTypes)
+
+    // warnings 
+    val deprecatedItemsCount = checkDeepDeprecation(msgType)
+    warn("Found "+deprecatedItemsCount+" deprecated fields/types in ["+msgType.fullName+"]")
+
     // todo more checks
 
     tagErrors ::: fieldErrors.flatten ::: enumErrors.flatten ::: innerMsgErrors.flatten ::: Nil
   }
+  
+  def checkDeepDeprecation(msgType: ProtoMessageType): Long = {
+    val typeDeprecated = checkDeprecation(msgType)
+    val deprecationOnFields = for (field <- msgType.fields) yield checkDeprecation(field)
+    val deprecationInnerMessages = for (field <- msgType.innerMessages) yield checkDeprecation(field)
+    val deprecationInnerEnums = for (field <- msgType.enums) yield checkDeprecation(field)
+    
+    val deprecations = deprecationOnFields.count { deprecated => deprecated } +
+      deprecationInnerMessages.count { deprecated => deprecated } +
+      deprecationInnerEnums.count { deprecated => deprecated } + (if(typeDeprecated) 1 else 0)
 
+    deprecations
+  }
+
+  
+  def checkDeprecation(it: Commentable with Deprecatable): Boolean = {
+    val DeprecatedAnnotation = "@deprecated"
+
+    val deprecated: Boolean = it.comment.contains(DeprecatedAnnotation)
+
+    if (deprecated) warn(it + " is deprecated!")
+    it.deprecated = deprecated
+    deprecated
+  }
+  
   /**
    * Check if an enum has valid values etc
    */
   def checkEnumType(enumType: ProtoEnumType, protoTypes: List[ProtoType]): List[VerificationError] = {
-    // todo implement me
     info("Running verifications on enum "+b(enumType)+"")
 
-    var enumErrors = Nil // todo implement me
+    // errors
+    var enumErrors = List.empty // todo add more checks
 
     val enumValues = enumType.values
     val tagUniquenessErrors = TagVerifier.validateTags(enumType, enumValues.map(_.tag))
+
+    // warnings
+    checkDeprecation(enumType)
 
     enumErrors ::: tagUniquenessErrors ::: Nil
   }
