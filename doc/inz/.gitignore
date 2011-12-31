@@ -1,4 +1,6 @@
 *~
+*.dvi
+*.out
 *.aux
 *.toc
 *.log

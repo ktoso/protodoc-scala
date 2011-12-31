@@ -7,6 +7,7 @@
 
 % dodatkowe pakiety
 \usepackage{enumerate}
+\usepackage{hyperref}
 % Listings ------------------------------------------------------------
 \usepackage{listings}
 % Scala listings
@@ -81,7 +82,7 @@
 \facultyPL{Wydział Elektrotechniki, Automatyki, Informatyki i Elektroniki}
 \facultyEN{Faculty of Electrical Engineering, Automatics, Computer Science and Electronics}
 
-\acknowledgements{TODO podziękowania} % TODO podziękowania
+\acknowledgements{} % TODO podziękowania
 
 \setlength{\cftsecnumwidth}{10mm}
 
@@ -94,17 +95,591 @@
 \tableofcontents
 \clearpage
 
-%---------------------------------------------------------------------------
-\include{intro}
+%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+%\include{intro}
+
+\chapter{Wprowadzenie}
+\label{cha:wprowadzenie}
 
 %---------------------------------------------------------------------------
-\chapter{Dodatki}
+\section{Cel pracy}
+\label{sec:celePracy}
+
+Celem projektu jest implementacja narzędzia generującego dokumentację na podstawie plików 
+*.proto zawierających zapisane przy pomocy ,,języka definicji interfejsów'' (tzw. \textit{Interface Description Language}, w skrócie \textit{IDL}) - Google Protocol Buffers. 
+
+
+Potrzebę implementacji takiego narzędzia motywuję doświadczeniem w pracy z Protocol Buffers, gdy mamy do czynienia z dużą ilością plików *.proto (setki). 
+Brak automatycznie generowanej dokumentacji tak dużego zbioru wiadomości znacznie utrudniał zapoznanie się z systemem oraz przystąpienie do sprawnej pracy z nim.
+Gdyby taka, zawsze aktualna, dokumentacja była dostępna w firmowym intranecie na przykład, komunikacja między zespołami o wiadomościach byłaby znacznie prostsza - 
+możliwe byłoby wówczas przesłanie sobie między programistami linku do właściwej wiadomości ,,to tej wiadomości szukasz'', włącznie z upewnieniem się, że na pewno
+wskazana wiadomość nie jest przestarzała - zawierałaby wówczas odnośnik do wiadomości którą obecnie powinno się stosować.
+
+
+Proces generowania dokumentacji jest analogiczny do znanego z świata Javy narzędzia JavaDoc 
+\footnote[1]{JavaDoc - Strona domowa projektu: \href{http://bit.ly/javadochome}{http://bit.ly/javadochome}} - stąd zainspirowana JavaDociem nazwa tego projektu. 
+Sam proces generowania dokumentacji polega na dostarczeniu narzędziu plikół *.proto, które następnie są parsowane oraz na podstawie tego procesu, 
+generowana jest strona www zawierające wszystkie zebrane informacje, włącznie z komentarzami oraz dodatkowymi informacjami 
+typu ,,\textit{deprecated}'' (ang. przestarzałe). Jako dodatkowy krok wygenerowana strona mogłaby automatycznie zostać opublikowana w firmowym intranecie.
+
+Cały proces możliwe jest w pełni zintegrować z narzędziami stosowanymi do budowania projektów np. Javowych. W przypadku projektów Javowych, obecnym \textit{de facto}
+standardem w wielu firmach stał się Apache Maven \footnote[2]{Apache Maven - Strona domowa projektu: \href{http://maven.apache.org}{http://maven.apache.org}}.
+ProtoDoc może zostać użyty razem z Maven aby automatycznie, podczas budowania projektu generować
+dokumentację. Możliwe jest uruchomienie tego zadania samodzielnie, lub jako jeden z etapów budowy projektu - dzięki czemu nie konieczne jest pamiętanie oraz ręczne
+aktualizowanie dokumentacji - byłaby automatycznie generowana podczas buildu, na przykład na serwerze ciągłej integracji.
+
+\newpage
+
+%---------------------------------------------------------------------------
+\section{Analiza obecnie dostępnych rozwiązań}
+\label{sec:dostepneNarzedzia}
+
+
+\begin{center}
+  \begin{tabular}{ | p{\textwidth} |}
+    \hline
+      Celem ułatwienia zrozumienia poniższego, oraz kolejnych rozdziałów w przypadku gdy czytelnik nie miał 
+      jeszcze styczności z Google Protocol Buffers zalecane jest wpierw
+      zapoznanie się z \textit{Dodatkiem \ref{cha:appendixA}}, gdzie wyjaśniane jest dokładnie jak oraz dlaczego działa ProtoBuf\footnote[1]{ProtoBuf - oficjalna skrótowa nazwa na ,,Protocol Buffers''}. \\ \hline
+  \end{tabular}
+\end{center}
+
+
+Niestety na chwilę obecną nie są dostępne narzędzia pozwalające na generowanie dokumentacji z plików Protocol Buffers.
+\textit{Analiza obecnych rozwiązań zatem organiczy się do rozważenia opłacalności wykorzystania jakiegoś projektu open source jako bazy dla ProtoDoc.}
+
+~\\\*
+
+Jak się okaże, najopłóacalniejsza z perspektywy programisty jak i użytkownika końcowego gotowej aplikacji ProtoDoc, będzie implementacja parsera,
+przy wykorzystaniu języka Scala, a nie wykorzystanie istniejących rozwiązań - które na przykład posiadają bardzo duże zewnętrzne zależności, lub
+ich dopasowanie do potrzeb tego projektu byłby zbyt dużym przedsięwzięciem.
+
+\subsection{Google Protoc}
+
+Protoc jest ,,oryginalnym'' kompilatorem plików *.proto. Zawiera ręcznie zaimplenentowany przez inżynierów google skaner oraz parser,
+potrafiący obsłużyć 100\% specyfikacji ProtoBuf. Jego źródła są dostępne na stronie Google Code: \href{http://code.google.com/p/protobuf/source/browse/}{http://code.google.com/p/protobuf/source/browse/}
+Projekt objęty jest licencją \textit{New BSD License\footnote{New BSD License, znana również jako 2-clause BSD license - \href{http://www.opensource.org/licenses/bsd-license.php}{http://www.opensource.org/licenses/bsd-license.php}}}.
+
+Warto również uwypuklić pewien problem z udostępnianym przez Google kompilatorem Protocol Buffers IDL - \textit{protoc}.
+Otóź nawet jeżeli źródłowy plik *.proto posiada komentarze, kompilator \textit{protoc} nie przeniesie je do wynikowych plików, np. *.java.
+Parser ten niestety ignoruje całkowicie komentarze. 
+
+Po wstępnej analizie kodu parsera dostarczanego przez Google doszedłem do wniosku, 
+że niestety wykorzstanie go jako bazy ProtoDoc nie byłoby opłacalne, ze względu na bardzo dużą ilość zmian które trzeba by wprowadzić w \textit{core} parsera
+ - zaimplementowanego ,,ręcznie'', bez zastosowania znanych generatorów parserów, w C++.
+
+\subsection{Idea plugin protobuf}
+
+Innym projektem open source zzawierającym zaimplementowany parser ProtoBuf jest plugin do ,,IntelliJ IDEA'', popularnego w świecie programistów JVM 
+IDE programistycznego. Źródła znajdują się na Google Code pod adresem: \href{http://code.google.com/p/idea-plugin-protobuf/source/browse}{http://code.google.com/p/idea-plugin-protobuf/source/browse}
+Projekt udostępniany jest na warunkach \textit{Apache 2.0 License}\footnote{Apache 2.0 License - \href{http://www.apache.org/licenses/LICENSE-2.0}{http://www.apache.org/licenses/LICENSE-2.0}}.
+
+Z perspektywy ProtoDoc, interesującymi fragmentami tego projektu jest skaner oraz parser. 
+Skaner jest generowany przy pomocy \textit{JFlex} \footnote{JFlex (Fast Lexical Analyzer for Java)- Strona domowa projektu: \href{http://jflex.de/}{http://jflex.de/}},
+, odpowiednika narzędzia GNU Flex, dla języka Java. Skaner teoretycznie nadawałby się do ponownego wykorzystania - obsługiwane są tutaj również komentarze.
+
+\newpage
+
+Niestety druga z interesujących nas części aplikacji, parser, jest \textit{ściśle związany ze środowiskiem IntelliJ IDEA}, dla którego to powstał ten projekt.
+IntelliJ dostarcza własny mechanizm parsowania do którego pluginy jedynie mogą się podpinać, oraz pomagać w przeprowadzeniu parsingu pliku, nie można w tym przypadku
+powiedzieć że projekt zawiera całą implementację parsera. Część źródeł IntelliJ IDEA co prawda jest otwarta, jednak skorzystanie z podejścia dołączenia całego IDE,
+aby być w stanie parsować pliki, wydaje się bardzo nie optymalna - rozmiar dystrybucji ProtoDoc stałby się bardzo duży (rzędku setek MB, z racji dołączonych 
+zależności w postaci IntelliJ).
+
+~\\\*
+
+Jak widać, również i ten projekt nie dostarcza w pełni funkcjonalnej oraz łatwej to rozbudowania o potrzebne w projekcie ProtoDoc funkcjonalności implementacji parsera
+Protocol Buffers. W związku z powyższym, postanowiłem wybrać sposób własnoręcznej implementacji parsera, aby proces był jednak możliwie przyjemny, oraz
+możliwy do utrzymania w przyszłości - na przykład przez społeczność Open Source. Ostatecznie wybrana przezemnie technika implementacij parsera 
+zostanie przedstawiona w kolejnej sekcji.
+
+
+
+\subsection{Wybór własnoręcznej implementacji Parsera - Parser Combinators}
+\label{sec:wybor_parsera}
+
+Podsumowując, istnieją implementacje parserów Protocol Buffers na wolnych (jak wolność) licencjach, jednak rozbudowa ich o pożądane funkcjonalności,
+albo byłaby zbyt czasochłonna by nazwać ją opłacalnym (zmiany manualnie implementowanego parsera \textit{protoc}) lub wymagałyby 
+przepisania parsera w całości, w powodu korzystania przez nie z zewnętrznych zależności których nie da się w prosty sposób dostarczyć.
+%TODO ref nie dziala!!!
+Tabela \ref{tab:parers} przedstawia małe podsumowanie zastosowanych technik implementacji parserów w omawianych projektach.
+
+\begin{table}[ch]
+  \begin{center}
+    \begin{tabular}{| l | l | l |}
+      \hline
+      Projekt & Metoda impl. skanera & Metoda impl. parsera\\
+      \hline
+      Google Protoc & "manualnie", C++ & "manualnie", C++\\
+      \hline
+      Idea-Plugin-Proto & JFlex, Java & dostarczany z IntelliJ, Java\\
+      \hline
+    \end{tabular}
+    \caption{Zestawienie sposobów implementacji parserów w rozważanych projektach open source}
+  \end{center}
+  \label{tab:parers}
+\end{table}
+
+Po przeanalizowaniu powyższych projektów i porzuceniu pomysłu rozwinięci istniejącej już implementacji o potrzebne elementy, rozpocząłem
+wybór generatora parserów / skanerów który chciałbym zastosować podczas tego projektu. 
+
+Pierwotnym kandydatem do zastosowania jako generator parsera był powszechnie znany \textit{GNU~Bison} \footnote{GNU Bison - Strona domowa projektu: \href{http://www.gnu.org/software/bison}{http://www.gnu.org/software/bison}},
+który w połączeniu z Flexem pozwolił na wygenerowanie parsera w ,,znajomy'' sposób. Oba te narzędzia są dobrze znane oraz sprawdzone od wielu lat oraz posiadają dobrą dokumentację.
+W ramach poszukiwań innych rozwiązań natknąłem się jednak na tak zwane ,,kombinatory parserów'', a następnie na fakt iż istnieje ich implementacja wewnątrz
+biblioteki standardowej języka Scala.
+
+~\\\*
+
+\textit{Scala} jest statycznie typowanym językiem programowania na platformę Java który wspiera zarówno \textit{obiektowy} jak i \textit{funkcyjny} paradygmat programowania.
+Tak zwane ,,\textit{Parser Combinators}'' o których tutaj mowa nie są ideą nową. Pojawiły się wraz z językami funkcyjnymi, a pierwsze publikacje naukowe
+na ich temat można było już napotkać w 1996 roku \cite{monadparsing} w publikacji Hutton oraz Meijer.
+Pojęcie ,,parsowania przy pomocy kombinatorów parserów'' najłatwiej jest wytłumaczyć jako:
+
+
+\begin{quotation}
+ ,,Budowanie parserów rekursywnie zstępujących poprzez modelowanie parserów jako funkcji
+   i definiowanie funkcji wyższego rzędu (zwanych kombinatorami) które implementują 
+   konstrukcje takie jak sekwencjonowanie, wybór oraz powtórzenie. [...]''
+   \cite{monadparsing}
+\end{quotation}
+
+Będziemy mieli zatem w efekcie do czynienia a parserem ,,rekursywnie zstępującym'' (\textit{LL(k)}). Przedstawicielem generatorów tworzących tego typu parsery jest na przykład
+ANTLR \footnote{ANTLR - Strona domowa projektu: \href{http://www.antlr.org/}{http://www.antlr.org/}}, opublikowany po raz pierwszy w roku 1992 jako następca \textit{Purdue Compiler Construction Tool Set} który powstał jeszcze w roku 1989 (sic).
+Ten typ parserów dodaje do znanej klasy LL(k) funkcjonalność ,,wycofania się'', z dowolnej głębokości look-ahead (parser może pracować z dowolnie dużym \textit{k},
+i zawsze będzie w stanie wykonać nawrot oraz wypróbować inną ścieżkę). Korzystanie z nawrotów przez parser oczywiście niesie z sobą zmniejszenie jego wydajności,
+jednakw wielu przypadkach (jak choćby Protocol Buffers, które mają stosunkowo prostą gramatykę), obawa przed spadniem wydajności nie odzwierciedla się zbytnio w 
+rzeczywistości. Dobrą wiadomością jest natomiast, że w \textit{Scala Parser Combinators} możemy korzystać z wersji metod z dodanym wykrzyknikiem oznaczającym,
+że pragniemy aby dany fragment był faktycznie klasy \textit{LL(1)} - jeżeli gramatyka nie jest na tyle jednoznacza aby dało się uzyskać \textit{LL(1)} w danym parserze
+zostaniemy powiadomieni o tym pod postacią błędu.
+
+
+
+% RECURSIVE DESCENT BACKTRACKING PARSER
+% This parser adds backtracking infrastructure to an LL(k) RD parser, which gives it the
+% power to process arbitrary-sized look-ahead sets. With backtracking infrastructure in
+% place, the parser can parse ahead as far as it needs to. If it fails to find a match, it can
+% rewind its input and try alternate rules. This capability makes it quite a bit more pow-
+% erful than the LL(k).
+% OK, so it can backtrack and choose alternate rules, but is there any order to this
+% process? You can specify hints for ordering in the form of syntactic predicates, as in
+% ANTLR (see [2] in section 7.6). You can declaratively specify the ordering so that the
+% parser can select the most appropriate rule to apply on the input stream.
+% With this kind of parser, you get much more expressive grammars, called parsing
+% expression grammars (PEGs). PEG is a more expressive form of grammar that extends
+% ANTLR’s backtracking and syntactic predicates (see [4] in section 7.6). PEG adds oper-
+% ators like & and ! that you specify within the grammar rules to implement finer con-
+% trols over backtracking and parser behaviors. They also make the grammar itself way
+% more expressive. You can develop parsers for PEGs in linear time using techniques like
+% memorizing.
+
+
+
+
+Jednym z wyróżniajączych \textit{Scala Parser Combinators} czynników jest fakt iż zamiast pisać pliki w których deklarujemy naszą gramatykę a 
+sam kod źródłowy parsera jest dopiero generowany na jego podstawie w przypadku Scali i wspomnianej biblioteki zdefiniować gramatykę parsera, 
+w połączeniu z blokami kodu które miałyby dokonać odpowiednich transformacji sparsowanych tokenów dokładnie w tym samym pliku który jest ,,plikiem źródłowym parsera''.
+Dzięki temu oszczędzamy na ,,kroku'' generowania kodu źródłowego parsera, który dopiero później zostałby skompilowany oraz wykonany. 
+Daje to ogromną przewagę podczas poszukiwania błędów w parserze - ponieważ ewentualne problemy bezpośrednio odwołują się do tego co my napisaliśmy,
+a nie do odrębnego pliku który powstał na podstawie naszego pliku.
+
+Pomimo tak wielu zalet sama struktura definicji parsera pozostaje podobna do znanej z Bisona oraz nadal jest złudnie 
+podobna do notacji \textit{BNF}\footnote{Notacja BNF - ,,Backus Naur Form'', metoda zapisu reguł gramatyki kontekstowej} 
+- która jest bardzo przejrzysta oraz zazwyczaj znana, lub łatwa to utworzenia podczas pisania parsera znanego języka.
+
+Kolejną zaletą jest umieszczenie definicji tokenów w tym samym pliku co definicja skanera - ponownie unikamy kroku generowania 
+skanera (na przykład przy użyciu \textit{JFlex}a). Zmniejszenie ilości miejsc gdzie konieczne jest wprowadzenie modyfikacji, jest zatem kolejną z zalet
+tego podejścia.
+
+~\\\*
+
+\begin{table}[ch]
+  \begin{center}
+    \begin{tabular}{| l | l |}
+      \hline
+      Metoda impl. skanera & Metoda impl. parsera\\
+      \hline
+      Parser Combinators, Scala & Parser Combinators, Scala \\
+      \hline
+    \end{tabular}
+    \caption{Przedstawienie jednolitości rozwiązania z zastosowaniem \textit{Scala Parser Combinators}}
+  \end{center}
+  \label{tab:scala_parsers_table}
+\end{table}
+
+Gdyby umieścić Parser Combinators (tak jak przedstawiono w Tabeli \ref{tab:scala_parsers_table}) na przedstawionej powyżej tabeli, z zestawieniem jak implementowana jest która część parsera,
+okazałoby się że jesteśmy wyjątkowo spójni - wszystkie części implementowane są w jednym miejscu / języku / narzędziem.
+
+Reasumując poniższe zalety są przyczyną wyboru tego podejścia do generowania parsera ponad klasyczne narzędzia typu Flex/Bison:
+\begin{itemize}
+ \item Brak konieczności dodatkowego kroku generowania kodu źródłowego
+  \subitem dla skanera (brak osobnego pliku ze spisem tokenów)
+  \subitem dla parsera (brak osobnego języka, dedykowanego definiowaniu
+ \item Wykonywany kod jest bezpośrednio związany z pisaną przez nas definicją parsera, co pozwala na łatwe poszukiwanie błędów
+ \item Minimalizacja miejsc w których konieczne jest wprowadzanie zmian, cała implementacja znajduje się w 1 miejscu
+\end{itemize}
+
+
+\begin{verbatim}
+ 
+\end{verbatim}
+
+Opis działania \textit{Parser Combinators} znajduje się w kolejnej sekcji, oraz w \textit{Dodatku \ref{cha:appendixB}}, gdzie wytłumaczone zostały wszystkie zasady
+konstruowania parserów przy pomocy tej biblioteki.
+
+
+\begin{center}
+\begin{tabular}{ | p{\textwidth} | }
+  \hline 
+  Jeżeli czytelnik jeszcze nie miał styczności z Scalą oraz dostarczaną przez wraz z nią biblioteką 
+  \textit{Parser Combinators} zalecane jest zapoznanie się z \textit{Dodatkiem \ref{cha:appendixB}}, 
+  gdzie szczegółowo omówiono zasady działania samego języka jak i Parser Combinators. \\
+  \hline 
+\end{tabular}
+\end{center}
+
+
+%===========================================================================
+% \chapter{Streszczone omówienie zasad działania Paser Combinators}
+% \label{sec:wprowadzenieTeoretyczne}
+% 
+% W tym rozdziale zostaną przybliżone podstawy działania: 
+% \begin{itemize}
+%  \item \textbf{Scala Parser Combinators} - zastosowanego generatora parserów w tym projekcie,
+%  \item oraz \textbf{Google Protocol Buffers} - parsowanego języka, oraz powiązanych z nim narzędzi. 
+% \end{itemize}
+% 
+% Omówione zostaną podjęte decyzje, dlaczego wybrano tą a nie inną technologię, oraz jakie konsekwencje poniesiono w związku z tymi wyborami.
+% 
+% TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO 
+% 
+% LUB USUNĄĆ I ZASTĄPIĆ DODATKAMI
+
+%===========================================================================
+\chapter{Szczegóły implementacyjne}
+\label{sec:zastosowanePodejscie}
+
+Przed rozpoczęciem lektury poniższego rozdziału zalecane jest zapoznanie się z podstawami języków Scala jak i narzędzia/języka Protocol Buffers. 
+W sekcji tematów zostały przedstawione w ramach dodatków 
+\begin{itemize}
+ \item \textit{Dodatek \ref{cha:appendixA}} --- omawiający Protocol Buffers. Gdzie i dlaczego powinno się je stosować, oraz przytoczenie benchmarku potwierdzającego te tezy.
+                                                Zostanie też przedstawiona składnia ProtoBuf IDL oraz workflow stosowany podczas pracy z ProtoBuf.
+ \item \textit{Dodatek \ref{cha:appendixB}} --- omawiający podstawy języka \textit{Scala}, po których przeczytaniu czytelnik będzie w stanie czytać ze zrozumieniem kod
+                                                projektu będącego przedmiotem tego projektu. Przedstawione zostaną również szczegóły Parser Combinators, oraz jak je czytać / pisać w języku Scala.
+\end{itemize}
+
+Jednym z celów projektu jest umożliwienie wykonania parsowania i wygenerowania dokumentacji bez konieczności
+instalacji zewnętrznych narzędzi (jakim byłby na przykład \textit{protoc}). Aby sprostać temu wymaganiu konieczna jest implementacja parsera 
+języka Protocol Buffers jako części JVM, nie wołając poza nią. Podjęto decyzję wykorzystania \textit{Scala Parser Combinators} (,,kombinatorów parserów'').
+
+% TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+% TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+% TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+% TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+% TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+
+%---------------------------------------------------------------------------
+\newpage
+\section{Projekt systemu}
+\label{sec:projekt_systemu}
+
+Przed omówieniem poszczególnych elementów implementacji \textit{ProtoDoc}, 
+spójrzmy na architekturę tego narzędzia w holistyczny sposób.
+
+% TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+% TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+% TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+
+Generalny przepływ informacji w aplikacji jest zarządzany przez klasę \verb|ProtoDocMain|,
+jest ona punktem wejściowym aplikacji - parsuje opcje podane z CLI (ang. \textit{Command Line Interface}, ,,linia poleceń'') aplikacji,
+listuje pliki które zostaną przeparsowane a następnie przekazuje je do klasy \verb|ProtoBufParser|.
+
+\begin{figure}[ch]
+\begin{center}
+ \includegraphics[scale=0.7]{main_classes.png}
+\end{center}
+\end{figure}
+
+% TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+% TODO TODO TODO TEN DIAGRAM Z WIADOMOSCIAMI
+% TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+
+
+
+
+%---------------------------------------------------------------------------
+\section{Parser}
+\subsection{Wprowadzenie do kombinatorów parserów}
+TODO klasyfikacja, opisać że są lewo stronnie rekurencyjne etc.
+
+\verb|http://en.wikipedia.org/wiki/Recursive_descent_parser|
+
+\verb|http://en.wikipedia.org/wiki/Left_recursion|
+\verb|http://en.wikipedia.org/wiki/Parser_combinator|
+
+\verb|http://stackoverflow.com/questions/17840/how-can-i-learn-about-parser-combinators|
+
+\subsection{Fragmenty implementacji}
+Przedstawić fragmenty parsera. Najlepiej go dać jako dodatek jednak w całości.
+
+\begin{lstlisting}
+def messageTypeDef: Parser[ProtoMessageType] = opt(comment) 
+                                           ~ messageNameDef
+                                           ~ meddageBody ^^ {
+  case maybeDoc ~ id ~ allFields =>
+    // utworzenie instancji ProtoMessageType
+  }
+\end{lstlisting}
+
+
+%---------------------------------------------------------------------------
+\section{Verifier}
+Generalny opis dlaczego musiał powstac
+
+Przedstawić jakie sprawdzania obsługuję. 
+Pokazać że obsługuję importy oraz udowodnić dlaczego konieczny jest dodatkowy krok na to.
+No bo bez takiego kroku nie wiedziałbym czy przypadkiem gdzies indziej nie zostal zdefiniowany jakis message etc.
+
+\subsection{Obsługiwane weryfikacje}
+Moze sub sectiony o tych checkach oraz konkretne przykłady błędów i jak są komunikowane?
+
+
+%---------------------------------------------------------------------------
+\section{CodeGenerator}
+Generator kodu w tym przypadku jest bardzo prostą serią transformacji.
+Opisać, wspomnieć że korzystam z mustache etc.
+
+
+%---------------------------------------------------------------------------
+\newpage
+\section{Zrzuty ekranu wygenerowanej dokumentacji}
+\label{sec:screenshots}
+W tej sekcji zostały umieszczone zrzuty ekranu z przykładowych wygenerowanych stron dla różnych typów wiadomości.
+
+\begin{figure}[hc]
+ \begin{center}
+  \includegraphics[width=\textwidth]{../protodoc_main.png}
+  % protodoc_main.png: 949x970 pixel, 93dpi, 25.92x26.50 cm, bb=0 0 735 751
+ \end{center}
+ \caption{Widok wygenerowanej strony dla typu \textbf{message}}
+ \label{msg_page}
+\end{figure}
+
+Na Rysunku \ref{msg_page} przedstawiona została strona wygenerowana na podstawie 
+
+\begin{figure}[hc]
+ \begin{center}
+  \includegraphics[width=\textwidth]{../protodoc_enum.png}
+  % protodoc_enum.png: 949x970 pixel, 93dpi, 25.92x26.50 cm, bb=0 0 735 751
+ \end{center}
+ \caption{Widok wygenerowanej strony dla typu \textbf{enum}}
+ \label{enum_page}
+\end{figure}
+
+
+%===========================================================================
+\chapter{Rola Testów oraz TDD w procesie tworzenia aplikacji}
+\label{chapter:tdd}
+
+Projekt prowadzony był zgodnie z zasadami Test Drivem Development (zwanego dalej \textit{TDD}),
+co znacznie ułatwiło ustabilizowanie API oraz głównych konceptów jeszcze we wczesnych etapach tworzenia aplikacji.
+Ponad to, metodyka ta umożliwiła pracę z dotychczas nieznanym mi API bez obaw o zniszczenie zaimplementowanych wcześniej funkcjonalności.
+
+Metodykę \textit{TDD} możnaby opisać jako cylk składający się z trzech faz:
+\begin{itemize}
+ \item napisanie najpierw \small{(sic!)} testu, sprawdzającego automatycznie czy stawiane przed nami oczekiwanie zostało spełnione
+ \subitem pewną sub-fazą jest upewnienie się że test faktycznie na stan obecny aplikacji nie przechodzi. Najlepiej aby wiadomość niepowodzenia
+          jasno wskazywała na to co jest przyczyną problemu. Jest to istotne nie tyle teraz, podczas implementacji, jednak podczas dalszego rozwoju aplikacji,
+          kiedy to być może sprawimy, że ten test przestanie przechodzić - wówczas, \textit{,,kilka tygodni później''}, pomocny komunikat o przyczynie problemu 
+          znacznie przyśpieszy zlokalizowanie oraz naprawienie problemu.
+ \item implementacji funkcjonalności, tak aby warunki w teście zostały spełnione.
+  \subitem należy pamiętać aby była to implementacja minimalna - nie wolno wychodzić ,,do przodu'' z implementacją, nawet jeżeli uważa się,
+           że pewna funkcjonalność \textit{prawdopodobnie} będzie niebawem implementowana.
+ \item oraz refaktoringu właśnie zaimplementowanych komponentów aplikacji, lub zauważonych podczas implementacji ewentualnych powtórzeń kodu itp.
+\end{itemize}
+
+Fazy te w literaturze znane są jako ,,Red - Green - Refactor''
+
+Przedstawiony powyżej cykl zazwyczaj trwa pomiędzy kilkoma a trzydziestoma minutami. Technika ta jest ściśle związana z samo-dyscypliną programisty
+i stosunkowo trudna do zastosowania w przypadku nie stosowania jej na codzień - jednak resultaty, pod postacią wzrostu jakości kodu oraz zmniejszeniu 
+czasu traconego na poszukiwania błędów są znaczne.
+
+Oprócz pisania testu zanim powstanie jakakolwiek implementacja, bardzo ważnym elementem fazy implementacji jest jest aby jej celem 
+było napisanie \textit{minimalnej ilości kodu doprowadzając test to ,,przejścia''} (spełniania wymagań w nim stawianych). Przykładowo, nie dozwolone jest
+implementowanie dodatkowych funkcjonalności (,,na zapas''), nawet jeżeli uważa się iż będą niebawem konieczne podczas fazy implementacji związanej 
+z właśnie napisanym testem. Faza implementacji nie może zostać zakończona w przypadku uszkodzenia (sprawienia że inny niż obecnie rozwijany test ,,nie przejdzie'')
+
+\section{Zaimplementowane specyfikacje}
+\begin{verbatim}
+MustacheFilenameTest:
+- Should create mustache template filenames
+TagVerifierTest:
+validateTags 
+- should detect duplicated tags
+  + Given an message with duplicated field tags 
+  + When tags are validated 
+  + Then it should detect duplicates 
+  + And errors are about the 'second' and 'fail' fields 
+validateTags 
+- should should 'OK' a valid tags list
+  + Given a valid message 
+  + When tags are validated 
+  + Then it have not detected any problems 
+InnerMessagesTest:
+Inner message 
+- should be parsed properly
+PackageTest:
+Package name 
+- should be read from proto file with it
+InnerInnerMsg package 
+- should contain it's super Messages in package name
+MultipleProtoFilesTest:
+Parser given multiple files 
+- should parse multiple seperate (independent) files
+CommentsTest:
+Comment on top level message 
+- should be parsed properly
+Comment on field 
+- should be parsed properly
+- should be parsed properly, even if inline
+- should be parsed properly, using JavaDoc style markers
+- should be parsed properly, even if spanning multiple lines
+Multi Line Comment on top level message 
+- should be parsed properly
+Multi Line Comment on inner enum 
+- should be parsed properly
+Comment on enum value 
+- should be parsed properly
+ProtoBufVerifierTest:
+The Verifier should validate field types 
+- should detect an unresolvable field
+  + Given a message with an invalid fieldtype 
+  + When the message is parsed and verified 
+  + Then the Verifier report it as invalid 
+  + And it should point out that the UnknownType is unresolvable 
+- should have no problems with resolvable field Type
+  + Given a message with valid, resolvable fieldtype, defined before the message 
+  + When the message is parsed and verified 
+  + Then the result should contain one HasResolvableField message 
+  + And the field should be resolved to the propper type 
+RealSimpleParsingTest:
+Parsing of an real message, with outer enum 
+- should be parsed properly
+  + Given A real proto file 
+  + When it is parsed 
+  + And it is verified 
+  + Then parsed size should be 2 
+  + And the inner message should be detected 
+  + And the inner message should be named properly 
+  + And the enum field should have the proper type resolved 
+  + And it's tag should be equal 3 
+  + And it's resolved type should be the outer enumeration 
+  + And the outer enum should be parsed and named properly 
+ProtoBufParserTest:
+Parser 
+- should parse single simple message
+- should parse single message with enum
+- should have no problems with field modifiers
+addOuterMessageInfo 
+- should fix package info of inner enums/msgs
+  + Will fix packages of: List(ProtoMessageType [InnerMessage] in package: []) 
+  + Fix resulted in: List(ProtoMessageType [InnerMessage] in package: [pl.project13.Outer]) 
+DeprecationTest:
+Message with deprecations 
+- the deprecated fields should be detected
+- should not detect deprecations where there are none
+- should detect deprecation on message type
+- should detect deprecation on enum type
+- should detect inner types
+EnumsTest:
+Enum 
+- should be parseable inside of an Message
+- should be usable as field type
+- should be usable even before it's type declaration
+- should detect an unresolvable enum or message type reference
+Undefined enum 
+- should be type checked, so an not existing enum type used as field type will fail compiling
+MultipleMessagesInOneFileTest:
+Parser 
+- should deal with multiple messages defined in the root level of one file
+  + Given a proto file with two root devel messages 
+  + When the messages are parsed and verified 
+  + Then the result should contain two messages 
+- should deal with multiple enums and messages defined in root scope, in one file
+  + Given a proto file with two root devel messages 
+  + When the messages and enum are parsed and verified 
+  + Then the result should contain two messages and one enum 
+FieldsTest:
+Message with 2 fields 
+- should in fact have 2 fields
+Parser 
+- should parse single int32 field
+- should parse single fixed32 field
+- should parse single sfixed64 field
+- should parse single int64 field
+- should parse single fixed64 field
+- should parse single optional string field
+- should parse single required string field with default value
+MessageTemplateTest:
+ProtoDocTemplateEngine 
+- should render simple message page
+TableOfContentsTest:
+ProtoDocTemplateEngine 
+- should render table of contents from sample data
+FullIntegrationTest:
+ProtoDoc 
+- should not fail for simple proto files
+  + Given the simple/ director, with proto files 
+  + And a valid destination directory 
+  + When the files are parsed 
+  + Then no exception should be thrown 
+  + And the output should be a valid doc 
+Passed: : Total 45, Failed 0, Errors 0, Passed 45, Skipped 0
+
+\end{verbatim}
+
+
+%===========================================================================
+\chapter{Zastosowanie ProtoDoc do automatyzacji dokumentacji projektów}
+
+%===========================================================================
+\chapter{Przygotowanie środowiska do rozwoju ProtoDoc}
+W rozdziale ten pokrótce przedstawię jak należy przygotować środowisko programistyczne celem rozwijania narzędzia \textit{ProtoDoc},
+może się to okazać przydatne w przypadku chęci sprawdzenia testów jednostkowych bądź wprowadzenia nowych funkcjonalności do aplikacji.
+
+\section{}
+
+\section{Instalacja narzędzia SBT}
+ProtoDoc budowany oraz testowany jest przy wykorzystaniu najpopularniejszego obecnie narzędzia do zarządzania buildem w świecie programistów Scala:
+Simple Build Tool, w śkrócie zwanym SBT \footnote{SBT - Strona domowa projektu: \href{https://github.com/harrah/xsbt}{https://github.com/harrah/xsbt}}.
+
+
+
+%===========================================================================
+\chapter{Przykład}
+Podajemy takie wejście:
+\begin{verbatim}
+message Person {
+  required int32 id = 1;
+  required string name = 2;
+  optional string email = 3;
+}
+\end{verbatim}
+
+Następnie wykonanie:
+
+A ostatecznie otrzymujemy taką stronę: \verb|http://protodoc.project13.pl/sample|.
+
+%TODO Tutaj screeny gotowego 
+
+
+%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+%---------------------------------------------------------------------------
 \appendix
 \include{appendixA}
 \include{appendixB}
 
 %---------------------------------------------------------------------------
-\chapter{Bibliografia}
 \bibliographystyle{alpha}
 \bibliography{myrefs}
 

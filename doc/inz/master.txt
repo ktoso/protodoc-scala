@@ -1,0 +1,692 @@
+Akademia Górniczo-Hutnicza
+im. Stanisława Staszica w Krakowie
+Wydział Elektrotechniki, Automatyki, Informatyki i Elektroniki
+K ATEDRA AUTOMATYKI
+
+˙
+P RACA IN ZYNIERSKA
+
+KONRAD M ALAWSKI
+
+P ROTO D OC
+I MPLEMENTACJA ODPOWIEDNIKA NARZ EDZIA JAVA D OC
+˛
+DLA J EZKA DEFINICJI INTERFEJSÓW
+˛
+G OOGLE P ROTOCOL B UFFERS
+
+P ROMOTOR :
+˙
+dr inz. Jacek Piwowarczyk
+
+Kraków 2011
+
+´
+O SWIADCZENIE AUTORA PRACY
+´
+´
+´
+´
+O SWIADCZAM , SWIADOMY ODPOWIEDZIALNO SCI KARNEJ ZA PO SWIAD ˙
+CZENIE NIEPRAWDY, ZE NINIEJSZ A PRAC E DYPLOMOWA WYKONAŁEM
+˛
+˛
+˛
+´
+´
+OSOBI SCIE I SAMODZIELNIE , I NIE KORZYSTAŁEM ZE ZRÓDEŁ INNYCH
+˙
+NI Z WYMIENIONE W PRACY.
+
+...................................
+PODPIS
+
+AGH
+University of Science and Technology in Krakow
+Faculty of Electrical Engineering, Automatics, Computer Science and Electronics
+D EPARTMENT OF AUTOMATICS
+
+BACHELOR OF S CIENCE T HESIS
+
+KONRAD M ALAWSKI
+
+P ROTO D OC
+D EVELOPMENT OF A JAVA D OC TOOL EQUIVALENT FOR
+THE G OOGLE P ROTOCOL B UFFERS
+I NTERFACE D ESCRIPTION L ANGUAGE
+
+S UPERVISOR :
+Jacek Piwowarczyk Ph.D
+
+Krakow 2011
+
+Spis tre´ci
+s
+
+1. Wprowadzenie ...............................................................................................................................
+
+6
+
+1.1.
+
+Cel pracy................................................................................................................................
+
+6
+
+1.2.
+
+Analiza obecnie dost˛ pnych rozwiaza´ .................................................................................
+e
+˛ n
+
+7
+
+1.2.1. Google Protoc ............................................................................................................
+
+7
+
+1.2.2. Idea plugin protobuf...................................................................................................
+
+7
+
+1.2.3. Wybór własnor˛ cznej implementacji Parsera - Parser Combinators .........................
+e
+
+8
+
+2. Omówienie podstaw zastosowanych technologii ........................................................................
+
+9
+
+3. Szczegóły implementacyjne .......................................................................................................... 10
+3.0.4. Projekt systemu .......................................................................................................... 10
+3.1.
+
+Parser ..................................................................................................................................... 10
+3.1.1. Wprowadzenie do kombinatorów parserów............................................................... 10
+3.1.2. Fragmenty implementacji .......................................................................................... 10
+
+3.2.
+
+Veriﬁer ................................................................................................................................... 11
+3.2.1. Obsługiwane weryﬁkacje ........................................................................................... 11
+
+3.3.
+
+CodeGenerator....................................................................................................................... 11
+3.3.1. Zrzuty ekranu wygenerowanej dokumentacji ............................................................ 12
+
+4. Zastosowanie ProtoDoc do automatyzacji dokumentacji projektów ....................................... 13
+5. Przykład ......................................................................................................................................... 14
+6. Dodatki ........................................................................................................................................... 15
+A. Google Protocol Buffers ................................................................................................................ 16
+A.1. Krótka historia j˛ zyka............................................................................................................ 16
+e
+A.2. Przykładowe deﬁnicje wiadomo´ci ....................................................................................... 16
+s
+A.3. Dost˛ pne narz˛ dzia................................................................................................................ 16
+e
+e
+B. Podstawy j˛ zyka Scala oraz Scala Parser Combinators ............................................................ 17
+e
+B.1. Krótka historia j˛ zyka............................................................................................................ 17
+e
+B.2. Podstawy................................................................................................................................ 17
+B.3. Scala Parser Combinators...................................................................................................... 18
+C. Bibliograﬁa .................................................................................................................................... 19
+
+5
+
+1. Wprowadzenie
+
+1.1. Cel pracy
+Celem projektu jest implementacja narz˛ dzia generujacego dokumentacj˛ na podstawie plików
+e
+˛
+e
+*.proto zawierajacych zapisane przy pomocy „j˛ zyka deﬁnicji interfejsów” (tzw. Interface Description
+˛
+e
+Language, w skrócie IDL) - Google Protocol Buffers.
+Potrzeb˛ implementacji takiego narz˛ dzia motywuj˛ do´wiadczeniem w pracy z Protocol Buffers,
+e
+e
+e s
+˙˛ s ˛
+gdy mamy do czynienia z duza ilo´cia plików *.proto (setki). Brak automatycznie generowanej doku˙
+mentacji tak duzego zbioru wiadomo´ci znacznie utrudniał zapoznanie si˛ z systemem oraz przystapienie
+s
+e
+˛
+do sprawnej pracy z nim. Gdyby taka, zawsze aktualna, dokumentacja była dost˛ pna w ﬁrmowym intrae
+˙
+necie na przykład, komunikacja mi˛ dzy zespołami o wiadomo´ciach byłaby znacznie prostsza - mozliwe
+e
+s
+byłoby wówczas przesłanie sobie mi˛ dzy programistami linku do wła´ciwej wiadomo´ci „to tej wiadoe
+s
+s
+mo´ci szukasz”, włacznie z upewnieniem si˛ , ze na pewno wskazana wiadomo´c nie jest przestarzała s
+˛
+e ˙
+s´
+zawierałaby wówczas odno´nik do wiadomo´ci która obecnie powinno si˛ stosowa´ .
+s
+s
+˛
+e
+c
+´
+Proces generowania dokumentacji jest analogiczny do znanego z swiata Javy narz˛ dzia JavaDoc
+e
+
+1
+
+- stad zainspirowana JavaDociem nazwa tego projektu. Sam proces generowania dokumentacji polega
+˛
+na dostarczeniu narz˛ dziu plikół *.proto, które nast˛ pnie sa parsowane oraz na podstawie tego procesu,
+e
+e
+˛
+generowana jest strona www zawierajace wszystkie zebrane informacje, włacznie z komentarzami oraz
+˛
+˛
+dodatkowymi informacjami typu „deprecated” (ang. przestarzałe). Jako dodatkowy krok wygenerowana
+strona mogłaby automatycznie zosta´ opublikowana w ﬁrmowym intranecie.
+c
+˙
+Cały proces mozliwe jest w pełni zintegrowa´ z narz˛ dziami stosowanymi do budowania projektów
+c
+e
+np. Javowych. W przypadku projektów Javowych, obecnym de facto standardem w wielu ﬁrmach stał
+˙
+si˛ Apache Maven 2 . ProtoDoc moze zosta´ uzyty razem z Maven aby automatycznie, podczas budowae
+c ˙
+˙
+nia projektu generowa´ dokumentacj˛ . Mozliwe jest uruchomienie tego zadania samodzielnie, lub jako
+c
+e
+jeden z etapów budowy projektu - dzi˛ ki czemu nie konieczne jest pami˛ tanie oraz r˛ czne aktualizowae
+e
+e
+nie dokumentacji - byłaby automatycznie generowana podczas buildu, na przykład na serwerze ciagłej
+˛
+integracji.
+
+1
+2
+
+JavaDoc - Strona domowa projektu: http://bit.ly/javadochome
+Apache Maven - Strona domowa projektu: http://maven.apache.org
+
+6
+
+1.2. Analiza obecnie dost˛ pnych rozwiaza´
+e
+˛ n
+
+7
+
+1.2. Analiza obecnie dost˛ pnych rozwiazan
+e
+˛ ´
+˙
+Celem ułatwienia zrozumienia ponizszego, oraz kolejnych rozdziałów w przypadku gdy czytelnik nie
+miał jeszcze styczno´ci z Google Protocol Buffers zalecane jest wpierw zapoznanie si˛ z Dodatkiem A,
+s
+e
+gdzie wyja´niane jest dokładnie jak oraz dlaczego działa ProtoBuf1 .
+s
+Niestety na chwil˛ obecna nie sa dost˛ pne narz˛ dzia pozwalajace na generowanie dokumentacji z
+e
+˛
+˛
+e
+e
+˛
+˙
+plików Protocol Buffers. Analiza obecnych rozwiaza´ zatem organiczy si˛ do rozwazenia opłacalno´ci
+˛ n
+e
+s
+wykorzystania jakiego´ projektu open source jako bazy dla ProtoDoc.
+s
+
+˙
+˙
+Jak si˛ okaze, najopłóacalniejsza z perspektywy programisty jak i uzytkownika ko´ cowego gotowej
+e
+n
+aplikacji ProtoDoc, b˛ dzie implementacja parsera, przy wykorzystaniu j˛ zyka Scala, a nie wykorzystae
+e
+˙
+˙ s
+nie istniejacych rozwiaza´ - które na przykład posiadaja bardzo duze zewn˛ trzne zalezno´ci, lub ich
+˛
+˛ n
+˛
+e
+˙
+dopasowanie do potrzeb tego projektu byłby zbyt duzym przedsi˛ wzi˛ ciem.
+e e
+
+1.2.1. Google Protoc
+Protoc jest „oryginalnym” kompilatorem plików *.proto. Zawiera r˛ cznie zaimplenentowany przez
+e
+˙
+˙ c
+inzynierów google skaner oraz parser, potraﬁacy obsłuzy´ 100% specyﬁkacji ProtoBuf. Jego zródła sa
+˛
+´
+˛
+dost˛ pne na stronie Google Code: http://code.google.com/p/protobuf/source/browse/ Projekt obj˛ ty jest
+e
+e
+licencja New BSD License1 .
+˛
+˙
+Warto równiez uwypukli´ pewien problem z udost˛ pnianym przez Google kompilatorem Protocol
+c
+e
+˙ ´
+Buffers IDL - protoc. Otó´ nawet jezeli zródłowy plik *.proto posiada komentarze, kompilator protoc
+z
+nie przeniesie je do wynikowych plików, np. *.java. Parser ten niestety ignoruje całkowicie komentarze.
+˙
+Po wst˛ pnej analizie kodu parsera dostarczanego przez Google doszedłem do wniosku, ze niestety
+e
+˙ ˛ s´
+wykorzstanie go jako bazy ProtoDoc nie byłoby opłacalne, ze wzgl˛ du na bardzo duza ilo´c zmian
+e
+które trzeba by wprowadzi´ w core parsera - zaimplementowanego „r˛ cznie”, bez zastosowania znanych
+c
+e
+generatorów parserów, w C++.
+
+1.2.2. Idea plugin protobuf
+Innym projektem open source zzawierajacym zaimplementowany parser ProtoBuf jest plugin do „In˛
+´
+´
+telliJ IDEA”, popularnego w swiecie programistów JVM IDE programistycznego. Zródła znajduja si˛ na
+˛ e
+Google Code pod adresem: http://code.google.com/p/idea-plugin-protobuf/source/browse Projekt udost˛ pniany jest na warunkach Apache 2.0 License2 .
+e
+Z perspektywy ProtoDoc, interesujacymi fragmentami tego projektu jest skaner oraz parser. Skaner
+˛
+jest generowany przy pomocy JFlex 3 , , odpowiednika narz˛ dzia GNU Flex, dla j˛ zyka Java. Skaner
+e
+e
+˙
+teoretycznie nadawałby si˛ do ponownego wykorzystania - obsługiwane sa tutaj równiez komentarze.
+e
+˛
+1
+
+˙
+New BSD License, znana równiez jako 2-clause BSD license - http://www.opensource.org/licenses/bsd-license.php
+Apache 2.0 License - http://www.apache.org/licenses/LICENSE-2.0
+3
+JFlex (Fast Lexical Analyzer for Java)- Strona domowa projektu: http://jﬂex.de/
+2
+
+K. Malawski
+
+ProtoDoc - impl. odpowiednika JavaDoc dla Google Protocol Buffers
+
+8
+
+1.2. Analiza obecnie dost˛ pnych rozwiaza´
+e
+˛ n
+
+´ s
+´
+Niestety druga z interesujacych nas cz˛ sci aplikacji, parser, jest sci´le zwiazany ze srodowiskiem
+˛
+e´
+˛
+IntelliJ IDEA, dla którego to powstał ten projekt. IntelliJ dostarcza własny mechanizm parsowania do
+˙
+którego pluginy jedynie moga si˛ podpina´ , oraz pomaga´ w przeprowadzeniu parsingu pliku, nie mozna
+˛ e
+c
+c
+w tym przypadku powiedzie´ ze projekt zawiera cała implementacj˛ parsera.
+c˙
+˛
+e
+
+˙
+Jak wida´ , równiez i ten projekt nie dostarcza w pełni funkcjonalnej oraz łatwej to rozbudowania
+c
+o potrzebne w projekcie ProtoDoc funkcjonalno´ci implementacji parsera Protocol Buffers. W zwiazku
+s
+˛
+˙
+z powyzszym, postanowiłem wybra´ sposób własnor˛ cznej implementacji parsera, aby proces był jedc
+e
+˙
+˙
+nak mozliwie przyjemny, oraz mozliwy do utrzymania w przyszło´ci - na przykład przez społeczno´c
+s
+s´
+Open Source. Ostatecznie wybrana przezemnie technika implementacij parsera zostanie przedstawiona
+w kolejnej sekcji.
+
+1.2.3. Wybór własnor˛ cznej implementacji Parsera - Parser Combinators
+e
+Podsumowujac, istnieja implementacje parserów Protocol Buffers na wolnych (jak wolno´c) licen˛
+˛
+s´
+˙˛
+cjach, jednak rozbudowa ich o pozadane funkcjonalno´ci, albo byłaby zbyt czasochłonna by nazwa´ ja
+s
+c ˛
+opłacalnym (zmiany manualnie implementowanego parsera protoc) lub wymagałyby przepisania parsera
+˙ s
+w cało´ci, w powodu korzystania przez nie z zewn˛ trznych zalezno´ci których nie da si˛ w prosty sposób
+s
+e
+e
+dostarczy´ .
+c
+Projekt
+
+Metoda impl. skanera
+
+Metoda impl. parsera
+
+Google Protoc
+
+"manualnie", C++
+
+"manualnie", C++
+
+Idea-Plugin-Proto
+
+JFlex, Java
+
+dostarczany z IntelliJ, Java
+
+˙
+Tablica 1.1: Zestawienie sposobów implementacji parserów w rozwazanych projektach open source
+
+˙
+˙
+Po wyeliminowaniu powyzszych 2 mozliwo´ci rozszerzenia istniejacych implementacji parserów o
+s
+˛
+˙
+potrzebne temu projektowi mozliwo´ci, postanowiłem napisa´ parser spełniajacy wymagania tego pros
+c
+˛
+jektu, przy wykorzystaniu j˛ zyka Scala oraz zawartych w jego bibliotece standardowej „kombinatorów
+e
+parserów” - Parser Combinators.
+Szczegółowy opis j˛ zyka Scala oraz Parser Combinators
+e
+
+K. Malawski
+
+ProtoDoc - impl. odpowiednika JavaDoc dla Google Protocol Buffers
+
+2. Omówienie podstaw zastosowanych technologii
+
+˙
+W tym rozdziale zostana przyblizone podstawy działania:
+˛
+– Scala Parser Combinators - zastosowanego generatora parserów w tym projekcie,
+– oraz Google Protocol Buffers - parsowanego j˛ zyka, oraz powiazanych z nim narz˛ dzi.
+e
+˛
+e
+Omówione zostana podj˛ te decyzje, dlaczego wybrano ta a nie inna technologi˛ , oraz jakie konse˛
+e
+˛
+˛
+e
+kwencje poniesiono w zwiazku z tymi wyborami.
+˛
+
+9
+
+3. Szczegóły implementacyjne
+
+˙
+Przed rozpocz˛ ciem lektury ponizszego rozdziału zalecane jest zapoznanie si˛ z podstawami j˛ zye
+e
+e
+ków Scala jak i narz˛ dzia/j˛ zyka Protocol Buffers. W sekcji tematów zostały przedstawione w ramach
+e
+e
+dodatków
+c
+– ?? Dodatek A — omawiajacy Protocol Buffers. Dlaczego warto je stosowa´
+˛
+˙
+Jednym z celów projektu jest umozliwienie wykonania parsowania i wygenerowania dokumentacji
+bez konieczno´ci instalacji zewn˛ trznych narz˛ dzi (jakim byłby na przykład protoc). Aby sprosta´ temu
+s
+e
+e
+c
+wymaganiu konieczna jest implementacja parsera j˛ zyka Protocol Buffers jako cz˛ sci JVM, nie wołajac
+e
+e´
+˛
+poza nia. Podj˛ to decyzj˛ wykorzystania Scala Parser Combinators („kombinatorów parserów”).
+˛
+e
+e
+
+3.0.4. Projekt systemu
+
+3.1. Parser
+3.1.1. Wprowadzenie do kombinatorów parserów
+TODO klasyﬁkacja, opisa´ ze sa lewo stronnie rekurencyjne etc.
+c˙ ˛
+http://en.wikipedia.org/wiki/Recursive_descent_parser
+
+http://en.wikipedia.org/wiki/Left_recursion http://en.wikipedia.org/wiki/Pars
+
+http://stackoverflow.com/questions/17840/how-can-i-learn-about-parser-combin
+
+3.1.2. Fragmenty implementacji
+Przedstawi´ fragmenty parsera. Najlepiej go da´ jako dodatek jednak w cało´ci.
+c
+c
+s
+Parser w tym projekcie budowany jest za pomoca cz˛ sci j˛ zyka Scala zwana „Parser Combinators”.
+˛ e´ e
+˛
+def messageTypeDef: Parser[ProtoMessageType] = opt(comment)
+~ "message" ~ ID ~ "{"
+~ rep(enumTypeDef | instanceField |
+messageTypeDef)
+~ "}" ^^ {
+case maybeDoc ~ m ~ id ~ p1 ~ allFields ~ p2 =>
+// utworzenie instancji ProtoMessageType
+}
+
+10
+
+11
+
+3.2. Veriﬁer
+
+3.2. Veriﬁer
+
+Generalny opis dlaczego musiał powstac
+
+Przedstawi´ jakie sprawdzania obsługuj˛ . Pokaza´ ze obsługuj˛ importy oraz udowodni´ dlaczego
+c
+e
+c˙
+e
+c
+konieczny jest dodatkowy krok na to. No bo bez takiego kroku nie wiedziałbym czy przypadkiem gdzies
+indziej nie zostal zdeﬁniowany jakis message etc.
+
+3.2.1. Obsługiwane weryﬁkacje
+
+Moze sub sectiony o tych checkach oraz konkretne przykłady bł˛ dów i jak sa komunikowane?
+e
+˛
+
+3.3. CodeGenerator
+
+Generator kodu w tym przypadku jest bardzo prosta seria transformacji. Opisa´ , wspomnie´ ze ko˛
+˛
+c
+c˙
+rzystam z mustache etc.
+K. Malawski
+
+ProtoDoc - impl. odpowiednika JavaDoc dla Google Protocol Buffers
+
+3.3. CodeGenerator
+
+3.3.1. Zrzuty ekranu wygenerowanej dokumentacji
+
+K. Malawski
+
+ProtoDoc - impl. odpowiednika JavaDoc dla Google Protocol Buffers
+
+12
+
+4. Zastosowanie ProtoDoc do automatyzacji dokumentacji
+projektów
+
+13
+
+5. Przykład
+
+Podajemy takie wej´cie:
+s
+message Person {
+required int32 id = 1;
+required string name = 2;
+optional string email = 3;
+}
+Nast˛ pnie wykonanie:
+e
+A ostatecznie otrzymujemy taka stron˛ : http://protodoc.project13.pl/sample.
+˛
+e
+
+14
+
+6. Dodatki
+
+15
+
+A. Google Protocol Buffers
+
+W tym dodatku zostanie omówiona idea oraz szczegóły implementacyjne stojace za Google Protocol
+˛
+Buffers.
+
+A.1. Krótka historia j˛ zyka
+e
+A.2. Przykładowe deﬁnicje wiadomo´ci
+s
+A.3. Dost˛ pne narz˛ dzia
+e
+e
+
+message Person {
+required int32 id = 1;
+required string name = 2;
+optional string email = 3;
+}
+
+16
+
+B. Podstawy j˛ zyka Scala oraz Scala Parser Combinators
+e
+
+˙
+Celem tego dodatku jest przyblizenie czytelnikowi j˛ zyka „Scala” aby w wystarczajaco płynny spoe
+˛
+˙
+sób mógł czyta´ przykłady kodu uzywane w tym dokumencie.
+c
+
+B.1. Krótka historia j˛ zyka
+e
+J˛ zyk Scala („Scalable Language”) najłatwiej jest przedstawi´ jako hybryd˛ dwóch znanych nurtów
+e
+c
+e
+programowania: programowania obiektowego oraz funkcyjnego, wraz z powiazanymi z nimi j˛ zykami
+˛
+e
+programowania. Twórca j˛ zyka Scala, Martin Oderski[?]
+e
+˙
+Jako konkretnych „rodziców” mozna by wskaza´ :
+c
+– Java - jako reprezentant nurtu obiektowego
+– oraz j˛ zyki: Haskell, SML oraz pewne elementy j˛ zyka Erlang (głównie Actor model).
+e
+e
+
+B.2. Podstawy
+˙
+˙
+Ta sekcja słuzy przyblizeniu czyletnikowi j˛ zyka Scala na poziomie wystatczajacym aby swobode
+˛
+nie czyta´ przykłady kodu umieszczone w tej pracy. W niektórych przykładach pomijane sa przypadki
+c
+˛
+skrajne lub nietypowe, celem szybkiego oraz jasnego przedstawienia minimum wiedzy na temat j˛ zyka
+e
+aby móc swobodnie go „czyta´ ”.
+c
+Scala jest j˛ zykiem statycznie typowanym posiadajacym lokalne „Type Inferrence”. Pozwala to kome
+˛
+pilatorowi scalac na „odnajdywanie” typów wszystkich zmiennych oraz typów zwracanych przez metody podczas kompilacji, bez potrzeby deﬁniowania ich wprost. System ten
+˙
+´
+Uzycie nawiasów (), srednika ; oraz kropki . jest analogiczne jak w przypadku Javy, jednak w
+˙
+wielu przypadkach opcjonalne gdyz kompilator jest w stanie wydedukowa´ gdzie powinny si˛ znale´ c.
+c
+e
+z´
+val value = Option(42);
+val other = value.orElse(0);
+// moze zostac zastpione
+val value = Option(42)
+val other = value orElse 0
+
+17
+
+B.3. Scala Parser Combinators
+
+18
+
+Jednym z ciekawych przykładów stosowania notacji bez nawiasów i kropek jest ScalaTest1 (przy
+którego pomocy pisano testy w tym projekcie). Przykładowa asercja napisana w DSLu deﬁniowanym
+przez ta bibliotek˛ wyglada nast˛ pujaco:
+˛
+e
+˛
+e ˛
+messages should (contain key ("Has") and not contain value ("NoSuchMsg"))
+
+B.3. Scala Parser Combinators
+
+1
+
+ScalaTest - framework do testowania - http://www.scalatest.org
+
+K. Malawski
+
+ProtoDoc - impl. odpowiednika JavaDoc dla Google Protocol Buffers
+
+C. Bibliograﬁa
+
+19
+
+

@@ -1,50 +1,25 @@
-\chapter{Podstawy języka Scala}
+\chapter{Google Protocol Buffers}
 \label{cha:appendixA}
-Celem tego dodatku jest przybliżenie czytelnikowi języka ,,Scala'' aby w wystarczająco płynny sposób mógł czytać przykłady kodu używane w tym dokumencie.
+W tym dodatku zostanie omówiona idea oraz szczegóły implementacyjne stojące za Google Protocol Buffers.
 
 %---------------------------------------------------------------------------
 \section{Krótka historia języka}
-\label{sec:scala_history}
-Język Scala (,,Scalable Language'') najłatwiej jest przedstawić jako hybrydę dwóch znanych nurtów programowania: programowania obiektowego oraz funkcyjnego, wraz z 
-powiązanymi z nimi językami programowania. Twórca języka Scala, Martin Oderski\cite{odersky_scala}
-
-Jako konkretnych ,,rodziców'' można by wskazać: 
-\begin{itemize}
- \item \textbf{Java} - jako reprezentant nurtu obiektowego 
- \item oraz języki: \textbf{Haskell}, \textbf{SML} oraz pewne elementy języka \textbf{Erlang} (głównie \textit{Actor model}).
-\end{itemize}
-
+\label{sec:protobuf_history}
 
 %---------------------------------------------------------------------------
-\section{Podstawy}
-\label{sec:scala_basics}
-Ta sekcja służy przybliżeniu czyletnikowi języka \textit{Scala} na poziomie wystatczającym aby swobodnie czytać przykłady
-kodu umieszczone w tej pracy. W niektórych przykładach pomijane są przypadki skrajne lub nietypowe, celem szybkiego oraz 
-jasnego przedstawienia minimum wiedzy na temat języka aby móc swobodnie go ,,czytać''.
-
-\textit{Scala} jest językiem statycznie typowanym posiadającym lokalne ,,Type Inferrence''. Pozwala to kompilatorowi 
-\textit{scalac} na ,,odnajdywanie'' typów wszystkich zmiennych oraz typów zwracanych przez metody podczas kompilacji,
-bez potrzeby definiowania ich wprost. System ten
-
-Użycie nawiasów \verb|()|, średnika \verb|;| oraz kropki \verb|.| jest analogiczne jak w przypadku Javy, 
-jednak w wielu przypadkach opcjonalne gdyż kompilator jest w stanie wydedukować gdzie powinny się znaleźć.
-\begin{lstlisting}
- val value = Option(42);
- val other = value.orElse(0);
-
- // moze zostac zastąpione
- val value = Option(42)
- val other = value orElse 0
-\end{lstlisting}
-
-Jednym z ciekawych przykładów stosowania notacji bez nawiasów i kropek jest \textit{ScalaTest}\footnote{ScalaTest - framework do testowania - http://www.scalatest.org}
-(przy którego pomocy pisano testy w tym projekcie). Przykładowa \textit{asercja} napisana w \textit{DSL}u definiowanym przez tą bibliotekę wygląda następująco:
-\begin{lstlisting}
- messages should (contain key ("Has") and not contain value ("NoSuchMsg"))
-\end{lstlisting}
-
-
+\section{Przykładowe definicje wiadomości}
+\label{sec:proto_file_examples}
 
 %---------------------------------------------------------------------------
-\section{Scala Parser Combinators}
-\label{sec:scala_parser_combinators}
+\section{Dostępne narzędzia}
+\label{sec:protobuf_available_tools}
+\begin{figure}
+\label{Najprostsza możliwa wiadomość ProtoBuf}
+\begin{lstlisting}
+message Person {
+  required int32 id = 1;
+  required string name = 2;
+  optional string email = 3;
+}
+\end{lstlisting}
+\end{figure}
