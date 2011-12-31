@@ -6,3 +6,4 @@ package pl.project13.protodoc.model
 case class ProtoEnumValue(valueName: String, tag: ProtoTag)
   extends ProtoField
   with Commentable
+  with Deprecatable

@@ -251,7 +251,7 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
     for(field <- innerFields) field match {
       case field: ProtoMessageType =>
         val f = field.asInstanceOf[ProtoMessageType]
-        info("Adding package info to ["+f.fullName+"]")
+        info("Adding package data to ["+f.fullName+"]")
         val packageWithOuterClass: String = msgPack + "." + msgName
         val message = ProtoMessageType(messageName = f.messageName,
                                    packageName = packageWithOuterClass,

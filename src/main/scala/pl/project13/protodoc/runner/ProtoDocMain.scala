@@ -17,8 +17,9 @@ class Configuration(m: ValueMap) extends ConfigMap(m) {
 }
 
 // our argument parser which uses a factory to create our Configuration
-case class ArgumentsParser() extends ArgumentParser(new Configuration(_))
-                                     with DefaultHelpViewer {
+case class ArgumentsParser()
+  extends ArgumentParser(new Configuration(_))
+  with DefaultHelpViewer {
 
   override val programName = Some("ProtoDoc")
 
@@ -33,8 +34,6 @@ case class ArgumentsParser() extends ArgumentParser(new Configuration(_))
 object ProtoDocMain extends Logger {
 
   val templateEngine = new ProtoDocTemplateEngine
-
-  var allParsedProtos: List[ProtoType] = Nil
 
   val endingWithProto = new FilenameFilter() {
     override def accept(dir: File, name: String) = name.endsWith(".proto")
@@ -57,19 +56,20 @@ object ProtoDocMain extends Logger {
 
     // todo will have to be changed, compiler should get all files
     val files = new File(protoDir).listFiles(endingWithProto)
-    for (file <- files) {
-      ok("Parsing file: " + b(file))
+    val protoFileContents = for (file <- files) yield contentsFor(file)
+    
+    val allParsedProtos = ProtoBufCompiler.compile(protoFileContents.toList)
 
-      val protoString = Source.fromFile(file).mkString
-
-      val parsedProtos = ProtoBufCompiler.compile(protoString)
-
-      allParsedProtos ++= parsedProtos
-
-      parsedProtos.foreach(templateEngine.renderTypePage(_, outDir))
-    }
-
+    // generate protodoc
+    
+    // for each type
+    allParsedProtos.foreach(templateEngine.renderTypePage(_, outDir))
+    // and the table of contents
     templateEngine.renderTableOfContents(allParsedProtos, outDir)
   }
 
+  def contentsFor(f: File): String = {
+    ok("Sourcing file: " + b(f.getName))
+    Source.fromFile(f).mkString
+  }
 }
