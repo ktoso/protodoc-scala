@@ -298,7 +298,7 @@ tego podejścia.
       \hline
       Metoda impl. skanera & Metoda impl. parsera\\
       \hline
-      Parser Combinators, Scala & Parser Combinators, Scala \\
+      \multicolumn{2}{|c|}{Parser Combinators, Scala} \\
       \hline
     \end{tabular}
     \caption{Przedstawienie jednolitości rozwiązania z zastosowaniem \textit{Scala Parser Combinators}}
@@ -367,16 +367,16 @@ W sekcji tematów zostały przedstawione w ramach dodatków
                                                 projektu będącego przedmiotem tego projektu. Przedstawione zostaną również szczegóły Parser Combinators, oraz jak je czytać / pisać w języku Scala.
 \end{itemize}
 
-Jednym z celów projektu jest umożliwienie wykonania parsowania i wygenerowania dokumentacji bez konieczności
-instalacji zewnętrznych narzędzi (jakim byłby na przykład \textit{protoc}). Aby sprostać temu wymaganiu konieczna jest implementacja parsera 
-języka Protocol Buffers jako części JVM, nie wołając poza nią. Podjęto decyzję wykorzystania \textit{Scala Parser Combinators} (,,kombinatorów parserów'').
+W tym rozdziale omówione zostaną zarówno ogólne założenia przyjęte podczas projektowania systemu, jak i struktura klas przyjęta celem
+modelowania struktury typów Protocol Buffers. Następnie przedstawione zostaną poszczególne komponenty aplikacji, z naciskiem na uzasadnienie
+wybranych rozwiązań oraz rozważenia ich zalet, wad oraz potencjalnych możliwości usunięcia zauważonych wad. 
 
-% TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
-% TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
-% TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
-% https://github.com/eishay/jvm-serializers/wiki/ <<<<<<<<<<<<<<<<<<<<<<<<<<<<
-% TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
-% TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+Przedstawione zostaną również elementy kodów źródłowych, skrócone do postaci wystarczającej na cel omówienia danego tematu 
+- w przypadku chęci zapoznania się ze całością implementacji np. komponentu parsera, zachęcam do zapoznania się 
+z załączonymi do pracy plikami źródłowymi projektu.
+
+W ostatniej sekcji (\ref{sec:prepare_env}) zostanie przedstawione jak należy przygotować środowisko pracy celem kompilowania oraz budowania projektu
+ze źródeł.
 
 %---------------------------------------------------------------------------
 \newpage
@@ -384,31 +384,43 @@ języka Protocol Buffers jako części JVM, nie wołając poza nią. Podjęto de
 \label{sec:projekt_systemu}
 
 Przed omówieniem poszczególnych elementów implementacji \textit{ProtoDoc}, 
-spójrzmy na architekturę tego narzędzia w holistyczny sposób.
+spójrzmy na architekturę tego narzędzia w holistyczny sposób. Główne odpowiedzialności aplikacji zostały podzielone pomiędzy
+poniższe klasy (konkretniej, klasy typu \textbf{object} - omówionych dokładniej w Dodatku \ref{cha:appendixB}, dotyczącym języka Scala):
 
-% TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
-% TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
-% TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+\begin{itemize}
+ \item \verb|ProtoDocCompiler| - jest fasadą nad parserem, wykorzystuje dodatkowo \verb|ProtoBufVerifier| celem sprawdzania poprawności oraz rozwiązania 
+                                 niejasności mogących jeszcze istnieć po pierwszym przebiegu parsera dotyczących typowania pól
+ \item \verb|ProtoBufParser| - jest implementacją parsera przy pomocy Scala Parser Combinators, omówiony zostanie szczegółowo w kolejnych rozdziałach
+ \item \verb|ProtoBufVerifier| - ,,weryfikator'' zajmujący się sprawdzaniem poprawności semantycznej sparsowanych plików *.proto.
+                                 W przypadku napotkania błędów krytycznych, działanie protodoc może zostać w tym miejscu przerwane,
+                                 oraz zwrócony zostałby komunikat informujący o przyczynie błędu.
+ \item \verb|ProtoDoc|
+\end{itemize}
 
-Generalny przepływ informacji w aplikacji jest zarządzany przez klasę \verb|ProtoDocMain|,
-jest ona punktem wejściowym aplikacji - parsuje opcje podane z CLI (ang. \textit{Command Line Interface}, ,,linia poleceń'') aplikacji,
-listuje pliki które zostaną przeparsowane a następnie przekazuje je do klasy \verb|ProtoBufParser|.
+
+\verb|ProtoBufParser|
 
 \begin{figure}[ch]
 \begin{center}
- \includegraphics[scale=0.7]{main_classes.png}
+ \includegraphics[width=\textwidth]{main_classes.png}
 \end{center}
+\label{simple_visualization}
+\caption{Wizualizacja interakcji pomiędzy komponentami}
 \end{figure}
 
-% TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
-% TODO TODO TODO TEN DIAGRAM Z WIADOMOSCIAMI
-% TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+\begin{figure}[ch]
+\begin{center}
+ \includegraphics[width=\textwidth]{compile_sequence}
+\end{center}
+\label{sequence_diagram_parsing}
+\caption{Diagram sekwencji parsowania oraz weryfikowania wiadomości}
+\end{figure}
 
 
 
 
 %---------------------------------------------------------------------------
-\section{Parser}
+\section{Parser: ProtoBufParser}
 \subsection{Wprowadzenie do kombinatorów parserów}
 TODO klasyfikacja, opisać że są lewo stronnie rekurencyjne etc.
 
@@ -449,12 +461,29 @@ Moze sub sectiony o tych checkach oraz konkretne przykłady błędów i jak są 
 Generator kodu w tym przypadku jest bardzo prostą serią transformacji.
 Opisać, wspomnieć że korzystam z mustache etc.
 
+\subsection{Język szablonów - Mustache}
+Podczas generowania plików HTML klasa \verb|ProtoDocTemplateEngine|
+
+%---------------------------------------------------------------------------
+\section{Przygotowanie środowiska do rozwoju ProtoDoc}
+\label{sec:prepare_env}
+W rozdziale ten pokrótce przedstawię jak należy przygotować środowisko programistyczne celem rozwijania narzędzia \textit{ProtoDoc},
+może się to okazać przydatne w przypadku chęci sprawdzenia testów jednostkowych bądź wprowadzenia nowych funkcjonalności do aplikacji.
+
+\subsection{}
+
+\section{Instalacja narzędzia SBT}
+ProtoDoc budowany oraz testowany jest przy wykorzystaniu najpopularniejszego obecnie narzędzia do zarządzania buildem w świecie programistów Scala:
+Simple Build Tool, w śkrócie zwanym SBT \footnote{SBT - Strona domowa projektu: \href{https://github.com/harrah/xsbt}{https://github.com/harrah/xsbt}}.
+
+
+
 
 %---------------------------------------------------------------------------
 \newpage
-\section{Zrzuty ekranu wygenerowanej dokumentacji}
+\chapter{Zrzuty ekranu wygenerowanej dokumentacji}
 \label{sec:screenshots}
-W tej sekcji zostały umieszczone zrzuty ekranu z przykładowych wygenerowanych stron dla różnych typów wiadomości.
+Rozdział ten zawiera przykładowe zrzuty ekranu wygenerowanych przy pomocy \textit{ProtoDoc} dokumentacji dla różnych typów wiadomości.
 
 \begin{figure}[hc]
  \begin{center}
@@ -498,7 +527,16 @@ Metodykę \textit{TDD} możnaby opisać jako cylk składający się z trzech faz
  \item oraz refaktoringu właśnie zaimplementowanych komponentów aplikacji, lub zauważonych podczas implementacji ewentualnych powtórzeń kodu itp.
 \end{itemize}
 
-Fazy te w literaturze znane są jako ,,Red - Green - Refactor''
+Fazy te w literaturze znane są jako ,,Red - Green - Refactor'', i obrazuje się ją przy pomocy przedstawionego na Rysunku \ref{tdd_cycle} grafu.
+
+\begin{figure}[ch]
+ \begin{center}
+  \includegraphics[scale=0.8]{tdd_cycle}
+ \end{center}
+ \label{tdd_cycle}
+ \caption{Schemat obrazujący fazy pracy w metodyce \textit{TDD} \small{(źródło: własne)}}
+\end{figure}
+
 
 Przedstawiony powyżej cykl zazwyczaj trwa pomiędzy kilkoma a trzydziestoma minutami. Technika ta jest ściśle związana z samo-dyscypliną programisty
 i stosunkowo trudna do zastosowania w przypadku nie stosowania jej na codzień - jednak resultaty, pod postacią wzrostu jakości kodu oraz zmniejszeniu 
@@ -513,6 +551,7 @@ z właśnie napisanym testem. Faza implementacji nie może zostać zakończona w
 \begin{verbatim}
 MustacheFilenameTest:
 - Should create mustache template filenames
+
 TagVerifierTest:
 validateTags 
 - should detect duplicated tags
@@ -525,6 +564,7 @@ validateTags
   + Given a valid message 
   + When tags are validated 
   + Then it have not detected any problems 
+
 InnerMessagesTest:
 Inner message 
 - should be parsed properly
@@ -533,6 +573,7 @@ Package name
 - should be read from proto file with it
 InnerInnerMsg package 
 - should contain it's super Messages in package name
+
 MultipleProtoFilesTest:
 Parser given multiple files 
 - should parse multiple seperate (independent) files
@@ -550,6 +591,7 @@ Multi Line Comment on inner enum
 - should be parsed properly
 Comment on enum value 
 - should be parsed properly
+
 ProtoBufVerifierTest:
 The Verifier should validate field types 
 - should detect an unresolvable field
@@ -562,6 +604,7 @@ The Verifier should validate field types
   + When the message is parsed and verified 
   + Then the result should contain one HasResolvableField message 
   + And the field should be resolved to the propper type 
+
 RealSimpleParsingTest:
 Parsing of an real message, with outer enum 
 - should be parsed properly
@@ -575,6 +618,7 @@ Parsing of an real message, with outer enum
   + And it's tag should be equal 3 
   + And it's resolved type should be the outer enumeration 
   + And the outer enum should be parsed and named properly 
+
 ProtoBufParserTest:
 Parser 
 - should parse single simple message
@@ -584,6 +628,7 @@ addOuterMessageInfo
 - should fix package info of inner enums/msgs
   + Will fix packages of: List(ProtoMessageType [InnerMessage] in package: []) 
   + Fix resulted in: List(ProtoMessageType [InnerMessage] in package: [pl.project13.Outer]) 
+
 DeprecationTest:
 Message with deprecations 
 - the deprecated fields should be detected
@@ -591,6 +636,7 @@ Message with deprecations
 - should detect deprecation on message type
 - should detect deprecation on enum type
 - should detect inner types
+
 EnumsTest:
 Enum 
 - should be parseable inside of an Message
@@ -599,6 +645,7 @@ Enum
 - should detect an unresolvable enum or message type reference
 Undefined enum 
 - should be type checked, so an not existing enum type used as field type will fail compiling
+
 MultipleMessagesInOneFileTest:
 Parser 
 - should deal with multiple messages defined in the root level of one file
@@ -609,6 +656,7 @@ Parser
   + Given a proto file with two root devel messages 
   + When the messages and enum are parsed and verified 
   + Then the result should contain two messages and one enum 
+
 FieldsTest:
 Message with 2 fields 
 - should in fact have 2 fields
@@ -620,12 +668,15 @@ Parser
 - should parse single fixed64 field
 - should parse single optional string field
 - should parse single required string field with default value
+
 MessageTemplateTest:
 ProtoDocTemplateEngine 
 - should render simple message page
+
 TableOfContentsTest:
 ProtoDocTemplateEngine 
 - should render table of contents from sample data
+
 FullIntegrationTest:
 ProtoDoc 
 - should not fail for simple proto files
@@ -643,20 +694,7 @@ Passed: : Total 45, Failed 0, Errors 0, Passed 45, Skipped 0
 \chapter{Zastosowanie ProtoDoc do automatyzacji dokumentacji projektów}
 
 %===========================================================================
-\chapter{Przygotowanie środowiska do rozwoju ProtoDoc}
-W rozdziale ten pokrótce przedstawię jak należy przygotować środowisko programistyczne celem rozwijania narzędzia \textit{ProtoDoc},
-może się to okazać przydatne w przypadku chęci sprawdzenia testów jednostkowych bądź wprowadzenia nowych funkcjonalności do aplikacji.
-
-\section{}
-
-\section{Instalacja narzędzia SBT}
-ProtoDoc budowany oraz testowany jest przy wykorzystaniu najpopularniejszego obecnie narzędzia do zarządzania buildem w świecie programistów Scala:
-Simple Build Tool, w śkrócie zwanym SBT \footnote{SBT - Strona domowa projektu: \href{https://github.com/harrah/xsbt}{https://github.com/harrah/xsbt}}.
-
-
-
-%===========================================================================
-\chapter{Przykład}
+\chapter{Spis obsługiwanych funkcjonalności}
 Podajemy takie wejście:
 \begin{verbatim}
 message Person {

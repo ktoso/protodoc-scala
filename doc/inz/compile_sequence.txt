@@ -1,0 +1,9 @@
+ProtoDocMain->ProtoBufCompiler:Parse these proto files (List[String])
+ProtoBufCompiler->ProtoBufParser: Parse request for each *.proto file
+ProtoBufParser-->ProtoBufCompiler: ProtoType representations (List[ProtoType])
+ProtoBufCompiler->ProtoBufVerifier:Perform checks on given ProtoType objects (List[ProtoType])
+ProtoBufVerifier->ProtoBufVerifier:Perform simple checks
+ProtoBufVerifier->ProtoBufVerifier:Resolve imports / user defined types
+ProtoBufVerifier-->ProtoBufCompiler: Updated ProtoTypes and VerificationErrors (List[ProtoType], List[VerificationError])
+ProtoBufCompiler->ProtoBufCompiler:Check presence for critical errors
+ProtoBufCompiler-->ProtoDocMain:Updated ProtoTypes (List[ProtoType])
