@@ -1,0 +1,6 @@
+ProtoDocMain->ProtoBufCompiler:Parse these proto files (List[String])
+ProtoBufCompiler-->ProtoDocMain: Parsed and verified (List[ProtoType])
+ProtoDocMain->ProtoDocTemplateEngine: Validated types (List[ProtoType])
+ProtoDocTemplateEngine->ProtoDocTemplateEngine:Generate HTML page for each type
+ProtoDocTemplateEngine->ProtoDocTemplateEngine:Generate Table of Contents
+ProtoDocTemplateEngine-->ProtoDocMain:Finished processing.
