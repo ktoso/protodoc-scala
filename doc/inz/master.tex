@@ -572,8 +572,7 @@ Co je odróżnia od \verb|ProtoMessageField| jest natomiast fakt iż po \verb|Pr
 Dokładne oddanie relacji pomiędzy utworzonymi tutaj typami a typami umieszczanymi w plikach proto nie jest w naszym przypadku konieczne, a być może nawet nie wskazane.
 W przypadku korzystania z protocol buffers na platformie JVM, nie istnieją odpowiedniki typów unsigned / signed - także korzystamy w tym przypadku po prostu z 
 typu \verb|scala.Int|, do przechowania np. \textit{wartości domyślnej} takiego pola. Nazwa typu którego dana klasa jest mapowaniem zostaje jednak utrzymana w ciele klasy,
-abyśmy mogli podczas generowania dokumentacji przywołać jaki dane pole miało typ w pliku *.proto.
-
+abyśmy mogli podczas generowania dokumentacji przywołać jaki dane pole miało typ w pliku *.proto. Pełen spis przyjętych mapowań został przedstawiony w formie Tabeli \ref{tab:field_types}. 
 
 \begin{figure}[ch]
 \begin{center}
@@ -583,9 +582,34 @@ abyśmy mogli podczas generowania dokumentacji przywołać jaki dane pole miało
 \caption{Zastosowany model typów pól mogących wystąpić w ProtoBuf IDL}
 \end{figure}
 
-Przyjęty model wywodzi się z stosowanych przez \textit{protoc}
-typów danych podczas reprezentowania wiadomości jako klasy Java. Tymsamym mapowanie typów protocol buffers na wewnętrzne typy wykorzystywane 
-przez ProtoDoc, można przedstawić w formie Tabeli \ref{tab:field_types}.
+W ramach ciekawostki, chciałbym w tym miejscu przedstawić implementację dwóch przykładowych z omawianych klas.
+
+\begin{lstlisting}[caption={Pełna implementacja klasy ProtoEnumValue}, label={lst:protoenumvalue}]
+case class ProtoEnumValue(valueName: String, tag: ProtoTag)
+  extends ProtoField
+  with Commentable
+  with Deprecatable
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Pełna implementacja klasy StringProtoMessageField}, label={lst:stringprotomessagefield}]
+case class StringProtoMessageField(override val fieldName: String,
+                                   override val tag: ProtoTag,
+                                   override val modifier: ProtoModifier,
+                                   override val defaultValue: String = None)
+  extends ProtoMessageField(fieldName, 
+                            "string", // type name in *.proto
+                            "java.lang.String", // JVM representation
+                            tag, 
+                            modifier,
+                            defaultValue)
+\end{lstlisting}
+
+Warto zwrócić uwagę, że mimo iż klasy przedstawiona na Listingach \ref{lst:protoenumvalue} oraz \ref{lst:stringprotomessagefield} nie posiadają stricte 
+zdefiniowanego ciała, dzięki pewnym konwencjom oraz mechanizmom udostępniamym przez Scala, takie definicja są 
+wszystkim co jest potrzebne do zdefiniowania w pełni funkcjonalnych klas, włącznie z polami, akcesorami dla atrybutów etc.
+
+Czytelnika zainteresowanego mechanizmami kryjącymi się za zastosowanymi tutaj ,,\verb|case class|ami'' zachęcam do przeczytania sekcji \ref{sec:case_classs},
+dotyczącej tego działu języka Scala, z Dodatku \ref{cha:appendixB}.
 
 \begin{table}
  \begin{center}
