@@ -646,16 +646,11 @@ enum value & ProtoEnumValue \\ \hline
 \chapter{Szczegóły implementacyjne}
 \label{sec:zastosowanePodejscie}
 
-Przed rozpoczęciem lektury poniższego rozdziału zalecane jest zapoznanie się z podstawami języków Scala jak i narzędzia/języka Protocol Buffers. 
-W sekcji tematów zostały przedstawione w ramach dodatków 
-\begin{itemize}
- \item \textit{Dodatek \ref{cha:appendixA}} --- omawiający Protocol Buffers. Gdzie i dlaczego powinno się je stosować, oraz przytoczenie benchmarku potwierdzającego te tezy.
-                                                Zostanie też przedstawiona składnia ProtoBuf IDL oraz workflow stosowany podczas pracy z ProtoBuf.
- \item \textit{Dodatek \ref{cha:appendixB}} --- omawiający podstawy języka \textit{Scala}, po których przeczytaniu czytelnik będzie w stanie czytać ze zrozumieniem kod
-                                                projektu będącego przedmiotem tego projektu. Przedstawione zostaną również szczegóły Parser Combinators, oraz jak je czytać / pisać w języku Scala.
-\end{itemize}
+Poniższy rozdział przedstawi szczegóły implementacyjne poszczególnych komponentów składających się na \textit{ProtoDoc}.
+Ogólna architektura oraz interakcie między komponentami zostały już opisane w poprzednim rozdziale, stąd te kwestie nie bądą tutaj ponownie poruszane,
+uwaga natomiast zostanie skoncentrowana na szczegółach implementacyjnych, oraz ewentualnych wyjaśnieniach nowo wprowadzanych pojęć lub bibliotek.
 
-W tym rozdziale omówione zostaną zarówno ogólne założenia przyjęte podczas projektowania systemu, jak i struktura klas przyjęta celem
+Omówione zostaną zarówno ogólne założenia przyjęte podczas projektowania systemu, jak i struktura klas przyjęta celem
 modelowania struktury typów Protocol Buffers. Następnie przedstawione zostaną poszczególne komponenty aplikacji, z naciskiem na uzasadnienie
 wybranych rozwiązań oraz rozważenia ich zalet, wad oraz potencjalnych możliwości usunięcia zauważonych wad. 
 
@@ -666,101 +661,369 @@ z załączonymi do pracy plikami źródłowymi projektu.
 W ostatniej sekcji (\ref{sec:prepare_env}) zostanie przedstawione jak należy przygotować środowisko pracy celem kompilowania oraz budowania projektu
 ze źródeł.
 
+\begin{center}
+\begin{tabular}{ | p{\textwidth} | }
+\hline 
+Jako że poniższy rozdział wymaga od czytelnika minimalnej choćby znajomości Scala oraz Protocol Buffers IDL, zalecane jest zapoznanie się z 
+dodatkami \ref{cha:appendixA} (Protocol Buffers) oraz \ref{cha:appendixB} (Podstawy języka Scala). \\ \hline
+\end{tabular}
+\end{center}
+
 
 %---------------------------------------------------------------------------
 \newpage
 \section{ProtoBufParser}
 \label{sec:protoBufParser}
-\subsection{Wprowadzenie do kombinatorów parserów}
-TODO klasyfikacja, opisać że są lewo stronnie rekurencyjne etc.
+Parser został zaimplementowany przy pomoy wspominanych wielokrotnie już kombinatorów parserów, 
+dostarczanych wraz z biblioteką standardową Scali. Jako wiadomość referencyjną, służącą jako przykład parsowanego pliku *.proto, 
+będziemy posługiwać się w tym rozdziale bardzo prostą wiadomością, obejmującą jednak podstawowe funckojalności definiowania typów
+w Protocol Buffers, przedstawioną na Listingu \ref{lst:my_sample_simple_message}.
 
-\verb|http://en.wikipedia.org/wiki/Recursive_descent_parser|
+\begin{lstlisting}[caption={Przykład wiadomości, służący łatwiejszej wizualizacji działania parsera}, label={lst:my_sample_simple_message}]
+message MyMessage {
+  required FullName name = 1;
+  optional int32 age = 2 [default = 1];
+  optional Gener gender = 3;
 
-\verb|http://en.wikipedia.org/wiki/Left_recursion|
-\verb|http://en.wikipedia.org/wiki/Parser_combinator|
-
-\verb|http://stackoverflow.com/questions/17840/how-can-i-learn-about-parser-combinators|
-
-\subsection{Fragmenty implementacji}
-Przedstawić fragmenty parsera. Najlepiej go dać jako dodatek jednak w całości.
-
-\begin{lstlisting}
-def messageTypeDef: Parser[ProtoMessageType] = opt(comment) 
-                                           ~ messageNameDef
-                                           ~ meddageBody ^^ {
-  case maybeDoc ~ id ~ allFields =>
-    // utworzenie instancji ProtoMessageType
+  message FullName {
+    required string firstname = 1;
+    required string lastname = 2;
   }
+
+  enum Gender {
+    MALE = 1;
+    FEMALE = 2;
+  }
+}
+\end{lstlisting}
+
+Parser jest zdefiniowany jako obiekt dziedziczący po klasie \verb|RegexParsers| (patrz Listing \ref{lst:define_the_parser_object}), będącą domyślną implementacją
+dostarczającą metody \verb|parse| oraz \verb|parseAll|, konieczne do implementacji parsera. Ponad wspomniane funkcje,
+udostępnia również możliwość ignorowania białych znaków oraz kilka metod pomocniczych. Wszystkie najważniejsze metody 
+zawarte są w Traicie \verb|Parsers|, którego RegexParsers dostaje wmieszanego (jak wytłumaczono w Dodatku \ref{cha:appendixB}).
+
+\begin{lstlisting}[caption={Definicja obiektu parsera}, label={lst:define_the_parser_object}]
+object ProtoBufParser
+  extends RegexParsers // includes the parser DSL
+  with ImplicitConversions // conversions for list flattening
+  with ParserConversions // my implicic conversions
+  with Logger { // include a logger
+\end{lstlisting}
+
+Dodatkowo wmieszane zostały dwa Traity udostępniające implicit konwersje (patrz Dodatek \ref{cha:appendixB}, Sekcja \ref{sec:implicit} -- Implicit Conversions),
+ułatwiające pracę z listami oraz konwertowanie między typami takimi jak proste typy liczbowe do typu reprezentującego tag protobufowy (klasa \verb|ProtoTag|).
+
+Idąc dalej przyjrzymy się najprostrzemu parserowi w tej klasie. Będzie to proste wyrażenie regularne matchujące identyfikatory które można stosować w 
+plikach *.proto. Intentyfikatory te mają podobne warunki istnienia jak indentyfikatory w Java, także wyrażenie (de facto, cały ,,parser indentyfikatora'') 
+tak jak to przedstawiono na Listingu \ref{lst:simplest_parser_possible_23}
+
+\begin{lstlisting}[caption={Bardzo prosty parser, zdefiniowany za pomocą implicita, który rozszerza API klasy String o metodę \textit{r} tworzącą wyrażenie regularne (instancję klasy \textit{scala.util.matching.Regex})},label={lst:simplest_parser_possible_23}]
+val ID = """[a-zA-Z_]([a-zA-Z0-9_]*|_[a-zA-Z0-9]*)*""".r
+\end{lstlisting}
+
+Następnie zdefiniujemy mały parser wykorzystując powyższy (Listing \ref{lst:messageTypeName}:
+
+\begin{lstlisting}[caption={Definicja parsera identyfikatora wiadomości}, label={lst:messageTypeName}]
+def messageTypeName /*: Parser[String]*/ = "message" ~> ID
+\end{lstlisting}
+
+Znak \verb|~>| oznacza \textit{kombinację parserów, przy odrzuceniu lewej strony}. W efekcie zdefiniowaliśmy właśnie część gramatyki
+oznaczającą iż jeżeli pojawi się słowo message, powinien po nim nastąpić pewien identyfikator, ale dla celów obróbki tej informacji, będzie nas interesować tylko
+parser po prawej stronie znaku \verb|~>|. Lewa strona zostanie jedynie użyta podczas parsowania, oraz słowo ,,message'' nie będzie widoczne podczas dalszego
+kombinowania tego parsera z pozostałymi.
+
+\begin{center}
+\begin{tabular}{|p{\textwidth}|}
+\hline Warto zauważyć iż znak \verb|~| jak i jego odpowiedniki ,,porzucające'' lewą (\verb|~>|) lub prawą (\verb|<~|) stronę sekwencji 
+parserów, po pierwsze: nie są operatorami, a metodami, oraz po drugie: są dostarczane przez implicit konwersje na parserach lub typach prostych. 
+ (Szczegółowy opis znajduje się w Dodatku \ref{cha:appendixB}).\\
+\hline
+\end{tabular}
+\end{center}
+
+Kolejnym potrzebnym do zdefiniowania parserem jest właściwe ciało wiadomości. Definicja jest bardzo prosta i czytelna, ponieważ korzystamy tutaj z 
+zdefiniowanych gdzie indziej parserów poszczególnych pól. Listing \ref{lst:parsowanie_pola_znaczy_ciala} przedstawia parser ciała wiadomości,
+który niebawem zostanie użyty wspólnie z parserem nazwy wiadomości celem budowy pełnego obiektu wiadomości przy pomocy kombinacji tych parserów.
+
+W ramach przypomnienia zanim spojrzymy na kod parsera ciała wiadomości przypomnijmy sobie jakie elementy może ono zawierać:
+\begin{itemize}
+ \item definicję pola wiadomości
+ \item definicję zagnieżdżonej wiadomości
+ \item definicję zagnieżdżonej enumeracji
+\end{itemize}
+
+Po przełożeniu tych wymagań na
+
+
+\begin{lstlisting}[caption={Parser ciała wiadomości}, label={lst:parsowanie_pola_znaczy_ciala}]
+def messageBody = "{" ~> 
+                        rep(enumTypeDef | instanceField | messageTypeDef) 
+                      <~ "}"
+\end{lstlisting}
+
+Listing \ref{lst:parsowanie_pola_znaczy_ciala} poza znanym nam już kombinatorem \verb|~>| wykorzystuje jeszcze kombinator \verb|rep()|,
+oznaczający po prostu iż dany element może powtarzać się wielokrotnie. Jego działanie jest analogiczne do znaku \verb|+| w wyrażeniach regularnych.
+
+Poza parserem ciała wiadomości umieszczonym na Listingu \ref{lst:parsowanie_pola_znaczy_ciala}, konieczne oczywiście jest zdefiniowanie parserów \verb|enumTypeDef|,
+\verb|messageTypeDef| oraz \verb|instanceField|. Implementacje tych parserów, są stosunkowo długie także nie zostaną umieszczone w calości w tym dokumencie. Jako
+przykład zostanie podane jednak pierwsze kilka linii metody definicji, pozwalającej nam zapznać się z generalną zasadą działania wszystkich zaimplementowanych w 
+projekcie parserów, ich kombinacji oraz jak dochodzi to przekształcenia zwyczajnego drzewa syntaktycznego do zaprojektowanych przez nas w porzednim rozdziale klas.
+
+\begin{lstlisting}[caption={Skrócona implementacja parsera pola wiadomości}, label={lst:short_field_parser}]
+def instanceField = opt(comment) ~ modifier ~! (protoType | userDefinedType) ~ ID ~! "=" ~! integerValue ~ opt(defaultValue) <~ ";" ^^ {
+    case doc ~ mod ~ pType ~ id ~ eq ~ tag ~ defaultVal =>
+      val comment = doc.getOrElse("") // : Option[String]
+      // ...
+
+      // return the prepared instance
+      if(isResolvedType) {
+        if(isKnownProtoEnumField(pType))
+          // ... 
+          ProtoMessageField.toEnumField(id, itsEnumType, tag, mod, defaultVal)
+        else 
+          // ...
+          ProtoMessageField.toProtoField(pType, id, tag, mod, defaultVal)
+      } else {
+        // ...
+        ProtoMessageField.toUnresolvedField(pType, id, tag, mod, defaultVal)
+      }
+}
+\end{lstlisting}
+
+Z nowych elementów pojawiły się tutaj metody \verb/|/ (działającej analogicznie do logicznej alternatywy) oraz \verb|^^| będącej operacją transformacji 
+przeparsowanego ciągu. Operacja \verb|^^| jest jedną z najistotniejszych ponieważ pozwala zmianę produkcji parsera z 
+zwyczajnych list, do faktycznych obiektów, które zamodelowaliśmy w poprzednim rozdziale. Szczegóły składni jej wykonania są dość złożone, jednak w skrócie, 
+mamy tutaj do czynienia z funkcją wyższego rzędu, której przekazujemy funkcję która będzie w stanie transformować sparsowany ciąg, do typu ProtoType.
+W naszym przykładzie zwracany jest \verb|ProtoMessageField| z pobranych podczas parsowania elementów. Słowo kluczore \verb|return| znane z innych języków programowania
+nie jest tutaj konieczne.
+
+~\\\*
+
+Pozostałe parsery są bardzo podobne w implementacji do przedstawionych powyżej, oraz generalnie sprowadzają się głównie do sprawdzania poprawności,
+na przykład wartości domyślnej w przypadku znanego przez parser już typu oraz przypisań odpowiednich elementów do odpowiednich typów, które szczegółowo omówiono w poprzednim rozdziale.
+
+
+% \subsection{Wprowadzenie do kombinatorów parserów}
+% TODO klasyfikacja, opisać że są lewo stronnie rekurencyjne etc.
+% 
+% \verb|http://en.wikipedia.org/wiki/Recursive_descent_parser|
+% 
+% \verb|http://en.wikipedia.org/wiki/Left_recursion|
+% \verb|http://en.wikipedia.org/wiki/Parser_combinator|
+% 
+% \verb|http://stackoverflow.com/questions/17840/how-can-i-learn-about-parser-combinators|
+
+
+%---------------------------------------------------------------------------
+\section{ProtoBufVerifier}
+Klasa \verb|ProtoBufVerifier| pojawiła się z konieczności przeprowadzania rozwiązania typów (ang. \textit{rype resolution}),
+w przypadku gdy mamy do czynienia z odwołaniem się do typu zdefiniowanego albo ,,poniżej'' typu zawierającego to odwołanie,
+lub na przykład w innym pliku. Parser niestety nie jest wówczas w stanie rozstrzygnąć samodzielnie czy dany typ, na przykład zastosowany na polu wewnąrz wiadomości,
+jest nie zdefiniowany czy po prostu został zdefiniowany w innym miejscu, do którego parser jeszcze nie doszedł. Verifier unika tych problemów, pracę po zakończeniu 
+działania parsera, kiedy to wszystkie informacje o typach są już dostępne.
+
+Przechodząc do klasy \verb|ProtoBufVerifier|, mamy już zakończony parsing oraz przekazane wszystkie sparsowane typy do instancji tej klasy.
+\verb|ProtoBufVerifier|, podobnie jak Parser, również jest zdefiniowany jako \textbf{object}, co odrobinę upraszcza korzystanie z niego.
+Patrząc na Verifier z zewnątrz (z poziomu \verb|ProtoDocCompiler|a) użycie go sprowadza się do wykonania weryfikacji na komplecie 
+przygotowanych przez parser obiektów ProtoType, oraz następnie sprawdzenie czy zawierają błędy ,,krytyczne''. 
+Fragment kodu odpowiedzialny za te czynności, umieszczony w \verb|ProtoDocCompiler| został przedstawiony na listingu \ref{lst:verify_how_it_is_called}
+
+\begin{lstlisting}[caption={Przykład wykorzystania weryfikatora}, label={lst:verify_how_it_is_called}]
+val verification= ProtoBufVerifier.verify(parsedProtos)
+
+if(verification.invalid) {
+  verification.errors.foreach(error(_)) // print all errors
+  throw new ProtoDocVerificationException(verification)
+}
 \end{lstlisting}
 
 
-%---------------------------------------------------------------------------
-\section{Verifier}
-Generalny opis dlaczego musiał powstac
+Implementacja weryfikatora bazuje głównie na zebranych informacjach oraz pojęciu ,,kontekstu'' (na przykład ,,wewnątrz tej wiadomości'')
+dzięki któremu jest w stanie rozstrzygnąć czy widoczność typów jest poprawna etc. Zaimplementowane weryfikacje różnią się dla typów wiadomości 
+oraz enumeracji. Poszczególne weryfikacje zostaną opisane w kolejnej sekcji. Listing \ref{lst:verify_this_please} przedstawia na jakiej zasadzie
+Weryfikator deleguje wykonanie sprawdzeń poprawności do konkretnych wyspecjalizowanych metod.
 
-Przedstawić jakie sprawdzania obsługuję. 
-Pokazać że obsługuję importy oraz udowodnić dlaczego konieczny jest dodatkowy krok na to.
-No bo bez takiego kroku nie wiedziałbym czy przypadkiem gdzies indziej nie zostal zdefiniowany jakis message etc.
+\begin{lstlisting}[caption={Delegacja sprawdzania poprawności typów},label={lst:verify_this_please}]
+def verify(protoTypes: List[ProtoType]): VerificationResult = 
+  VerificationResult((for (protoType <- protoTypes) 
+                       yield check(protoType, protoTypes)).flatten)
+\end{lstlisting}
+
+~
+
+\begin{lstlisting}
+def check[T <: ProtoType](protoType: T, 
+                          protoTypes: List[T]): List[VerificationError] = 
+  protoType match {
+    case msgType: ProtoMessageType =>
+      checkMessageType(msgType, protoTypes)
+    case enumType: ProtoEnumType =>
+      checkEnumType(enumType, protoTypes)
+}
+\end{lstlisting}
+
+Tutaj zastosowanie znajduje \textbf{pattern matching}, znany z języków funkcyjnych, takich jak \textit{Haskell} lub \textit{Erlang}.
+Konstrukcja \textbf{match} pozwala na dekonstrukcję matchowanego typu oraz wiele bardzo potężnych operacji które w przeciwnym przypadku 
+byłyby bardzo długą serią instrukcji warunkowych oraz rzutowań typów. Metoda \verb|check| jak widać, deleguje wiadomość jeszcze głębiej, 
+jednak tym razem już do specjalizowanych metod odpowiadających za sprawdzanie poprawności typu. Przykładem implementacji checków jest 
+\verb|checkMessageType| umieszczony na listingu \ref{lst:checkMessageType}.
+
+\begin{lstlisting}
+def checkMessageType(msgType: ProtoMessageType, protoTypes: List[ProtoType]) = {
+  info("Running verifications on "+b(msgType)+" message")
+
+  // errors 
+  val tagErrors = TagVerifier.validateTags(msgType, msgType.fields.map(_.tag))
+
+  val enumErrors = for (enum <- msgType.enums) yield checkEnumType(enum, protoTypes)
+  val fieldErrors = for (field <- msgType.fields) yield checkField(msgType, field, protoTypes)
+  val innerMsgErrors = for (innerMsg <- msgType.innerMessages) yield checkInnerMsg(msgType, innerMsg, protoTypes)
+
+  // warnings 
+  val deprecatedItemsCount = checkDeepDeprecation(msgType)
+  warn("Found "+deprecatedItemsCount+" deprecated fields/types in ["+msgType.fullName+"]")
+
+  tagErrors ::: fieldErrors.flatten ::: enumErrors.flatten ::: innerMsgErrors.flatten ::: Nil // return a list of all errors
+}
+\end{lstlisting}
+
 
 \subsection{Obsługiwane weryfikacje}
-Moze sub sectiony o tych checkach oraz konkretne przykłady błędów i jak są komunikowane?
+\textit{ProtoDoc} w momencie pisania tej pracy obsługuje następujące weryfikacje poprawności (dla wszystkich typów pól oraz deklaracji typów jakie parser obecnie 
+jest w stanie zrozumieć):
 
+\begin{itemize}
+ \item poprawność \textbf{tag}ów
+  \subitem czy tag zawiera się w specyfikowanym przez Protocol Buffers zakresie dozwolonych liczb
+  \subitem czy tag jest niepowtarzalny w zasięgu bloku danej wiadomości lub enumeracji
+ \item czy typ definiowany przez użytkownika posiada niepowtarzalną w pełni kwalifikowaną nazwę
+ \item czy wartość domyślna pola w wiadomości posiada typ zgodny z typem tego pola (np. liczbę całkowitą dla pól int32)
+ \item czy w przypadku korzystania z definiowanego przez użytkownika typu, wykorzystanego podczas deklaracji pola, typ ten jest ,,widoczny'' 
+       z wewnąrz kontekstu tego pola.
+ \item czy wiadomość lub enumeracja nie posiada zduplikowanych nazw pól
+\end{itemize}
+
+Najciekawszą z wspomnianych weryfikacji jest definitywnie sprawdzanie widoczności typu, z racji wielu możliwości odwołania się do niego,
+na przykład podczas deklaracji pola w wiadomości. Całość implementacji jest b. długa, jednak celem zobrazowania jak można budować czytelne weryfikacje
+przy pomocy pisania własnych implicit conversions, zostaną przytoczone w Listingu \ref{lst:visibilityChecks} najciekawsze fragmenty metody odpowiedzialnej
+za sprawdzenie czy typ danego pola jest ,,w zasięgu''.
+
+\begin{lstlisting}
+  // by using the find method on List
+  val fullyQualifiedMatch = allParsed.find(_.fullName == typeName)
+  if(fullyQualifiedMatch.isDefined) {
+    field resolveTypeTo(fullyQualifiedMatch.get)      
+    return NoErrorsEncountered
+  } 
+    
+  //by using an infix notation, via implicit conversions
+  if(typeName isDefinedWithin fromContext) {
+    val resolvedType = typeName getResolvedTypeWithin fromContext
+    field resolveTypeTo(resolvedType)      
+    return NoErrorsEncountered
+  }
+    
+  // ... 
+
+  // unable to resolve, report error
+  error("the field: ["+field.fieldName+"] was unresolvable at this point...")
+  return UndefinedTypeVerificationError(field.fieldName, "Unable to resolve type ["+typeName+"] from ["+fromContext+"] context.") :: Nil
+\end{lstlisting}
+
+
+Dodatkowo zostały zaimplementowane ostrzeżenia, które nie są błędne w kontekście Protocol Buffers,
+jednak są ,,podejrzane'' stąd warto wytknąć je programiście podczas poszukiwania problemów w kodzie:
+
+\begin{itemize}
+ \item czy enumeracja nie jest pusta (nie posiada żadnych wartości)
+ \item czy wiadomość nie jest pusta (nie posiada żadnych pól)
+\end{itemize}
+
+Weryfikacje te były bardzo proste w implementacji dzięki zaprojektowanemu modelowi danych. Jako przykład może posłużyć sprawdzenie czy typ jest pusty, 
+przedstawione w całości w Listingu \ref{lst:checkIfEmpty}.
+
+\begin{lstlisting}
+def checkIfEmpty(enumType: ProtoEnumType) {
+  if(enumType.values.isEmpty)
+    warn("""|The enum "+enumType.fullName+" has no values.
+            |This could be a possible typo with missplacing the "}"..."""
+            .stripMargin)
+}
+\end{lstlisting}
+
+Weryfikacje są bardzo ciekawym elementem ProtoDoc, oraz jednym z najbardziej obiecujących miejsc do dalszego rozwoju.
+Nie trudno jest sobie wyobrazić wiele heurystycznych metod mogących tutaj znaleźć zastosowanie, oraz pomóc programiście
+pracować nad poprawianiem jakości tworzonych przez siebie wiadomości. Tymczasem, podstawowe checki, które zostały
+zaimplenentowane w tym projekcie powinny być wystarczające - zważywszy na fakt iż są dodatkiem, a nie właściwym celem aplikacji.
 
 %---------------------------------------------------------------------------
-\section{CodeGenerator}
-Generator kodu w tym przypadku jest bardzo prostą serią transformacji.
-Opisać, wspomnieć że korzystam z mustache etc.
+\section{ProtoDocTemplateEngine - generator kodu}
+Ostatim komponentem składającym się na ProtoDoc jest generator kodu, w naszym przypadku jego rolę pełni klasa \verb|ProtoDocTemplateEngine|.
+
+Jego rola jest bardzo prosta, jecyne co musi zrobić to dla każdego otrzymanego typu, wygenerować stronę HTML, z przygotowanego wcześniej szablonu.
+Dodatkowym krokiem jest wygenerowanie strony z indeksem wszystkich typów, aby użytkownik mógł wygodnie wyszukiwać.
+
+Strony generowane są przy wykorzystaniu biblioteki \textit{Scalate} \footnote{Scalate - strona domowa projektu: \href{http://scalate.fusesource.org/}{http://scalate.fusesource.org/}}
+oraz silnika \textbf{Mustache} dostarczanego przez nią. Mustache jest prostym językiem definiowania szablonowym (ang. \textit{template}), który umieszcza 
+się np. w HTMLu. Silnik mustache następnie jest w stanie iterować np. po dostarczonej mu liście pól danej wiadomomości oraz wyświetlać fragment szablonu dla każgego z nich.
+
+Na tym kończy się odpowiedzialność \verb|ProtoDocTemplateEngine| --- proste zmapowanie pól obiektów, na odpowiadające im nazwy w szablonach.
+Przykład przekazania informacji o typie dla strony o typie enumeracji można zobaczyć na Listingu \ref{lst:using_scalate}. Metoda \verb|engine.layout|
+zwraca wygenerowaną stronę jako String, pozostaje jedynie ją zapisać na dysk.
+
+\newpage
+\begin{lstlisting}[caption={Przykład zastosowania Scalate (z silnikiem renderowania szablonów Mustache)}label={lst:using_scalate}]
+def renderEnumPage(enum: ProtoEnumType) = {
+  import enum._
+
+  val data = Map("enumName" -> typeName,
+    "packageName" -> packageName,
+    "comment" -> comment,
+    "values" -> values)
+
+  engine.layout("enum".mustache, data)
+}
+\end{lstlisting}
 
 \subsection{Język szablonów - Mustache}
 \label{sec:mustache}
-Podczas generowania plików HTML klasa \verb|ProtoDocTemplateEngine| korzysta z biblioteki \textit{Scalate} \footnote{Scalate - strona domowa 
-projektu: \href{http://scalate.fusesource.org/}{http://scalate.fusesource.org/}}
+Celem krótkiego przedstawienia języka Mustache, oraz uzasadnienia wybrania takiego silnika renderującego szablony chciałbym przedstawić kilka elementów Mustache.
+Posłużymy się jedynie kilkuliniowymi przykładami, aby nie zaciemniać obrazu HTMLem który aż tak interesujący z naszej perspektywy nie jest.
+
+Nazwa silnika \textit{Mustache} pochodzi od angielskiego słowa oznaczającego wąsy. Może się to wydawać dziwne, lecz po pierwszym spojrzeniu na 
+znaczniki mustache etymologia nazwy staje się oczywista: Wszystkie odwołania do zmiennych, jak i operacje warunkowe obejmowane są 
+następującym znakiem: \verb|{{  }}|, przypominającym wąsy. Konkretny przykład zastosowania umieszczania zmiennych w HTML można zobaczyć na Listingu \ref{lst:simpleMustache}.
+
+\begin{lstlisting}[label={lst:simpleMustache}]
+<title>ProtoDoc for: {{packageName}}.{{fieldName}}</title>
+\end{lstlisting}
+
+Warunki natomiast zapisuje się przy pomocy znaku rozpoczynającego warunek: \verb|{{#boolean_var}}| (lub jego odpowiednikowi negującemy wartość w sprawdzanej zmiennej:
+\verb|{{^boolean_var}}|) oraz kończącego blok warunkowy \verb|{{/boolean_var}}|. 
+Identyczną składnią (\verb|{{#fields}}|) można iterować po wartościach zawartych w liście, co w ProtoDoc ma miejsce podczas np. renderowania
+tabeli z informacjami wszystkich pól danego typu.
+
+Mustache udostępnia odrobinę więcej funkcjonalności niż omówione powyżej, jednak w przypadku generowania prostych szablonów, 
+z jakimi mamy do czynienia w ProtoDoc, nie były one konieczne do zastosowania. W razie chęci zapoznania się z tym silnikiem dokładniej,
+odsyłam na stronę domową projektu - \href{http://mustache.github.com/mustache.5.html}{http://mustache.github.com/mustache.5.html}.
+
 
 %---------------------------------------------------------------------------
-\section{Przygotowanie środowiska do rozwoju ProtoDoc}
-\label{sec:prepare_env}
-W rozdziale ten pokrótce przedstawię jak należy przygotować środowisko programistyczne celem rozwijania narzędzia \textit{ProtoDoc},
-może się to okazać przydatne w przypadku chęci sprawdzenia testów jednostkowych bądź wprowadzenia nowych funkcjonalności do aplikacji.
-
-\subsection{}
-
-\section{Instalacja narzędzia SBT}
-ProtoDoc budowany oraz testowany jest przy wykorzystaniu najpopularniejszego obecnie narzędzia do zarządzania buildem w świecie programistów Scala:
-Simple Build Tool, w śkrócie zwanym SBT \footnote{SBT - Strona domowa projektu: \href{https://github.com/harrah/xsbt}{https://github.com/harrah/xsbt}}.
-
-
+% \chapter{Przygotowanie środowiska do rozwoju ProtoDoc}
+% \label{sec:prepare_env}
+% W rozdziale ten pokrótce przedstawię jak należy przygotować środowisko programistyczne celem rozwijania narzędzia \textit{ProtoDoc},
+% może się to okazać przydatne w przypadku chęci sprawdzenia testów jednostkowych bądź wprowadzenia nowych funkcjonalności do aplikacji.
+% 
+% \section{Instalacja narzędzia SBT}
+% ProtoDoc budowany oraz testowany jest przy wykorzystaniu najpopularniejszego obecnie narzędzia do zarządzania buildem w świecie programistów Scala:
+% Simple Build Tool, w śkrócie zwanym SBT \footnote{SBT - Strona domowa projektu: \href{https://github.com/harrah/xsbt}{https://github.com/harrah/xsbt}}.
 
 
 %---------------------------------------------------------------------------
 \newpage
-\chapter{Zrzuty ekranu wygenerowanej dokumentacji}
-\label{sec:screenshots}
-Rozdział ten zawiera przykładowe zrzuty ekranu wygenerowanych przy pomocy \textit{ProtoDoc} dokumentacji dla różnych typów wiadomości.
-
-\begin{figure}[hc]
- \begin{center}
-  \includegraphics[width=\textwidth]{../protodoc_main.png}
-  % protodoc_main.png: 949x970 pixel, 93dpi, 25.92x26.50 cm, bb=0 0 735 751
- \end{center}
- \caption{Widok wygenerowanej strony dla typu \textbf{message}}
- \label{msg_page}
-\end{figure}
-
-Na Rysunku \ref{msg_page} przedstawiona została strona wygenerowana na podstawie 
-
-\begin{figure}[hc]
- \begin{center}
-  \includegraphics[width=\textwidth]{../protodoc_enum.png}
-  % protodoc_enum.png: 949x970 pixel, 93dpi, 25.92x26.50 cm, bb=0 0 735 751
- \end{center}
- \caption{Widok wygenerowanej strony dla typu \textbf{enum}}
- \label{enum_page}
-\end{figure}
-
-
-%===========================================================================
 \chapter{Rola Testów oraz TDD w procesie tworzenia aplikacji}
 \label{chapter:tdd}
+\section{Metodyka TDD i jej pozytywny wpływ na projekt}
 
 Projekt prowadzony był zgodnie z zasadami Test Drivem Development (zwanego dalej \textit{TDD}),
 co znacznie ułatwiło ustabilizowanie API oraz głównych konceptów jeszcze we wczesnych etapach tworzenia aplikacji.
@@ -944,26 +1207,120 @@ Passed: : Total 45, Failed 0, Errors 0, Passed 45, Skipped 0
 
 %===========================================================================
 \chapter{Zastosowanie ProtoDoc do automatyzacji dokumentacji projektów}
+\label{maven}
 
-%===========================================================================
-\chapter{Spis obsługiwanych funkcjonalności}
-Podajemy takie wejście:
-\begin{verbatim}
-message Person {
-  required int32 id = 1;
-  required string name = 2;
-  optional string email = 3;
+Ponieważ takie narzędzie jak \textit{ProtoDoc} powinno być stosowane w sposób w pełni automatyczny, logicznym krokiem w rozpowszechnieniu
+jego użycia była integracja z najpopularniejszym (de facto ,,standardowym'') narzędziem zarządzania cyklem życia projektu, jakim w świecie Javy jest \textbf{Maven}.
+
+W związku z powyższym w ramach projektu został zrealizowany plugin do narzędzia Maven. Wspierane są zarówno wersje 2.x jak i 3.x tego narzędzia. 
+Nie będziemy tutaj wnikać w szczegóły i zasady działania narzędzia Maven, ponieważ jest to bardzo obszerny temat, jednak
+przedstawię jak można wykorzystać \textit{ProtoDoc} wraz z Mavenem do automatycznego generowania dokumentacji wszystkich plików proto umieszczonych w projekcie.
+
+Wszystkie zależności jak i pluginy deklaruje się w mavenie w pliku \textbf{pom.xml}. W naszym przypadku konieczne będzie dodanie elementu \verb|<plugin>|, wewnątrz
+\verb|project -> build -> plugins|.
+
+\begin{lstlisting}[caption={Deklaracja korzystania z pluginu ProtoDoc}, label={last:use_the_maven_plugin}]
+      <plugin>
+	<groupId>pl.project13.maven</groupId>
+	<artifactId>protodoc-maven-plugin</artifactId>
+	<version>1.0</version>
+	<executions>
+	  <execution>
+	    <goals>
+	      <goal>package</goal>
+	    </goals>
+	  </execution>
+	</executions>
+  <!-- Optional overrides of default properties:
+	<configuration>
+	  <protoDir>${project.basedir}/src/main/proto</protoDir>
+	  <outDir>${project.basedir}/target/protodoc</outDir>
+	  <verbose>false</verbose>
+	</configuration>  -->
+      </plugin>
+\end{lstlisting}
+
+Jest to wystarczające aby ProtoDoc mógł \textbf{automatycznie}, podczas budowania projektu generować dokumentację
+dla wszystkich plików proto umieszczonych wewnątrz domyślnego folderu - \textbf{src/main/proto}. Ścieżka ta jest zgodna z konwencjami przyjętymi
+w Maven, jednak w razie potrzeby istnieje możliwość nadpisania tego ustawienia poprzed dodanie elementu configuration, tak jak to przedstawiono na Listingu \ref{last:use_the_maven_plugin}
+
+%------------------------------------------------------------------------------
+\section{Szczegóły implementacyjne}
+\label{maven_implementacja}
+Uważny czytelnik zauważył że przeniknęliśmy właśnie ze świata \textbf{Scala} do świata \textbf{Javy}.
+Wartym podkreślenia jest jak sprawnie da się korzystać z obu tych języków ,,jednocześnie'', 
+dzięki dobrodziejstwom platformy JVM \footnote{JVM - Java Virtual Machine} --- wspólnego runtime na którym różne języki bezproblemowo mogą 
+się między sobą komunikować.
+
+Dzięki poprzednim doświadczeniom w tworzeniu pluginów mavenowych, oraz przygotowaniu ProtoDoc w taki sposób aby był bardzo łatwo używalny nie tylko z poziomu
+command line, ale również poziomu kodu źródłowego, integracja z mavenem przebiegła bardzo prosto. Pliku pom.xml zawierającego zależności pluginu nie będę 
+tutaj umieszczał z racji jego rozmiaru (~150 linii), jednak okazuje się że cała implementacja pluginu, bezproblemowo nadaje się to umieszczenia w tym miejscu.
+
+\begin{lstlisting}[caption={Pełna implementacja pluginu mavenowego korzystającego z ProtoDoc}]
+public class ProtoDocMojo extends AbstractMojo {
+
+  /** @parameter default-value="${project.basedir}/src/main/proto" */
+  private String protoDir;
+
+  /** @parameter default-value="${project.basedir}/target/protodoc" */
+  private String outDir;
+
+  /** @parameter default-value="false" */
+  private boolean verbose;
+
+  public void execute() throws MojoExecutionException {
+    ProtoDocMain.generateProtoDoc(protoDir, outDir, verbose);
+  }
 }
+\end{lstlisting}
+
+Ciekawostką jest że pierwotne wersje Maven2, były tak stare, iż nie były jeszcze dostępne adnotacje w Javie. 
+Stąd uciekano się do \textit{meta-programowania} w komentarzach, poprzez tak zwane docklety --- adnotacje (słowa poprzedzane znakiem \verb|@|)
+umieszczone nad zmiennymi prywatnymi powyższego Mojo faktyczą są znaczące (sic!) oraz deklarują iż w te zmienne powinny zostać wstrzyknięte
+przez mavena odpowiednie ustawienia z sekcji \verb|<configuration/>| pluginu.
+
+%------------------------------------------------------------------------------
+\section{Efekt działania ProtoDoc wraz z Maven}
+Efektem zastosowania powyższego pluginu w projekcie mavenowym, jest automatyczne wygenerowanie się dokumentacji.
+Aby unaocznić bardziej strukturę plików oraz proces korzystania z Apache Maven, poniżej przedstawiam krótką sekwencję komend
+wydaną w zgognej z POSIX linii poleceń, obrazującej działanie mavena oraz samego pluginu.
+
+\begin{verbatim}
+$ tree
++-- pom.xml
++-- src
+    +-- main
+        +-- java
+        |  +-- pl
+        |      +-- project13
+        |          +-- ProtoDocMojo.java
+        +-- proto
+            +-- amazing_message.proto
+            +-- common_message.proto
+            +-- simple.proto
+$ mvn clean install
+# ............. maven output .............
+$ tree
++-- pom.xml
++-- src/ ...
++-- target
+    +-- clases/ ...
+    +-- protodoc
+    |   +-- images/ ...
+    |   +-- js/ ...
+    |   +-- index.html 
+    |   +-- pl.project13.AmazingMessage.EnumType.html
+    |   +-- pl.project13.CommonMessage.html
+    |   +-- pl.project13.MessageWithInner.html
+    |   +-- pl.project13.MessageWithInner.InnerMessage.html
+    |   ...
+    ...
+$ chromium-browser target/index.html
 \end{verbatim}
 
-Następnie wykonanie:
+Wykonanie ostatniej komenty (chromium-browser) uruchomi przeglądarkę Google Chromium, ukazując nam wykenerowaną stronę www dokumentacji.
+Przykłady wyglądu takich stron są umieszczone w Rozdziale \ref{sec:screenshots}.
 
-A ostatecznie otrzymujemy taką stronę: \verb|http://protodoc.project13.pl/sample|.
-
-%TODO Tutaj screeny gotowego 
-
-
-%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 %---------------------------------------------------------------------------
 \appendix

@@ -126,6 +126,45 @@ new Example().test // poprawne
 \end{lstlisting}
 
 
+%---------------------------------------------------------------------------
+\section{Implicit Conversions - konwersje ,,domniemane''}
+\label{sec:implicit}
+Scala pomimo że jest językiem silnie statycznie typowanym pozwala na pewne zabiegi aby ułatwić pracę w tak rygorystycznym type systemie.
+Jednym z tych rozwiązań są tak zwane ,,Implicit Conversions'', będące typem metod, które kompilator może próbować zastosować podczas gdy 
+potrzebna jest automatyczna konwersja z typu A na B. Najłatwiej będzie omówić to na prostym przykładzie (Listing \ref{lst:simple_implicit_example},
+także spójrzmy na poniższe przypisanie liczby typu \verb|scala.Int| do zmiennej typu \verb|java.lang.String|:
+
+\begin{lstlisting}[caption={Przykład wystąpienia implicit conversion}, label={lst:simple_implicit_example}]
+val num: Int = 42
+val string: String = num // compile time error!
+\end{lstlisting}
+
+Przykład przedstawiony na Listingu \ref{lst:simple_implicit_example} \textit{nie skompiluje się}, a kompilator odpowiedziałby następującym komunikatem:
+
+\begin{verbatim}
+ <console>:8: error: type mismatch;
+ found   : Int
+ required: String
+       val string: String = num
+\end{verbatim}
+
+Dopisanie implicit konwersji w zasięgu widoczności tego przypisania, pozwoli natomiast kompilatorowi zauważyć iż dostępna jest metoda potrafiąca przeprowadzić
+konwersję z typu \verb|Int | na \verb|String|, oraz ją zastosować. Implementację takiej konwersji przedstawiono na Listingu \ref{lst:an_implicit}.
+
+\begin{lstlisting}[caption={Implementacja oraz zastosowanie konwersji domniemanej --- \textit{Implicit Conversion}}, label={lst:an_implicit}]
+implicit def num2str(num: Int) = num.toString
+// == implicit def num2str(num: Int): String = num.toString
+
+val num: Int = 42
+val string: String = num // ok!
+\end{lstlisting}
+
+To co się rzeczywiście dzieje podczas kompilacji, to zwyczajne wstawienie metody num2str, w linii z przypisaniem liczby do zmiennej typu String,
+w następujący sposób: \verb|num2str(num)|. Istnieje więcej szczegółowych zasad dotyczących konwersji domniemanych, na przykład która konwersja powinna zostać 
+zastosowana w przypadku większej ilości metod pozwalających na poprawne wykonanie przypisania, jednak nie będziemy w nie wnikać, ponieważ na potrzeby zrozumienia
+zastosowanych DSL\footnote{DSL - Domain Specific Language} sama informacja o istnieniu tych konwersji powinna być wystarczająca.
+
+
 
 
 %---------------------------------------------------------------------------
