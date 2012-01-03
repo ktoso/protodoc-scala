@@ -10,4 +10,4 @@ case class VerifierWarning(about: String, msg: String)
 case class EnumHasNoValuesVerificationWarning(
     override val about:String,
     override val msg: String = "The enum has no values")
-  extends VerificationError(about, msg)
+  extends FieldVerificationError(about, msg)

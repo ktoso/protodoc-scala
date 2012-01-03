@@ -59,8 +59,6 @@ class ProtoBufParserTest extends FlatSpec
       repeated bool five = 5;
     }""").head
 
-    result
-
     // then
     result.fields should have length (5)
 
@@ -88,6 +86,30 @@ class ProtoBufParserTest extends FlatSpec
     fixedMessage.innerMessages.head should have (
       'packageName ("pl.project13.Outer.InnerMessage")
     )
+  }
+  
+  it should "parse message with inner enum and message" in {
+    val result: ProtoMessageType = ProtoBufParser.parse("""
+        message MyMessage {
+          required FullName name = 1;
+          optional int32 age = 2 [default = 1];
+          optional Gener gender = 3;
+
+          message FullName {
+            required string firstname = 1;
+            required string lastname = 2;
+          }
+
+          enum Gender {
+            MALE = 1;
+            FEMALE = 2;
+          }
+        }""").head
+
+    // then
+    result.fields should have length (3)
+    result.innerMessages should have length (1)
+    result.enums should have length (1)
   }
 
 }

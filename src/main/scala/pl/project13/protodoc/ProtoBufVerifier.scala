@@ -19,10 +19,8 @@ object ProtoBufVerifier extends Logger {
    * @return true if the passed in ProtoTypes are valid, false otherwise
    */
   def verify(protoTypes: List[ProtoType]): VerificationResult = {
-    val errorLists: Seq[Seq[VerificationError]] = for (protoType <- protoTypes) yield check(protoType, protoTypes)
-    val errors: Seq[VerificationError] = errorLists.flatten
-
-    errors.foreach(error(_))
+    val errors = (for (protoType <- protoTypes)
+                    yield check(protoType, protoTypes)).flatten
 
     VerificationResult(errors)
   }
@@ -33,10 +31,6 @@ object ProtoBufVerifier extends Logger {
 
     case enumType: ProtoEnumType =>
       checkEnumType(enumType, protoTypes)
-
-    case _ =>
-      warn("Got unsupported ProtoType: "+b(protoType)+", unable to verify.")
-      NoErrorsEncountered
   }
   
   def checkMessageType(msgType: ProtoMessageType, protoTypes: List[ProtoType]) = {
@@ -49,13 +43,19 @@ object ProtoBufVerifier extends Logger {
     val fieldErrors = for (field <- msgType.fields) yield checkField(msgType, field, protoTypes)
     val innerMsgErrors = for (innerMsg <- msgType.innerMessages) yield checkInnerMsg(msgType, innerMsg, protoTypes)
 
+    val duplicationErrors = for(t <-protoTypes) yield checkIfDuplicated(msgType, protoTypes)
+    
     // warnings 
     val deprecatedItemsCount = checkDeepDeprecation(msgType)
     warn("Found "+deprecatedItemsCount+" deprecated fields/types in ["+msgType.fullName+"]")
 
     // todo more checks
 
-    tagErrors ::: fieldErrors.flatten ::: enumErrors.flatten ::: innerMsgErrors.flatten ::: Nil
+    tagErrors :::
+      fieldErrors.flatten :::
+      enumErrors.flatten :::
+      duplicationErrors.flatten :::
+      innerMsgErrors.flatten
   }
   
   def checkDeepDeprecation(msgType: ProtoMessageType): Long = {
@@ -89,15 +89,22 @@ object ProtoBufVerifier extends Logger {
     info("Running verifications on enum "+b(enumType)+"")
 
     // errors
-    var enumErrors = List.empty // todo add more checks
+    // todo add more checks
 
     val enumValues = enumType.values
     val tagUniquenessErrors = TagVerifier.validateTags(enumType, enumValues.map(_.tag))
+    val duplicationErrors = for(t <-protoTypes) yield checkIfDuplicated(enumType, protoTypes)
 
     // warnings
     checkDeprecation(enumType)
+    checkIfEmpty(enumType)
 
-    enumErrors ::: tagUniquenessErrors ::: Nil
+    tagUniquenessErrors ::: duplicationErrors.flatten
+  }
+  
+  def checkIfEmpty(enumType: ProtoEnumType) {
+    if(enumType.values.isEmpty)
+      warn("The enum "+enumType.fullName+" has no values. This could be a possible typo with missplacing the }, please check." )
   }
 
   /**
@@ -152,7 +159,16 @@ object ProtoBufVerifier extends Logger {
     error("the field: ["+field.fieldName+"] was unresolvable at this point...")
     UndefinedTypeVerificationError(field.fieldName, "Unable to resolve type ["+typeName+"] from ["+fromContext+"] context.") :: Nil
   }
-  
+
+  def checkIfDuplicated(context: ProtoType,
+                        protoTypes: List[ProtoType]): List[VerificationError] = {
+    val checkedTypeName = context.fullName
+    val foundDuplicate = protoTypes.count { _.fullName == checkedTypeName } > 1
+
+    if(foundDuplicate) DuplicateMessageVerificationError(checkedTypeName) :: Nil
+    else Nil
+  }
+
   /**
    * Check an inner message
    */

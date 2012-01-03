@@ -88,7 +88,7 @@ class FieldsTest extends FlatSpec with ProtoTagConversions
     }
     """).head
 
-    val expected = StringProtoMessageField("name", 1, OptionalProtoModifier())
+    val expected = StringProtoMessageField("name", 1, OptionalProtoModifier(), "")
     result.fields.head should equal(expected)
   }
 
@@ -101,6 +101,21 @@ class FieldsTest extends FlatSpec with ProtoTagConversions
 
     val expected = StringProtoMessageField("name", 1, RequiredProtoModifier(), "loremipsum")
     result.fields.head should equal(expected)
+  }
+
+  it should "parse single required double field with default value" in {
+    val result: ProtoMessageType = ProtoBufParser.parse("""
+    message Wiadomosc {
+      required double number = 1 [default = 15.5];
+    }
+    """).head
+
+    val expected = DoubleProtoMessageField("number", 1, RequiredProtoModifier(), 15.5f)
+    val field = result.fields.head
+
+    field.fieldName should equal(expected.fieldName)
+    field.tag should equal(expected.tag)
+    field.defaultValue should equal(expected.defaultValue)
   }
 
 }

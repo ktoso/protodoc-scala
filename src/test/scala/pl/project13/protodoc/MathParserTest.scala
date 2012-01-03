@@ -38,15 +38,10 @@ object MathParser extends RegexParsers with ImplicitConversions {
   
   def add: Parser[AOperation] = ("+" | "-" ) ^^ { AOperation(_) }
   def mult: Parser[MOperation] = ("*" | "/" ) ^^ { MOperation(_) }
-//  def add: Parser[Any] = ("+" | "-" )
-//  def mult: Parser[Any] = ("*" | "/" )
 
   def op: Parser[Long] = lp ~> num ~! (add | mult) ~! num <~ rp ^^ {
     case num1 ~ op ~ num2 => op.perform(num1, num2)
   }
-
-//  def op: Parser[Any] = lp ~> num ~ (add | mult) ~ num <~ rp
-//  def all: Parser[Any] = rep(op)
 
   def lp: Parser[Option[String]] = opt("(")
   def rp: Parser[Option[String]] = opt(")")
@@ -59,10 +54,9 @@ object MathParser extends RegexParsers with ImplicitConversions {
 }
 
 object MathParserTest extends App {
-
   override def main(args: Array[String]) {
     import MathParser._
-    println(parse("10+15"))
-    println(parse("10*2"))
+    println(parse("10+15")) // 25
+    println(parse("10*2")) // 20
   }
 }

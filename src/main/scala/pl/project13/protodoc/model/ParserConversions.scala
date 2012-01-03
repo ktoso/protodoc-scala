@@ -32,7 +32,7 @@ trait ParserConversions {
     long2tag(tagString.toLong)
   }
 
-  def checkProtoTagNumber(tagNumber: Long) = {
+  def checkProtoTagNumber(tagNumber: Long) {
     if (!(tagNumber > 0 && tagNumber <= 536870911 && (tagNumber < 1900 || tagNumber > 1999))) {
       throw new RuntimeException("Invalid tag: " + tagNumber)
     }

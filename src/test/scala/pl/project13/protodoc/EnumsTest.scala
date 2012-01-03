@@ -58,7 +58,7 @@ class EnumsTest extends FlatSpec with ShouldMatchers
       'protoTypeName (enumType.typeName),
       'tag (ProtoTag(2)),
       'modifier (RequiredProtoModifier()),
-      'defaultValue (null)
+      'defaultValue (None)
     )
   }
 

@@ -1,6 +1,8 @@
 package pl.project13.protodoc.model
 
 import ProtoModifier._
+import ProtoMessageField.Empty
+import pl.project13.protodoc.utils.CommonImplicits
 
 /**
  * The base class for all other basic ProtoMessageFields, and also for itself, when a userdefined type is used.
@@ -32,9 +34,6 @@ class ProtoMessageField(
     scalaTypeName = fullyQualifiedScalaTypeName
 
     this
-
-//      new ProtoMessageField(fieldName, fullyQualifiedProtoTypeName, fullyQualifiedScalaTypeName, tag,
-//                                modifier, defaultValue)
   }
 
   val protoFormat = {
@@ -51,7 +50,7 @@ case class IntProtoMessageField(override val fieldName:    String,
                                 theProtoTypeName:          String,
                                 override val tag:          ProtoTag,
                                 override val modifier:     ProtoModifier,
-                                override val defaultValue: Any = None)
+                                override val defaultValue: Int = 0)
   extends ProtoMessageField(fieldName, theProtoTypeName, "scala.Int", tag, modifier, defaultValue)
 
 /**
@@ -61,7 +60,7 @@ case class LongProtoMessageField(override val fieldName:    String,
                                  theProtoTypeName:          String,
                                  override val tag:          ProtoTag,
                                  override val modifier:     ProtoModifier,
-                                 override val defaultValue: Any = None)
+                                 override val defaultValue: Long = 0)
   extends ProtoMessageField(fieldName, theProtoTypeName, "scala.Long", tag, modifier, defaultValue)
 
 /**
@@ -70,7 +69,7 @@ case class LongProtoMessageField(override val fieldName:    String,
 case class BooleanProtoMessageField(override val fieldName: String,
                                     override val tag: ProtoTag,
                                     override val modifier: ProtoModifier,
-                                    override val defaultValue: Any = None)
+                                    override val defaultValue: Boolean = false)
   extends ProtoMessageField(fieldName, "bool", "scala.Boolean", tag, modifier, defaultValue)
 
 /**
@@ -79,7 +78,7 @@ case class BooleanProtoMessageField(override val fieldName: String,
 case class FloatProtoMessageField(override val fieldName: String,
                                   override val tag: ProtoTag,
                                   override val modifier: ProtoModifier,
-                                  override val defaultValue: Any = None)
+                                  override val defaultValue: Float = 0)
   extends ProtoMessageField(fieldName, "float", "scala.Float", tag, modifier, defaultValue)
 
 /**
@@ -88,7 +87,7 @@ case class FloatProtoMessageField(override val fieldName: String,
 case class DoubleProtoMessageField(override val fieldName: String,
                                    override val tag: ProtoTag,
                                    override val modifier: ProtoModifier,
-                                   override val defaultValue: Any = None)
+                                   override val defaultValue: Double = 0)
   extends ProtoMessageField(fieldName, "double", "scala.Double", tag, modifier, defaultValue)
 
 /**
@@ -97,7 +96,7 @@ case class DoubleProtoMessageField(override val fieldName: String,
 case class StringProtoMessageField(override val fieldName: String,
                                    override val tag: ProtoTag,
                                    override val modifier: ProtoModifier,
-                                   override val defaultValue: Any = None)
+                                   override val defaultValue: String = Empty)
   extends ProtoMessageField(fieldName, "string", "java.lang.String", tag, modifier, defaultValue)
 
 /**
@@ -118,13 +117,15 @@ case class EnumProtoMessageField(override val fieldName: String,
                                  override val tag: ProtoTag,
                                  override val modifier: ProtoModifier,
                                  override val defaultValue: Any)
-//                                 override val defaultValue: ProtoEnumValue) // todo would be awesome
+//                                 override val defaultValue: ProtoEnumValue) // todo
   extends ProtoMessageField(fieldName, theScalaTypeName, theProtoTypeName,  tag, modifier, defaultValue)
 
 /**
  * Companion object, serves as factory, will be used by parser
  */
 object ProtoMessageField extends ProtoTagConversions {
+
+  val Empty = ""
 
   def toUnresolvedField(typeName: String,
                         fieldName: String,
@@ -148,19 +149,19 @@ object ProtoMessageField extends ProtoTagConversions {
                    modifier: ProtoModifier,
                    defaultValue: Option[Any] = None) = typeName match {
     case "int32" | "uint32" | "sint32"| "fixed32" | "sfixed32" =>
-      new IntProtoMessageField(fieldName, typeName, protoTag, modifier, defaultValue.getOrElse(None))
+      IntProtoMessageField(fieldName, typeName, protoTag, modifier, defaultValue.getOrElse(0).toString.toInt)
     case "int64" | "uint64" | "sint64" | "fixed64" | "sfixed64" =>
-      new LongProtoMessageField(fieldName, typeName, protoTag, modifier, defaultValue.getOrElse(None))
+      LongProtoMessageField(fieldName, typeName, protoTag, modifier, defaultValue.getOrElse(0).toString.toInt)
     case "double" =>
-      new DoubleProtoMessageField(fieldName, protoTag, modifier, defaultValue.getOrElse(None))
+      DoubleProtoMessageField(fieldName, protoTag, modifier, defaultValue.getOrElse(0).toString.toDouble)
     case "float" =>
-      new FloatProtoMessageField(fieldName, protoTag, modifier, defaultValue.getOrElse(None))
+      FloatProtoMessageField(fieldName, protoTag, modifier, defaultValue.getOrElse(0).toString.toFloat)
     case "bool" =>
-      new BooleanProtoMessageField(fieldName, protoTag, modifier, defaultValue.getOrElse(None))
+      BooleanProtoMessageField(fieldName, protoTag, modifier, defaultValue.getOrElse("false").toString.toBoolean)
     case "string" =>
-      new StringProtoMessageField(fieldName, protoTag, modifier, defaultValue.getOrElse(None))
+      StringProtoMessageField(fieldName, protoTag, modifier, defaultValue.getOrElse("").toString)
     case "bytes" =>
-      new ByteStringProtoMessageField(fieldName, protoTag, modifier, defaultValue.getOrElse(None))
+      ByteStringProtoMessageField(fieldName, protoTag, modifier, defaultValue.getOrElse(None))
     case unknownType =>
       throw new UnsupportedOperationException("Unknown field type encountered: "+unknownType)
   }
@@ -170,12 +171,11 @@ object ProtoMessageField extends ProtoTagConversions {
                   protoTag: Int,
                   modifier: ProtoModifier,
                   defaultValue: Option[Any] = None) = {
-//                  defaultValue: Option[ProtoEnumValue] = None) = { // todo would be awesome
-    new EnumProtoMessageField(fieldName = fieldName,
-                              theProtoTypeName = isValueOfEnumType.typeName,
-                              theScalaTypeName = isValueOfEnumType.typeName,
-                              tag = protoTag,
-                              modifier = modifier,
-                              defaultValue = defaultValue.getOrElse(null))
+    EnumProtoMessageField(fieldName = fieldName,
+                          theProtoTypeName = isValueOfEnumType.typeName,
+                          theScalaTypeName = isValueOfEnumType.typeName,
+                          tag = protoTag,
+                          modifier = modifier,
+                          defaultValue = defaultValue.getOrElse(None))
   }
 }

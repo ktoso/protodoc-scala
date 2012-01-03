@@ -1,23 +1,16 @@
 package pl.project13.protodoc.templating
 
 import pl.project13.protodoc.model.{ProtoEnumType, ProtoMessageType, ProtoType}
-import scala.annotation.tailrec
-import scala.collection.JavaConversions
-import scala.collection.JavaConverters._
 import pl.project13.protodoc.Logger
 import com.google.common.io.{Files => GFiles}
 import org.fusesource.scalate.layout.DefaultLayoutStrategy
 import org.fusesource.scalate._
 
 import Mustache._
-import java.util.regex.Pattern
-import java.io.{InputStreamReader, FileWriter, File}
-import com.google.common.io.CharStreams
-import com.google.common.base.Charsets
-import java.nio.file.{StandardCopyOption, CopyOption, Paths, Files}
+import java.io.{FileWriter, File}
+import java.nio.file.{StandardCopyOption, Paths, Files}
 
 /**
- *
  * @author Konrad Malawski
  */
 class ProtoDocTemplateEngine
@@ -37,7 +30,12 @@ class ProtoDocTemplateEngine
   // default bindings
   bindings = List(Binding(name = "protodoc_version",
     className = "String",
-    defaultValue = Option(""""v1.0"""")))
+    defaultValue = Option(""""v1.1"""")))
+
+  def copyResources(outDir: String) {
+    List()
+    
+  }
 
   def renderTableOfContents(contents: List[ProtoType]) = {
     var all: List[ProtoType] = Nil
@@ -67,6 +65,8 @@ class ProtoDocTemplateEngine
     val html = renderTableOfContents(contents)
     val filename: String = outDir + "/index.html"
     writeToFile(filename, html)
+
+    copyResources(outDir) // todo this should have it's own method
   }
 
   def renderTypePage(msg: ProtoMessageType) = {
@@ -146,10 +146,7 @@ class ProtoDocTemplateEngine
       }
 
       all
-    } else {
-      Nil
-    }
-
+    } else List.empty
   }
 
   def allInnerMessagesOf(msgs: List[ProtoMessageType]): List[ProtoType] = {
@@ -168,9 +165,13 @@ class ProtoDocTemplateEngine
 object ProtoDocTemplateEngine extends Logger {
 
   def copyTemplatesToTmp() {
-    info("Preparing templates working directory...")
+    copyTemplatesTo(Mustache.TemplatesDirPath)
+  }
 
-    val dir = Paths.get(Mustache.TemplatesDirPath)
+  def copyTemplatesTo(targetPath: String) {
+    info("Preparing template resources...")
+
+    val dir = Paths.get(targetPath)
     if (!Files.exists(dir)) {
       Files.createDirectory(dir) // create tmp dir
     }
@@ -183,7 +184,7 @@ object ProtoDocTemplateEngine extends Logger {
       indexSource.getLines().foreach(fileName => {
         val fileStream = classLoader.getResourceAsStream(fileName)
 
-        val targetFile = Paths.get(Mustache.TemplatesDirPath + "/" + fileName)
+        val targetFile = Paths.get(targetPath + "/" + fileName)
 
         info("Preparing file: " + targetFile)
 

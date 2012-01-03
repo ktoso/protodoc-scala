@@ -8,23 +8,27 @@ import scala.util.parsing.input.CharArrayReader
 /**
  * @author Konrad Malawski
  */
-object ProtoBufParser extends RegexParsers with ImplicitConversions
-                                           with ParserConversions
-                                           with Logger {
+object ProtoBufParser
+  extends RegexParsers
+  with ImplicitConversions
+  with ParserConversions
+  with Logger {
 
   val ID = """[a-zA-Z_]([a-zA-Z0-9_]*|_[a-zA-Z0-9]*)*""".r
 
   val NUM = """[1-9][0-9]*""".r
 
+  val FLOAT_NUM: Parser[String] =  """(\d+(\.\d*)?|\d*\.\d+)([eE][+-]?\d+)?[fFdD]?""".r
+
   val CHAR = """[a-zA-Z0-9]""".r
 
   // lists of "known types", to allow parsing of enum fields etc
-  var knownEnums: List[ProtoEnumType] = List()
-  var knownMessages: List[ProtoMessageType] = List()
+  var knownEnums: List[ProtoEnumType] = Nil
+  var knownMessages: List[ProtoMessageType] = Nil
 
-  var unresolvedTypes: List[_ <: ProtoType] = List()
+  var unresolvedTypes: List[_ <: ProtoType] = Nil
 
-  var fieldsWithUncheckedTypes: List[ProtoMessageField] = List()
+  var fieldsWithUncheckedTypes: List[ProtoMessageField] = Nil
 
   /**
    * For now, just ignore whitespaces
@@ -32,8 +36,8 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
 //  protected override val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
   protected override val whiteSpace = """( |\n|\t|//.*)+""".r
 
-  def pack: Parser[String] = "package" ~ repsep(ID, ".") ~ ";" ^^ {
-    case p ~ packName ~ end =>
+  def pack: Parser[String] = "package" ~> repsep(ID, ".") <~ ";" ^^ {
+    case packName =>
       val joinedName = packName.mkString(".")
       info("detected package name: " + joinedName)
 
@@ -138,8 +142,8 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
       definedEnum
   }
 
-  def enumValue: Parser[ProtoEnumValue] = opt(comment) ~ ID ~ "=" ~ NUM ~ ";" ^^ {
-    case maybeDoc ~ id ~ eq ~ num ~ end =>
+  def enumValue: Parser[ProtoEnumValue] = opt(comment) ~ ID ~ "=" ~ NUM <~ ";" ^^ {
+    case maybeDoc ~ id ~ eq ~ num =>
       val value = ProtoEnumValue(id, num)
       val comment = maybeDoc.getOrElse("")
       info("enum value: '" + value + "', with comment: '" + comment + "'")
@@ -153,8 +157,8 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
   def commentStart: Parser[Any]    = ("/**" | "/*")
   def commentEnd: Parser[Any]      = "*/"
   def commentContent: Parser[Any]  = rep(chrExcept('/', '*') | '/' ~ not('*') | '*' ~ not('/') | comment)
-  def comment: Parser[String] = commentStart ~ commentContent ~ commentEnd ^^ {
-    case s ~ comment ~ end =>
+  def comment: Parser[String] = commentStart ~> commentContent <~ commentEnd ^^ {
+    case comment =>
         if(comment.toString.contains("\n")) {
           val r = """(\w|\n| |\t)""".r
           comment.asInstanceOf[List[Any]]
@@ -170,51 +174,64 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
                  .mkString("")
         }
   }
-  def cStyleComment: Parser[String] = "//" ~ rep(commentContent) ~ "\n" ^^ {
-    case s ~ comment ~ end =>
-      comment.toString
+  def cStyleComment: Parser[String] = "//" ~> rep(commentContent) <~ "\n" ^^ {
+    case comment => comment.toString()
   }
-//  lazy val protoDocComment = commentStart ~> commentContent ~< commentEnd
 
   def chrExcept(cs: Char*): Parser[Char]  = elem("chrExcept", ch => (ch != CharArrayReader.EofCh) && (cs forall (ch !=)))
 
   // fields -------------------------------------------------------------------
-  def instanceField = opt(comment) ~ modifier ~ (protoType | userDefinedType) /*| msgType)*/ ~ ID ~ "=" ~ integerValue ~ opt(defaultValue) ~ ";" ^^ {
-    case doc ~ mod ~ pType ~ id ~ eq ~ tag ~ defaultVal ~ end =>
+  def instanceField = opt(comment) ~ modifier ~! (protoType | userDefinedType) ~ ID ~! "=" ~! integerValue ~ opt(defaultValue) <~ ";" ^^ {
+    case doc ~ mod ~ pType ~ id ~ eq ~ tag ~ defaultVal =>
       info("parsing field '" + id + "'...")
       val comment = doc.getOrElse("")
 
-      if(primitiveTypes.contains(pType)) { // it's a primitive field
+      val isPrimitiveType = primitiveTypes.contains(pType)
+      if(isPrimitiveType) { // it's a primitive field
         good("Found basic ("+pType+") field: "+b(id))
 
         val field = ProtoMessageField.toProtoField(pType, id, tag, mod, defaultVal)
         field.comment = comment
         field
-      } else if(knownEnums.map(_.typeName).contains(pType)) { // it's an enum
-        good("Found enum field for already defined enum ("+pType+") field: "+b(id))
+      } else {
+        val isKnownEnumType = knownEnums.map(_.typeName).contains(pType)
+        if (isKnownEnumType) {
+          // it's an enum
+          good("Found enum field for already defined enum (" + pType + ") field: " + b(id))
 
-        val itsEnumType = knownEnums.find(p => p.typeName == pType).get
-        val field = ProtoMessageField.toEnumField(id, itsEnumType, tag, mod, defaultVal)
-        field.comment = comment
-        field
-      }
-//      else if(knownMessages.map(_.messageName).contains(pType)){ // todo must be improved, fullName also is ok here
-//        ProtoMessageField.to // todo implement messages, the same way as enum fields
-//      }
-      else {
-         val msg = "Unable to create Field instance for field: '" + id + "', type: " + pType
-//         throw new UnknownTypeException(msg)
-         warn(msg) // todo maybe something better
-         unresolvedTypes + pType
+          val itsEnumType = knownEnums.find(p => p.typeName == pType).get
 
-        val field = ProtoMessageField.toUnresolvedField(pType, id, tag, mod, defaultVal)
-        field.comment = comment
-        field
+          // the default value was not set, or is in fact a valid value
+          //        if(defaultValue.isInstanceOf[scala.None]){
+          //          val field = ProtoMessageField.toEnumField(id, itsEnumType, tag, mod, defaultVal)
+          //          field.comment = comment
+          //          field
+          //        } else
+          if (itsEnumType.values.find {_.valueName == defaultValue}.isDefined) {
+            val field = ProtoMessageField.toEnumField(id, itsEnumType, tag, mod, defaultVal)
+            field.comment = comment
+            field
+          } else {
+            val msg = "The default value [" + defaultValue + "] is not a valid value for the enum type [" + itsEnumType + "]!"
+
+            error(msg)
+            err(msg)
+          }
+        } else {
+          val msg = "Unable to create Field instance for field: '" + id + "', type: " + pType
+          warn(msg) // todo maybe something better
+
+          unresolvedTypes + pType
+
+          val field = ProtoMessageField.toUnresolvedField(pType, id, tag, mod, defaultVal)
+          field.comment = comment
+          field
+        }
       }
   }
 
-  def defaultValue: Parser[Any] = "[" ~ "default" ~ "=" ~ (ID | NUM | stringValue) ~ "]" ^^ {
-    case b ~ d ~ eq ~ value ~ end =>
+  def defaultValue: Parser[Any] = "[" ~> "default" ~> "=" ~> (ID | FLOAT_NUM | NUM | stringValue) <~ "]" ^^ {
+    case value =>
       info("Default values: " + value)
       value
   }
@@ -222,10 +239,7 @@ object ProtoBufParser extends RegexParsers with ImplicitConversions
   // field values -------------------------------------------------------------
   def integerValue: Parser[Int] = ("[1-9][0-9]*".r) ^^ { s => s.toInt }
 
-  def stringValue: Parser[String] = "\"" ~ """\w+""".r ~ "\"" ^^ {
-    case o ~ stringValue ~ end =>
-      stringValue
-  }
+  def stringValue: Parser[String] = "\"" ~> """\w+""".r <~ "\""
 
   def booleanValue: Parser[Boolean] = ("true" | "false") ^^ {
     s => s.toBoolean

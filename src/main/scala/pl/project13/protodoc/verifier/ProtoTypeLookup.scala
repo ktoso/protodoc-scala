@@ -2,7 +2,7 @@ package pl.project13.protodoc.verifier
 
 import pl.project13.protodoc.model.{ProtoType, ProtoMessageType}
 import pl.project13.protodoc.exceptions.{ProtoDocVerificationException}
-import pl.project13.protodoc.{VerificationError, VerificationResult}
+import pl.project13.protodoc.{FieldVerificationError, VerificationError, VerificationResult}
 
 
 /**
@@ -83,7 +83,7 @@ class ProtoTypeLookup(typeNameToResolve: String) {
     val msg = """|Unable to resolve ["""+typeNameToResolve+"""] due to a "duplicate resolution" of this type.
                  |Are you sure you didn't define this type two times in the same scope?""".stripMargin
 
-    val error = VerificationError(typeNameToResolve, msg) :: Nil
+    val error = FieldVerificationError(typeNameToResolve, msg) :: Nil
     val result = VerificationResult(error)
 
     throw new ProtoDocVerificationException(result)

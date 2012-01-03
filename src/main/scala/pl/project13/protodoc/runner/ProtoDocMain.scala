@@ -64,8 +64,11 @@ object ProtoDocMain extends Logger {
     
     // for each type
     allParsedProtos.foreach(templateEngine.renderTypePage(_, outDir))
+
     // and the table of contents
     templateEngine.renderTableOfContents(allParsedProtos, outDir)
+
+    ProtoDocTemplateEngine.copyTemplatesTo(outDir)
   }
 
   def contentsFor(f: File): String = {

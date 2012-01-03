@@ -42,7 +42,7 @@ class ProtoBufVerifierTest extends Spec
       exception.verificationResult.errors should have length (1)
 
       val err = exception.verificationResult.errors.head
-      err.about should equal ("errorField")
+      err.asInstanceOf[FieldVerificationError].about should equal ("errorField")
     }
 
     it("should have no problems with resolvable field Type") {
