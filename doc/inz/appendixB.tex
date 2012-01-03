@@ -16,6 +16,9 @@ Jako konkretnych ,,rodziców'' można by wskazać:
  \item oraz języki: \textbf{Haskell}, \textbf{SML} oraz pewne elementy języka \textbf{Erlang} (głównie \textit{Actor model}).
 \end{itemize}
 
+O języku Scala można myśleć jako połączeniu tych nurtów. Dostępne są klasyczne elementy języków funcyjnych,
+takie jak pattern matching czy nacisk na immutability wszystkich tworzonych obiektów. Jest to zwłaszczw widoczne w domyślnych implementacjach
+kolekcji, których nie można modyfikować - a tworzy się za każdym razem nową listę, współdzieląc między nimi elementy które są niezmienne.
 
 %---------------------------------------------------------------------------
 \section{Podstawy}
@@ -125,6 +128,77 @@ class Example extends A with B {
 new Example().test // poprawne
 \end{lstlisting}
 
+%---------------------------------------------------------------------------
+\section{Case Class oraz Pattern Matching}
+\label{sec:caseclass}
+
+Klasy deklarowane przy pomocy \verb|case class| niosą ze sobą pewne ułatwienia, które generuje za nas kompilator.
+Case klasy są wykorzystywane w bardzo wielu miejscach w ProtoDoc, ze względu na ich znaczną zwięzłość zapisu oraz wygodną współpracę z konstrukcją
+\verb|match|, która zostanie za moment wyjaśniona.
+
+Case klasę \small{(pozwolę sobie przyjąć taki, mieszający dwa języki, sposób nazywania jej, z racji problematycznego sesownego przetłumaczenia słowa case 
+(ang. przypadek) w tym zwrocie)} definiujemy przy pomocy konstrukcji przedstawionej na Listingu \ref{lst:case_class}.
+
+\begin{lstlisting}[caption={Deklaracja case klasy},label={lst:case_class}]
+case class SampleProtoField(name: String, value: Long)
+\end{lstlisting}
+
+oraz odpowiada w przybliżeniu implementacji przedstawionej poniżej, na Listingu \ref{lst:case_class_by_hand}:
+
+\begin{lstlisting}[caption={Ręczna implementacja case classy},label={lst:case_class_by_hand}]
+class SampleProtoField {
+ private def this(__name: String) = {
+  this()
+  _name = __name
+ }
+
+ private val _name = null
+
+ def name =  _name
+
+ def equals = /**/
+ def hashCode = /**/
+ def toString = /**/
+}
+
+object SampleProtoField {
+ def apply(name: String) = new SampleProtoField(name)
+ def unapply(field: SampleProtoField) = field.name
+}
+\end{lstlisting}
+
+Dzieje się tutaj bardzo dużo ciekawych rzeczy sięgających głęboko po możliwości Scala, jednak w efekcie umożliwia nam:
+\begin{itemize}
+ \item domyślne utworzenie niezmiennych pól dla każdego argumentu w konstruktorze case klasy (val)
+ \item automatyczne wygenerowanie getterów dla tych pól
+ \item przyjemną dla oka implementację \verb|toString()|
+ \item implementacje \verb|equals()| and \verb|hashCode()| (programiści Java znają ból generowania tych metod ręcznie)
+ \item wygenerowanie ,,companion object'' pozwalającego na:
+ \subitem tworzenie konstrukcji typu \verb|SampleProtoField("")| zamiast \verb|new SampleProtoField("")| (poprzez implementację apply)
+ \subitem korzystanie z tej klasy w konstrukcji match (poprzez implementację unapply)
+\end{itemize}
+
+Najciekawsze dla nas są automatyczne implementacja apply / unapply, które w efekcie pozwalają na następujące linie:
+
+\begin{lstlisting}
+val it: SampleProtoField = SampleProtoField("name") // apply
+
+val SampleProtoField(name) = "some name"
+\end{lstlisting}
+
+A jeżeli sięgnąć po konstrukcję match, pozwala ona na konstrukcje ,,wyjmujące'' wartości pól z skomplikowanych case class:
+
+\begin{lstlisting}
+myCaseClass match {
+  case SampleProtoField(name) => println(name)
+  case ComplicatedProtoField(name, type, _, _) => println(name +" & "+ type)
+}
+\end{lstlisting}
+
+Konstrukcja \verb|match|, wywodzi się z programowania funkcyjnego. Mowa tutaj o ,,pattern matching''
+znanym z chociażby \textbf{Erlanga}. Dzięki tej konstrukcji da się ominąć wiele linii kodu w stylu \verb|if(x) {x = x.getX(); method(x);}|.
+Technika ta została zastosowana w bardzo wielu miejscach aplikacji, włącznie z parserem oraz weryfikatorem.
+
 
 %---------------------------------------------------------------------------
 \section{Implicit Conversions - konwersje ,,domniemane''}
@@ -170,3 +244,183 @@ zastosowanych DSL\footnote{DSL - Domain Specific Language} sama informacja o ist
 %---------------------------------------------------------------------------
 \section{Scala Parser Combinators}
 \label{sec:scala_parser_combinators}
+W tym rozdziale zostaną pokrótce przedstawione Scala Parser Combinators, oraz ich składnia.
+Zostaną poruszone również tematy dotyczące wydajności kombinatorów oraz jak ustrzec się przez zanadto nawracającym się parserem.
+
+Podstatową informacją którą należy sobie przyswoić podczas pracy z kombinatorami parserów, jest idea operowania na funkcjach wyższego rzędu - 
+bo dokładnie tym są kombinatory. Najpierw jednak zdefiniujmy najprostszy możliwy parser (przedstawiony na Listingu \ref{lst:super_simple_parser}):
+
+\begin{lstlisting}[caption={Najprostszy możliwy parser}, label={lst:super_simple_parser}]
+object SimplestParser extends JavaTokenParsers {
+  def a: Parser[String] = "a"
+}
+\end{lstlisting}
+
+Przedstawiona na listingu imponująca implementacja parsera jednego znaku, de facto dokonywana jest przez implicit konwersję (dostarczoną przez \verb|JavaTokenParsers|), 
+z typu \verb|String| na typ \verb|Parser[String]|. Zgodnie z oczekiwaniami ,,parsuje'' on jedynie jeden znak - oraz zwraca samego siebie (wspomniane ,,a'').
+W przypadku napisu dłuższego niż samo ,,a'', prymitywny parser możemy zdefiniować jako funkcję przyjmującą napis wejściowy a zwracającą krotkę 
+przeprasowanego elementu, oraz pozostałej części napisu. W szczególności Parser zatem można zdefiniować jako:
+
+\begin{center}
+\begin{tabular}{|p{\textwidth}|}
+\hline
+\textbf{Definicja 1} \\
+\textit{Parser} zdefiniowany jest jako funkcja przyjmująca napis wejściowy, a zwracająca krotkę sparsowanego elementu oraz pozostałego napisu wejściowego. \\ 
+\cite{monadparsing}
+\\ \hline
+\end{tabular}
+\end{center}
+
+Mając tak zdefiniowany parser, możemy przedstawić definicję kombinatora parserów:
+
+\begin{center}
+\begin{tabular}{|p{\textwidth}|}
+\hline
+\textbf{Definicja 2} \\
+\textit{Kombinator parserów}, jest \textit{funkcją wyższego rzędu},
+która przyjmuje jako argumenty funkcje parsujące, oraz zwraca nową funkcję utworzoną poprzez ich kombinację -- zależną od jego implementacji. \\
+
+\cite{monadparsing}
+\\ \hline
+\end{tabular}
+\end{center}
+
+W przypadku Scali, kombinatory implementowane są poprzez metody wypisane w Tabeli \ref{combinators_table}, zdefiniowane w typie \verb|Parser|.
+
+\begin{table}
+\begin{center}
+\begin{tabular}{|l|l|p{7cm}|}
+\hline
+Metoda & Nazwa & Przykład \\ \hline
+\verb|~| & sekwencja & \verb|"a" ~ "b"| parsuje ciąg ,,ab'', oraz zwraca ,,ab''\\
+\verb|~>| & sekwencja, odrzucając lewą stronę & \verb|,,a'' ~> ,,b''| parsuje ciąg ,,ab'', oraz zwraca ,,b''\\
+\verb|<~| & sekwencja, odrzucając prawą stronę & \verb|,,a'' <~ ,,b''| parsuje ciąg ,,ab'', oraz zwraca ,,a''\\
+\verb\|\ & alternatywa & ,,a'' | ,,b'' parsuje ciąg ,,a'' lub ,,b'', oraz zwraca ,,a'' lub ,,b''\\
+\verb\^^\ & transformacja & \verb|,,a'' ^^ () => Any| parsuje ciąg ,,a'', oraz zwraca do, co zwróci funkcja przekazana jako argument tego kombinatora. Zostanie opisany szczegółowo poniżej. \\
+\verb|opt()| & sekwencja & opt(,,b'') parsuje ciąg ,,'' lub ,,b'', oraz zwraca Option[String], mogące zawierać ,,b'' lub nic\\
+\verb|rep()| & powtórzenie & rep(,,b'') parsuje ciąg składający się z powtórzeń ciągu ,,b'', oraz zwraca List(,,b'', ,,b'', ,,b'', ...)]\\
+\verb|repsep()| & powtórzenie, z separatorami & repsep(,,b'', ,,,'') parsuje ciąg składający się z powtórzeń ciągu ,,b'' oddzielonych znakiem ,,,'', oraz zwraca List(,,b'', ,,b'', ,,b'', ...)]\\
+\verb|rep()| & powtórzenie & rep(,,b'') parsuje ciąg składający się z powtórzeń ciągu ,,b'', oraz zwraca List(,,b'', ,,b'', ,,b'', ...)]\\ \hline
+\end{tabular}
+\end{center}
+\caption{Dostępne podstawowe kombinatory parserów}
+\label{combinators_table}
+\end{table}
+
+Warto tutaj przytoczyć implementację dwóch kombinatorów, ponieważ pokazują jak olbrzymią elastyczność w definiowaniu ich uzyskać
+poprzez wykorzystywanie bardzo prostych kombinatorów (wewnętrznie zdefiniowanych \verb\|||\ oraz \verb|&&&|, z których jako programista korzystający
+z Scala Parser Combinators raczej korzystać nie będziemy). Warte zauważenia na Listingu \ref{optrep} jest na przykład wywołanie \verb|rep(p)|,
+otóż dzięki elastyczności Scali, możliwe jest zaimplementowanie Parserów w ten sposób że do wywołania rep(p) nie koniecznie musi dojść, pomimo że 
+mamy do czynienia z zwyczajnymi wywołaniami metod. Umożliwia to tak zwany ,,pass-by-name parameter'', jednak znacznie wykracza to poza zakres konieczny 
+do zrozumienia działania Parser Combinators, także pozostaniemy przy stwierdzeniu iż mamy tutaj do czynienia z leniwą ewaluacją tej metody.
+
+\begin{lstlisting}[caption={Implementacja parserów opt i rep}, label={optrep}]
+def opt(p: Parser): Parser = p ||| empty;   // p ? p : empty
+def rep(p: Parser): Parser = opt(rep1(p));  // p* = [p+]
+def rep1(p: Parser): Parser = p &&& rep(p); // p+ = p ~ p*
+\end{lstlisting}
+
+
+Przy odpowiednim zastosowaniu tych prostych zasad, można bardzo łatwo tworzyć parsery nawet skomplikowanych gramatyk.
+Niestety z natury działania kombinatorów, możliwe jest wygenerowanie parsera który będzie wykonywał wielokrotne oraz głębokie nawroty.
+Celem zmniejszenia miejsc narażenia się na zbyt dużą klasę wygenerowanego parsera \textit{LL(k)}, możemy zastosować kombinator \verb|~!|
+który zgłosi błąd jeżeli dana kombinacja nie jest możliwa do rozwiązania w sposób generujący Parser klasy \textit{LL(1)} w tym miejscu.
+Powinno się stosować ten operator jeżeli tylko możliwe, aby zagwarantować sobie wczesne ostrzeżenie o nie optymalnej formie gramatyki.
+Wówczas można przeprowadzić faktoryzację lewostronną, celem wyciągnięcia wspólnego symbolu dla dwóch lub więcej produkcji ,,przed nawias'', zmniejszając klasę parsera.
+
+Ostatnim elementem koniecznym do wprowadzenia zanim przejdziemy do przykładów pełnych implementacji prostych parserów, jest kombinator \verb|^^|,
+oznaczający ,,\textit{transformację}''. Kombinator ten służyć nam będzie do produkowania typów które chcemy produkować z danego sparsowanego elementu,
+nie natomiast prymitówów takich jak listy i typy podstawowe, które zostałyby zwrócone przez parser bez zastosowania tego kombinatora.
+Prostym przykładem jest parser przedstawiony na Listingu \ref{so_simple}, który transformuje napis ,,true'' na wartość typu \verb|Boolean|.
+
+\begin{lstlisting}[caption={Zastosowanie kombinatora transformującego}, label={so_simple}]
+def TRUE: Parser[Boolean] = "true" ^^ { b => true }
+
+//                                      without ^^, 
+// def TRUE: Parser[String] = "true" // value is String!
+
+\end{lstlisting}
+
+\subsection{Przykłady parserów}
+Przedstawione zostaną dwa proste przykłady parserów, mieszczące się na 1 stronie A4, oraz realizujące przydatne operacje, 
+takie jak parsowanie formatu JSON, oraz obliczenie prostego wyrażenia matematycznego. Przykłady te mogą posłyżuć jako pomoc w unaocznieniu elegancji
+oraz potęgi Parser Combinators.
+
+Jako pierwszy przykład parsera chciałbym w tym miejscu zacytować implementację parsera JSON \footnote{JSON - Java Script Object Notation} umieszczonego w książce
+\textit{Programming in Scala} autorstwa Martina Oderskiego \cite{odersky_scala}:
+
+\begin{lstlisting}
+import scala.util.parsing.combinator._
+
+class JSON extends JavaTokenParsers {   
+
+  def obj: Parser[Map[String, Any]] = 
+    "{"~> repsep(member, ",") <~"}" ^^ (Map() ++ _)
+    
+  def arr: Parser[List[Any]] =
+    "["~> repsep(value, ",") <~"]" 
+
+  def member: Parser[(String, Any)] = 
+    stringLiteral~":"~value ^^ 
+      { case name~":"~value => (name, value) }
+
+  def value: Parser[Any] = (
+    obj
+  | arr 
+  | stringLiteral
+  | floatingPointNumber ^^ (_.toDouble) 
+  | "null"  ^^ (x => null) 
+  | "true"  ^^ (x => true) 
+  | "false" ^^ (x => false)
+  )
+}
+\end{lstlisting}
+
+Kod nie dość że jest elegancki, to okazuje się, gramatyka wykorzystana w tym przykładzie (a zatem i wygenerowany parser) jest klasy \textit{LL(1)}.
+Oznacza to, że kosztowny mechanizm nawrotów nigdy nie zostanie wykorzystany podczas parsowania JSONa przy pomocy powyższego parsera. Jest to ciekawy argument
+przeciwko zarzutowi stawianemu kombinatorom parserów, iż generują bardzo powolne (nawracające się) parsery -- jest to oczywiście nie prawda, ponieważ to 
+od zastosowanej gramatyki zależy jakiej klasy otrzymamy w efekcie parser.
+
+~\\\*
+
+Drugim przykładem parsera jest zaimplementowany przeze mnie celem pokazania kombinatorów parserów prosty parser,
+który w efekcie działania oblicza b. proste wyrażenia matematyczne. Parser ten można raczej traktować jako ciekawostkę niż pełną implementację Idei, 
+jednak obrazuje on bardzo dobrze jak wykorzystywane są operacje \verb|^^| celem wpasowania parsowanego drzewa do własnego modelu -- analogicznie
+jak miało to miejsce podczas implementowania parsera ProtoDoc.
+
+\begin{lstlisting}
+object MathParser extends RegexParsers with ImplicitConversions {
+  def number: Parser[Long] = "[0-9]+".r ^^ { _.toLong }
+  def num: Parser[Long] = lp ~> number <~ rp
+  
+  def add: Parser[AOperation] = ("+" | "-" ) ^^ { AOperation(_) }
+  def mult: Parser[MOperation] = ("*" | "/" ) ^^ { MOperation(_) }
+
+  def op: Parser[Long] = lp ~> num ~! (add | mult) ~! num <~ rp ^^ {
+    case num1 ~ op ~ num2 => op.perform(num1, num2)
+  }
+
+  def lp: Parser[Option[String]] = opt("(")
+  def rp: Parser[Option[String]] = opt(")")
+  def stop: Parser[Option[String]] = opt(";")
+  
+  def parse(string: String): Any = parseAll(op, string) match {
+    case Success(res, _) => res
+    case e => throw new RuntimeException(e.toString)
+  }
+}
+
+object MathParserTest extends App {
+  override def main(args: Array[String]) {
+    import MathParser._
+    println(parse("10+15")) // 25
+    println(parse("10*2")) // 20
+  }
+}
+\end{lstlisting}
+
+
+Kod ponownie jest zwięzły, czytelny oraz scentralizowany w jednym miejscu. W ramach przypomnienia jak podobny parser wyglądałby w GNU Bison, 
+można spojrzeć tutaj: \href{http://www.usna.edu/Users/cs/lmcdowel/courses/si413/F10/labs/L04/calc1/ex1.html}{http://www.usna.edu/Users/cs/lmcdowel/courses/si413/F10/labs/L04/calc1/ex1.html}
+gdzie umieszczony został przykład podobnego parsera. Wadami rozwiązania problemy przy pomocy Bison oraz Flex jest korzystanie z wielu narzędzi,
+wielu plików, oraz wielokrokowy proces budowania projektu -- co w kontraście do 1 pliku, 1 języka, oraz braku dodatkowych kroków, faktycznie daje Scali pewną przewagę.

@@ -8,6 +8,7 @@
 % dodatkowe pakiety
 \usepackage{enumerate}
 \usepackage{hyperref}
+
 % Listings ------------------------------------------------------------
 \usepackage{listings}
 % Scala listings
@@ -96,18 +97,35 @@
 \clearpage
 
 %---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-%\include{intro}
-
 \chapter{Wprowadzenie}
 \label{cha:wprowadzenie}
 
-% TODO TODO TODO TODO TODO TODO TODO TODO TODO 
-% TODO TODO TODO TODO TODO TODO TODO TODO TODO 
-% TODO TODO TODO TODO TODO TODO TODO TODO TODO 
-% TODO TODO TODO TODO TODO TODO TODO TODO TODO 
-% TODO TODO TODO TODO TODO TODO TODO TODO TODO 
-% TODO TODO TODO TODO TODO TODO TODO TODO TODO 
-% TODO TODO TODO TODO TODO TODO TODO TODO TODO 
+Google Protocol Buffers są zespołem narzędzi i binarnego protokołu służącymi do transportu danych w możliwie najefektywniejszy sposób.
+Można o nich myśleć w kategorii następcy takich formatów danych jak XML lub ostatnio popularny JSON. Główną przyczyną dlaczego Protocol Buffers, 
+dalej zwanymi ProtoBuf, zaczynają powoli wypierać zastosowanie wcześniej wspomnianych formatów reprezentacji danych jest fakt wynikający bezpośrednio
+z części ,,binarny'' w opisie ProtoBuf -- wiadomości kodowane przy pomocy tego narzędzia, mogą być znacznie efektywniej kompresowane oraz szybciej 
+rekonstruowane. W przypadku systemów ,,High Velocity'' gdzie opóźnienia rzędu milisekund już są znaczące okazuje się, że nie ma już od dawna miejsca
+dla uznawanych dotychczas przez branżę standardów komunikacji, takich jak na przykład SOAP, parsowanie którego wiadomości z racji formatu danych, zwyczajnie
+nie jest w stanie sprostać wymaganiom wydajnościowym tych systemów. Jednym z przykładów największych instalacji ProtoBuf jest oczywiście samo Google, 
+stosujące je w ramach komunikacji między większością swoich aplikacji. Protocol Buffers nie są same w ruchu wielkich firm ku binarnym protokołom - 
+jako przykład może posłużyć \href{http://thrift.apache.org/}{Apache Thrift} \footnote{Apache Thrift -- Strona domowa projektu}, będący odpowiednikiem ProtoBuf,
+uwolnionego jako open source spod skrzydła Facebook. 
+
+Zasada działania tych protokołów jest prosta, oraz w pewien sposób zbliżona do tego co świat enterprise zna od lat, pod formą WSDL, to znaczy ,,kontraktów''
+między dostawcą serwisu oraz jego klientami. W Protocol Buffers taki kontrakt spisuje się przy pomocy specjalnego IDL (\textit{Interface Description Language} 
+- ang. Język opisu interfejsu) o tej samej nazwie. Język ten jest przedmiotem niniejszej pracy inżynierskiej. Definiowane przy jego pomocy typy wiadomości
+są następnie wykorzystywane przez kompilator \textit{protoc}, celem generowania ,,potrafiących się przeczytać ze strumienia bajtów'' klas, w dowolnym języku
+programowania. Pozwala to na automatyczne generowanie web serwisów, analogicznie jak miało to miejsce w przypadku generowania kodu z WSDL za czasów SOAP.
+
+Miejscem w którym \textit{ProtoDoc}, aplikacja powstała w ramach tej pracy inżynierskiej, znajduje swoją niszę, jest dokumentacja wiadomości Protocol Buffers.
+Niestety okazuje się, iż dokumentacja wiadomości Protocol Buffers staje się dużym problemem w korporacjach gdzie mamy do czynienia setkami wiadomości, które
+zostały pierwotnie stworzone wiele lat temu. Niestety nie istnieją obecnie narzędzia generujące dokumentację na podstawie kodu ProtoBuf. Pomogłoby
+to rozproszonym dużym zespołom uniknąć nieporozumień dotyczących poprawnego wykorzystywania wiadomości. Narzędziem które może ten stan rzeczy zmienić,
+jest ProtoDoc.
+
+% Celem \textit{ProtoDoc} jest rozwiązanie problemów dokumentacji wiadomości, w analogiczny sposób jak uczynił to JavaDoc dla Javy,
+% poprzez automatyczne generowanie stron www, zawierających pełen zestaw informacji na temat danego typu, wraz z odnośnikamu do nowżych lub bardziej zalecanych wersji wiadomości.
+% Tym sposobem nawet programiści spoza zespołu, mogliby mieć dostęp do tej dokumentacji i uniknięte zostałyby liczne nieporozumienia związane z brakiem dokumentacji Protocol Buffers.
 
 
 %---------------------------------------------------------------------------
@@ -190,7 +208,7 @@ Skaner jest generowany przy pomocy \textit{JFlex} \footnote{JFlex (Fast Lexical 
 Niestety druga z interesujących nas części aplikacji, parser, jest \textit{ściśle związany ze środowiskiem IntelliJ IDEA}, dla którego to powstał ten projekt.
 IntelliJ dostarcza własny mechanizm parsowania do którego pluginy jedynie mogą się podpinać, oraz pomagać w przeprowadzeniu parsingu pliku, nie można w tym przypadku
 powiedzieć że projekt zawiera całą implementację parsera. Część źródeł IntelliJ IDEA co prawda jest otwarta, jednak skorzystanie z podejścia dołączenia całego IDE,
-aby być w stanie parsować pliki, wydaje się bardzo nie optymalna - rozmiar dystrybucji ProtoDoc stałby się bardzo duży (rzędku setek MB, z racji dołączonych 
+aby być w stanie parsować pliki, wydaje się bardzo nie optymalna - rozmiar dystrybucji ProtoDoc stałby się bardzo duży (rzędu setek MB, z racji dołączonych 
 zależności w postaci IntelliJ).
 
 ~\\\*
@@ -381,7 +399,7 @@ Wpierw zostanie jednak pokazany w sposób bardziej wizualny niż formalny, jak k
  \includegraphics[scale=0.85]{main_classes.png}
 \end{center}
 \label{simple_visualization}
-\caption{Nie formalna wizualizacja interakcji pomiędzy komponentami}
+\caption{Nieformalna wizualizacja interakcji pomiędzy komponentami}
 \end{figure}
 
 Dzięki nie formalnej wizualizacji interakcji między komponentami na Rysunku \ref{simple_visualization} można łatwo zobrazować sobie
@@ -804,7 +822,7 @@ na przykład wartości domyślnej w przypadku znanego przez parser już typu ora
 
 
 % \subsection{Wprowadzenie do kombinatorów parserów}
-% TODO klasyfikacja, opisać że są lewo stronnie rekurencyjne etc.
+% TODO klasyfikacja, opisać że są lewostronnie rekurencyjne etc.
 % 
 % \verb|http://en.wikipedia.org/wiki/Recursive_descent_parser|
 % 
@@ -1019,192 +1037,6 @@ odsyłam na stronę domową projektu - \href{http://mustache.github.com/mustache
 % Simple Build Tool, w śkrócie zwanym SBT \footnote{SBT - Strona domowa projektu: \href{https://github.com/harrah/xsbt}{https://github.com/harrah/xsbt}}.
 
 
-%---------------------------------------------------------------------------
-\newpage
-\chapter{Rola Testów oraz TDD w procesie tworzenia aplikacji}
-\label{chapter:tdd}
-\section{Metodyka TDD i jej pozytywny wpływ na projekt}
-
-Projekt prowadzony był zgodnie z zasadami Test Drivem Development (zwanego dalej \textit{TDD}),
-co znacznie ułatwiło ustabilizowanie API oraz głównych konceptów jeszcze we wczesnych etapach tworzenia aplikacji.
-Ponad to, metodyka ta umożliwiła pracę z dotychczas nieznanym mi API bez obaw o zniszczenie zaimplementowanych wcześniej funkcjonalności.
-
-Metodykę \textit{TDD} możnaby opisać jako cylk składający się z trzech faz:
-\begin{itemize}
- \item napisanie najpierw \small{(sic!)} testu, sprawdzającego automatycznie czy stawiane przed nami oczekiwanie zostało spełnione
- \subitem pewną sub-fazą jest upewnienie się że test faktycznie na stan obecny aplikacji nie przechodzi. Najlepiej aby wiadomość niepowodzenia
-          jasno wskazywała na to co jest przyczyną problemu. Jest to istotne nie tyle teraz, podczas implementacji, jednak podczas dalszego rozwoju aplikacji,
-          kiedy to być może sprawimy, że ten test przestanie przechodzić - wówczas, \textit{,,kilka tygodni później''}, pomocny komunikat o przyczynie problemu 
-          znacznie przyśpieszy zlokalizowanie oraz naprawienie problemu.
- \item implementacji funkcjonalności, tak aby warunki w teście zostały spełnione.
-  \subitem należy pamiętać aby była to implementacja minimalna - nie wolno wychodzić ,,do przodu'' z implementacją, nawet jeżeli uważa się,
-           że pewna funkcjonalność \textit{prawdopodobnie} będzie niebawem implementowana.
- \item oraz refaktoringu właśnie zaimplementowanych komponentów aplikacji, lub zauważonych podczas implementacji ewentualnych powtórzeń kodu itp.
-\end{itemize}
-
-Fazy te w literaturze znane są jako ,,Red - Green - Refactor'', i obrazuje się ją przy pomocy przedstawionego na Rysunku \ref{tdd_cycle} grafu.
-
-\begin{figure}[ch]
- \begin{center}
-  \includegraphics[scale=0.8]{tdd_cycle}
- \end{center}
- \label{tdd_cycle}
- \caption{Schemat obrazujący fazy pracy w metodyce \textit{TDD} \small{(źródło: własne)}}
-\end{figure}
-
-
-Przedstawiony powyżej cykl zazwyczaj trwa pomiędzy kilkoma a trzydziestoma minutami. Technika ta jest ściśle związana z samo-dyscypliną programisty
-i stosunkowo trudna do zastosowania w przypadku nie stosowania jej na codzień - jednak resultaty, pod postacią wzrostu jakości kodu oraz zmniejszeniu 
-czasu traconego na poszukiwania błędów są znaczne.
-
-Oprócz pisania testu zanim powstanie jakakolwiek implementacja, bardzo ważnym elementem fazy implementacji jest jest aby jej celem 
-było napisanie \textit{minimalnej ilości kodu doprowadzając test to ,,przejścia''} (spełniania wymagań w nim stawianych). Przykładowo, nie dozwolone jest
-implementowanie dodatkowych funkcjonalności (,,na zapas''), nawet jeżeli uważa się iż będą niebawem konieczne podczas fazy implementacji związanej 
-z właśnie napisanym testem. Faza implementacji nie może zostać zakończona w przypadku uszkodzenia (sprawienia że inny niż obecnie rozwijany test ,,nie przejdzie'')
-
-\section{Zaimplementowane specyfikacje}
-\begin{verbatim}
-MustacheFilenameTest:
-- Should create mustache template filenames
-
-TagVerifierTest:
-validateTags 
-- should detect duplicated tags
-  + Given an message with duplicated field tags 
-  + When tags are validated 
-  + Then it should detect duplicates 
-  + And errors are about the 'second' and 'fail' fields 
-validateTags 
-- should should 'OK' a valid tags list
-  + Given a valid message 
-  + When tags are validated 
-  + Then it have not detected any problems 
-
-InnerMessagesTest:
-Inner message 
-- should be parsed properly
-PackageTest:
-Package name 
-- should be read from proto file with it
-InnerInnerMsg package 
-- should contain it's super Messages in package name
-
-MultipleProtoFilesTest:
-Parser given multiple files 
-- should parse multiple seperate (independent) files
-CommentsTest:
-Comment on top level message 
-- should be parsed properly
-Comment on field 
-- should be parsed properly
-- should be parsed properly, even if inline
-- should be parsed properly, using JavaDoc style markers
-- should be parsed properly, even if spanning multiple lines
-Multi Line Comment on top level message 
-- should be parsed properly
-Multi Line Comment on inner enum 
-- should be parsed properly
-Comment on enum value 
-- should be parsed properly
-
-ProtoBufVerifierTest:
-The Verifier should validate field types 
-- should detect an unresolvable field
-  + Given a message with an invalid fieldtype 
-  + When the message is parsed and verified 
-  + Then the Verifier report it as invalid 
-  + And it should point out that the UnknownType is unresolvable 
-- should have no problems with resolvable field Type
-  + Given a message with valid, resolvable fieldtype, defined before the message 
-  + When the message is parsed and verified 
-  + Then the result should contain one HasResolvableField message 
-  + And the field should be resolved to the propper type 
-
-RealSimpleParsingTest:
-Parsing of an real message, with outer enum 
-- should be parsed properly
-  + Given A real proto file 
-  + When it is parsed 
-  + And it is verified 
-  + Then parsed size should be 2 
-  + And the inner message should be detected 
-  + And the inner message should be named properly 
-  + And the enum field should have the proper type resolved 
-  + And it's tag should be equal 3 
-  + And it's resolved type should be the outer enumeration 
-  + And the outer enum should be parsed and named properly 
-
-ProtoBufParserTest:
-Parser 
-- should parse single simple message
-- should parse single message with enum
-- should have no problems with field modifiers
-addOuterMessageInfo 
-- should fix package info of inner enums/msgs
-  + Will fix packages of: List(ProtoMessageType [InnerMessage] in package: []) 
-  + Fix resulted in: List(ProtoMessageType [InnerMessage] in package: [pl.project13.Outer]) 
-
-DeprecationTest:
-Message with deprecations 
-- the deprecated fields should be detected
-- should not detect deprecations where there are none
-- should detect deprecation on message type
-- should detect deprecation on enum type
-- should detect inner types
-
-EnumsTest:
-Enum 
-- should be parseable inside of an Message
-- should be usable as field type
-- should be usable even before it's type declaration
-- should detect an unresolvable enum or message type reference
-Undefined enum 
-- should be type checked, so an not existing enum type used as field type will fail compiling
-
-MultipleMessagesInOneFileTest:
-Parser 
-- should deal with multiple messages defined in the root level of one file
-  + Given a proto file with two root devel messages 
-  + When the messages are parsed and verified 
-  + Then the result should contain two messages 
-- should deal with multiple enums and messages defined in root scope, in one file
-  + Given a proto file with two root devel messages 
-  + When the messages and enum are parsed and verified 
-  + Then the result should contain two messages and one enum 
-
-FieldsTest:
-Message with 2 fields 
-- should in fact have 2 fields
-Parser 
-- should parse single int32 field
-- should parse single fixed32 field
-- should parse single sfixed64 field
-- should parse single int64 field
-- should parse single fixed64 field
-- should parse single optional string field
-- should parse single required string field with default value
-
-MessageTemplateTest:
-ProtoDocTemplateEngine 
-- should render simple message page
-
-TableOfContentsTest:
-ProtoDocTemplateEngine 
-- should render table of contents from sample data
-
-FullIntegrationTest:
-ProtoDoc 
-- should not fail for simple proto files
-  + Given the simple/ director, with proto files 
-  + And a valid destination directory 
-  + When the files are parsed 
-  + Then no exception should be thrown 
-  + And the output should be a valid doc 
-Passed: : Total 45, Failed 0, Errors 0, Passed 45, Skipped 0
-
-\end{verbatim}
-
-
 %===========================================================================
 \chapter{Zastosowanie ProtoDoc do automatyzacji dokumentacji projektów}
 \label{maven}
@@ -1320,6 +1152,157 @@ $ chromium-browser target/index.html
 
 Wykonanie ostatniej komenty (chromium-browser) uruchomi przeglądarkę Google Chromium, ukazując nam wykenerowaną stronę www dokumentacji.
 Przykłady wyglądu takich stron są umieszczone w Rozdziale \ref{sec:screenshots}.
+
+%---------------------------------------------------------------------------
+\newpage
+\section{Zrzuty ekranu wygenerowanej dokumentacji}
+\label{sec:screenshots}
+W tej sekcji zostały umieszczone zrzuty ekranu z przykładowych wygenerowanych stron dla różnych typów wiadomości.
+
+\begin{figure}[hc]
+ \begin{center}
+  \includegraphics[width=\textwidth]{../protodoc_main.png}
+  % protodoc_main.png: 949x970 pixel, 93dpi, 25.92x26.50 cm, bb=0 0 735 751
+ \end{center}
+ \caption{Widok wygenerowanej strony dla typu \textbf{message}}
+ \label{msg_page}
+\end{figure}
+
+Na Rysunku \ref{msg_page} przedstawiona została strona wygenerowana na podstawie 
+
+\begin{figure}[hc]
+ \begin{center}
+  \includegraphics[width=\textwidth]{../protodoc_enum.png}
+  % protodoc_enum.png: 949x970 pixel, 93dpi, 25.92x26.50 cm, bb=0 0 735 751
+ \end{center}
+ \caption{Widok wygenerowanej strony dla typu \textbf{enum}}
+ \label{enum_page}
+\end{figure}
+
+
+%---------------------------------------------------------------------------
+\newpage
+\chapter{Rola Testów oraz TDD w procesie tworzenia aplikacji}
+\label{chapter:tdd}
+\section{Metodyka TDD i jej pozytywny wpływ na projekt}
+
+Projekt prowadzony był zgodnie z zasadami Test Drivem Development (zwanego dalej \textit{TDD}),
+co znacznie ułatwiło ustabilizowanie API oraz głównych konceptów jeszcze we wczesnych etapach tworzenia aplikacji.
+Ponad to, metodyka ta umożliwiła pracę z dotychczas nieznanym mi API bez obaw o zniszczenie zaimplementowanych wcześniej funkcjonalności.
+
+Metodykę \textit{TDD} możnaby opisać jako cylk składający się z trzech faz:
+\begin{itemize}
+ \item napisanie najpierw \small{(sic!)} testu, sprawdzającego automatycznie czy stawiane przed nami oczekiwanie zostało spełnione
+ \subitem pewną sub-fazą jest upewnienie się że test faktycznie na stan obecny aplikacji nie przechodzi. Najlepiej aby wiadomość niepowodzenia
+          jasno wskazywała na to co jest przyczyną problemu. Jest to istotne nie tyle teraz, podczas implementacji, jednak podczas dalszego rozwoju aplikacji,
+          kiedy to być może sprawimy, że ten test przestanie przechodzić - wówczas, \textit{,,kilka tygodni później''}, pomocny komunikat o przyczynie problemu 
+          znacznie przyśpieszy zlokalizowanie oraz naprawienie problemu.
+ \item implementacji funkcjonalności, tak aby warunki w teście zostały spełnione.
+  \subitem należy pamiętać aby była to implementacja minimalna - nie wolno wychodzić ,,do przodu'' z implementacją, nawet jeżeli uważa się,
+           że pewna funkcjonalność \textit{prawdopodobnie} będzie niebawem implementowana.
+ \item oraz refaktoringu właśnie zaimplementowanych komponentów aplikacji, lub zauważonych podczas implementacji ewentualnych powtórzeń kodu itp.
+\end{itemize}
+
+Fazy te w literaturze znane są jako ,,Red - Green - Refactor'', i obrazuje się ją przy pomocy przedstawionego na Rysunku \ref{tdd_cycle} grafu.
+
+\begin{figure}[ch]
+ \begin{center}
+  \includegraphics[scale=0.8]{tdd_cycle}
+ \end{center}
+ \label{tdd_cycle}
+ \caption{Schemat obrazujący fazy pracy w metodyce \textit{TDD} \small{(źródło: własne)}}
+\end{figure}
+
+
+Przedstawiony powyżej cykl zazwyczaj trwa pomiędzy kilkoma a trzydziestoma minutami. Technika ta jest ściśle związana z samo-dyscypliną programisty
+i stosunkowo trudna do zastosowania w przypadku nie stosowania jej na codzień - jednak resultaty, pod postacią wzrostu jakości kodu oraz zmniejszeniu 
+czasu traconego na poszukiwania błędów są znaczne.
+
+Oprócz pisania testu zanim powstanie jakakolwiek implementacja, bardzo ważnym elementem fazy implementacji jest jest aby jej celem 
+było napisanie \textit{minimalnej ilości kodu doprowadzając test to ,,przejścia''} (spełniania wymagań w nim stawianych). Przykładowo, nie dozwolone jest
+implementowanie dodatkowych funkcjonalności (,,na zapas''), nawet jeżeli uważa się iż będą niebawem konieczne podczas fazy implementacji związanej 
+z właśnie napisanym testem. Faza implementacji nie może zostać zakończona w przypadku uszkodzenia (sprawienia że inny niż obecnie rozwijany test ,,nie przejdzie'').
+
+Dzięki zastosowaniu tej metodyki, nie dość że kod tworzyło się łatwiej -- dzięki skupianiu się na konkretnym celu, dostarczającym konkretnych wartości dla projektu -- 
+ale również podczas wprowadzania dużych zmian, mogłem być pewien, że nie uszkadzam przypadkiem istniejących oraz działających sprawnie elementów programu.
+Szczerze zalecam stosowanie tej metodyki, a nawet jeżeli nie czystego TDD, które może byż z początku przytłaczającym podejściem do wytwarzania oprogramowania,
+to z pewnością do samego rozpoczyniania pracy od napisania testu, a dopiero następnie przestępowania do programowania.
+
+Ogółem w projekcie zostało zaimplementowane ponad 46 testów, w których zastosowano ponad 200 asercji.
+
+\section{Zaimplementowane specyfikacje}
+Ponieważ wyjście z Runnera (,,tego który uruchamia'') testów stosowanego przezemnie w tym projekcie, są bardzo czytelne, oraz ładnie dokumentują 
+jakie funkcjonalności dokładnie zostały zaimplementowane oraz automatycznie przetestowane. Poniżej umieszczone zostały jedynie niektóre z wiadomości,
+ponieważ umieszczenie wszystkich zajęłoby niestety kilka stron -- mam jednak nadzieję, że ich czytelność mile zaskoczy czytelnika oraz zachęci do stosowania
+tego typu podejścia do testowania aplikacji.
+
+\begin{verbatim}
+ProtoBufVerifierTest:
+The Verifier should validate field types 
+- should detect an unresolvable field
+  + Given a message with an invalid fieldtype 
+  + When the message is parsed and verified 
+  + Then the Verifier report it as invalid 
+  + And it should point out that the UnknownType is unresolvable 
+- should have no problems with resolvable field Type
+  + Given a message with valid, resolvable fieldtype, defined before the message 
+  + When the message is parsed and verified 
+  + Then the result should contain one HasResolvableField message 
+  + And the field should be resolved to the propper type 
+
+RealSimpleParsingTest:
+Parsing of an real message, with outer enum 
+- should be parsed properly
+  + Given A real proto file 
+  + When it is parsed 
+  + And it is verified 
+  + Then parsed size should be 2 
+  + And the inner message should be detected 
+  + And the inner message should be named properly 
+  + And the enum field should have the proper type resolved 
+  + And it's tag should be equal 3 
+  + And it's resolved type should be the outer enumeration 
+  + And the outer enum should be parsed and named properly 
+
+MultipleMessagesInOneFileTest:
+Parser 
+- should deal with multiple messages defined in the root level of one file
+  + Given a proto file with two root devel messages 
+  + When the messages are parsed and verified 
+  + Then the result should contain two messages 
+- should deal with multiple enums and messages defined in root scope, in one file
+  + Given a proto file with two root devel messages 
+  + When the messages and enum are parsed and verified 
+  + Then the result should contain two messages and one enum 
+
+...
+\end{verbatim}
+
+%---------------------------------------------------------------------------
+\chapter{Podsumowanie}
+Projekt udało się zakończyć w ramach planowanego zakresu funkcjonalności. 
+
+Miłym akcentem jest również plugin do narzędzia zarządzania cyklem życia projektu - Maven,
+dzięki czemu ProtoDoc faktycznie zyskał na sensie, z perspektywy użytkownika końcowego.
+
+\section{Plany rozwoju aplikacji}
+Aplikacja w przyszłości może zostać rozszerzona aby wspierać jeszcze większą część standardu 
+Protocol Buffers, w szczególności, można wyróźnić niektóre interesujące zadania do wykonania:
+
+\begin{itemize}
+ \item zaimplementować rozpoznawanie słowa kluczowego \textbf{option}, służącego przekazywaniu pewnych meta danych do kompilatora \textit{protoc}
+ \item zaimplementować bardziej dokładne rozwiązywanie widoczności, biorące pod uwagę różne notacje z kropką w nazwie wiadomości
+       w przypadku stosowania słowa kluczowego \textit{import}
+ \item dobudować dodatkowy moduł, który dokumentowałby elementy \textbf{service}, które nie zostały pokryte w tej pracy
+ \item zaimplementować więcej, oraz bardziej wnikliwych weryfikacji, służących nie tylko jako sprawdzenie poprawności, ale jako rady oraz utrzymanie dobrego stylu
+       implementowanych wiadomości
+ \item zaimplementować \textit{ProtoDoc} jako plugin do innych systemów zarządzania cyklem życia projektu. Zadanie to jest stosunkowo proste, 
+       jak już przedstawiono na przykładzie Maven, a mogłoby znacznie pomóc społeczności użytkowników języków takich jak Groovy bądź Scala, gdzie Maven 
+       jest rzadziej wykorzystywany niż w projektach ,,czysto Javowych''.
+\end{itemize}
+
+Projekt planuję rozwijać w czasie wolnym, ponieważ uważam że potrzeba takiego narzędzia faktycznie istnieje oraz przy okazji jego 
+implementacji nauczyłem się wiele o Scali jak i samych Protocol Buffers.
 
 
 %---------------------------------------------------------------------------
