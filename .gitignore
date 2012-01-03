@@ -12,3 +12,5 @@ lib_managed/
 src_managed/
 project/boot/
 src/main/resources/file_index
+
+.DS_Store
