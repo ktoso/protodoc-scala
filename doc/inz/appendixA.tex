@@ -54,7 +54,7 @@ person.SerializeToOstream(&output);
 A następnie możliwe byłoby dokonanie opisywanej wcześniej deserializacji z utworzonej właśnie tablicy bajtów.
 Ten przykład przedstawimy w języku Java, w ramach przypomnienia iż ProtoBuf jest niezależny od języka ani platformy:
 
-\begin{lstlisting}[caption={Przykład klasy ProtoBuf w C++, odczytującej ,,się'' z zapisanego wcześniej binarnego pliku}]
+\begin{lstlisting}[caption={Przykład klasy ProtoBuf w Javie, odczytującej ,,się'' z zapisanego wcześniej binarnego pliku}]
 FileInputStream is = new FileInputStream("myfile.data");
 
 Person person = Person.parseFrom(is);
