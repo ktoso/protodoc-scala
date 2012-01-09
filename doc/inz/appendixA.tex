@@ -112,7 +112,7 @@ sfixed32 & sfixed64 & fixed64 &  \\
 \end{tabular}
 \end{center}
 \caption{Predefiniowane typy w ProtoBuf}
-\label{protoTupes_all}
+\label{protoYypes_all}
 \end{table}
 
 Poza wspomnianymi predefiniowanymi typami, pola mogą oczywiście mieć typ innej wiadomości. Tym sposobem można modelować nawet skomplikowane modele domenowe
@@ -139,17 +139,19 @@ Jak widać, możliwe jest również podanie nazwy \verb|LARGE| jako wartości do
 
 Poniewać w efekcie, ProtoBuf służy efektywnej serializacji i deserializacji obiektów, bardzo ważna jest jego wydajność pracy 
 w rzeczywistych warunkach, oraz porównanie go z innymi dostępnymi rozwiązaniami. Benchmark taki został przeprowadzony przez Pana
-w ramach projektu \textbf{jvm-serializers} \cite{JVMSerializers}
+w ramach projektu \textbf{jvm-serializers} \cite{Jvmserializers}
 Testy takie przeprowadzono w ramach projektu umieszczonego na githubie pod adresem.
-Benchmark \cite{proto_benchmark} ten został wykonany w roku 2011, oraz uwzględnia najważniejsze metody serializacji danych na JVMie, takie jak
+Benchmark ten został wykonany w roku 2011, oraz uwzględnia najważniejsze metody serializacji danych na JVMie, takie jak
 natywna serializacja Java, serializacja danych do JSON przy pomocy różnych bibliotek oraz oczywiście ProtoBuf oraz jego konkurencji - Thrift.
 
 \textbf{Serializacja + Deserializacja:}\\
-Czas spędzony na serializacji oraz deserializacji tego samego obiektu:
+Czas spędzony na serializacji oraz deserializacji tego samego obiektu został przedstawiony na Rysunku \ref{serializers1}. 
 
 \begin{figure}[ch!]
  \includegraphics[scale=0.8]{proto_1}
  \includegraphics[scale=1]{proto_2} 
+ \caption{Wykresy czasu serializacji + deserializacji obiektu przy zastosowaniu różnych bibliotek (źródło: \cite{Jvmserializers})}
+ \label{serializers1}
 \end{figure}
 
 ProtoStuff, alternatywna implementacja protokołu ProtoBuf wiedzie prym w tym benchmarku, jednak protobuf nadal jest stanowczno wiadącą implementacją.
@@ -159,22 +161,28 @@ z czasem osiągniętym przez ProtoBuf, równym \textbf{6132ns} jasno wyraża prz
 
 \newpage
 \textbf{Rozmiar zserializowanej wiadomości:}\\
-Rozmiar liczony w bajtach wiadomości po zserializowaniu:
+Rysunek \ref{serializers2} przedstawia natomiast rozmiar wiadomości po serializacji przy wykorzystaniu wybranych bibliotek (liczony w bajtach).
 
 \begin{figure}[ch!]
  \includegraphics[scale=0.8]{serialized_size_1}
  \includegraphics[scale=1]{serialized_size_2} 
+ \caption{Wykresy rozmiaru rozmiaru zserializowanego obiektu przy zastosowaniu różnych bibliotek (źródło: \cite{Jvmserializers})}
+ \label{serializers2}
 \end{figure}
 
 Przy porównywaniu rozmiaru zserializowanego obiektu ponownie protokoły binarne, z ProtoBuf na czele wiodą prym... 
 Konkurencja typu serializacji Javowej lub JSON niestety nie ma tutaj wiele do powiedzenia, powodem jest iż Java serializując obiektu musi
 zatrzymać wszystkie nazwy klas aby potrafić się do nich odwołać podczas deserializacji; W przypadku JSONa, mamy do czynienia z dużą ilością nadmiarowych danych
-w postaci reprezentowania liczb jako tekst, oraz dużej ilości nadmiarowych znaków w postaci \verb|{| oraz \verb|}| itp.
+w postaci reprezentowania liczb jako tekst, oraz dużej ilości nadmiarowych znaków w postaci \verb|{| oraz \verb|}|. To samo można powiedzieć o wszelkich
+tekstowych reprezentacjach danych, które tłumaczą każde pole danych jako element XML - niosący ze sobą jeszcze większą ilość nadmiarowych danych (elementy
+otwierające i zamykające dane pole). Ciekawostą jest natomiast to iż nawet tak ociążała postać danych jaką jest XML, ma szansę wyprodukować mniejszy rozmiach zserializowanego obiektu
+niż mechanizmy domyślnie stosowane przez języki takie jak Scala lub Java. Przyczyną tutaj jest konieczność serializacji przez mechanizmy bazujące bezpośrednio na JVM,
+również wszystkich nazw typów każgego z pól które jest serializowane -- tym samym, dla każdego pola będącego ciągiem znaków, dodatkowo w zserializowanej postaci
+obiektu pojawi się ciąg znaków ,,java.lang.String''.
 
 
 
 %---------------------------------------------------------------------------
-\newpage
 \section{Przykładowe definicje wiadomości}
 \label{sec:proto_file_examples}
 
@@ -201,7 +209,11 @@ message SearchRequest {
 }
 \end{lstlisting}
 
-\begin{lstlisting}[caption={Definicja wiadoomści wykorzystującej inną wiadomość}]
+Powyższy listing obrazuje jak mogłaby wyglądać wiadomość Protocol Buffers stosowany przez wyszukiwarkę Google.
+SearchRequest przedstawiałby w takim przypadku żądanie nadane w efekcie przez użytkownika, wgłąb systemu.
+
+\newpage
+\begin{lstlisting}[caption={Definicja wiadoomści wykorzystującej inną wiadomość}, label={something1}]
 message SearchResponse {
   repeated Result result = 1;
 }
@@ -213,8 +225,7 @@ message Result {
 }
 \end{lstlisting}
 
-\newpage
-\begin{lstlisting}[caption={Definicja wiadomości korzystającej z wewnętrznej wiadomości}]
+\begin{lstlisting}[caption={Definicja wiadomości korzystającej z wewnętrznej wiadomości}, label={something2}]
 message SearchResponse {
   message Result {
     required string url = 1;

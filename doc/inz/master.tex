@@ -69,7 +69,7 @@
 \shorttitlePL{ProtoDoc - impl. odpowiednika JavaDoc dla Google~Protocol~Buffers} 
 \shorttitleEN{ProtoDoc - impl. of JavaDoc like tool for Google~Protocol~Buffers}
 
-\thesistypePL{Praca inżynierska}
+\thesistypePL{Praca Dyplomowa Inżynierska}
 \thesistypeEN{Bachelor of Science Thesis}
 
 \supervisorPL{dr inż. Jacek Piwowarczyk}
@@ -217,7 +217,7 @@ ich dopasowanie do potrzeb tego projektu byłby zbyt dużym przedsięwzięciem.
 
 Protoc jest ,,oryginalnym'' kompilatorem plików *.proto. Zawiera ręcznie zaimplenentowany przez inżynierów google skaner oraz parser,
 potrafiący obsłużyć 100\% specyfikacji ProtoBuf. Jego źródła są dostępne na stronie Google Code: \href{http://code.google.com/p/protobuf/source/browse/}{http://code.google.com/p/protobuf/source/browse/}
-Projekt objęty jest licencją \textit{New BSD License}\cite{BDSLicense}.
+Projekt objęty jest licencją \textit{New BSD License} \cite{BSDLicense}.
 
 Warto również uwypuklić pewien problem z udostępnianym przez Google kompilatorem Protocol Buffers IDL - \textit{protoc}.
 Otóź nawet jeżeli źródłowy plik *.proto posiada komentarze, kompilator \textit{protoc} nie przeniesie je do wynikowych plików, np. *.java.
@@ -444,7 +444,6 @@ Jak widać mamy wydzielone klasyczne dla kompilatorów odpowiedzialności: parso
 W kolejnych sekcjach zostaną przedstawione diagramy oraz wizualizacje interakcji między tymi komponentami.
 
 %------------------------------------------------------------------------------
-\newpage
 \section{Architektura aplikacji}
 \label{sec:sequence_diagrams}
 
@@ -507,7 +506,6 @@ przedstawione na poprzednim diagramie (\ref{fig:sequence_diagram_parsing}).
 
 
 %------------------------------------------------------------------------------
-\newpage
 \subsection{Zastosowany model typów wiadomości Protocol Buffers w Scala}
 \label{the_types}
 Celem wykorzystania w pełni z potencjału statycznego typowania języka Scala --- zamiast pracowania wprost na listach i mapach wartości które 
@@ -848,11 +846,10 @@ mamy tutaj do czynienia z funkcją wyższego rzędu, której przekazujemy funkcj
 W naszym przykładzie zwracany jest \verb|ProtoMessageField| z pobranych podczas parsowania elementów. Słowo kluczore \verb|return| znane z innych języków programowania
 nie jest tutaj konieczne.
 
-~\\\*
-
 Pozostałe parsery są bardzo podobne w implementacji do przedstawionych powyżej, oraz generalnie sprowadzają się głównie do sprawdzania poprawności,
 na przykład wartości domyślnej w przypadku znanego przez parser już typu oraz przypisań odpowiednich elementów do odpowiednich typów, które szczegółowo omówiono w poprzednim rozdziale.
 
+~\\\*
 
 % \subsection{Wprowadzenie do kombinatorów parserów}
 % TODO klasyfikacja, opisać że są lewostronnie rekurencyjne etc.
@@ -960,7 +957,7 @@ na przykład podczas deklaracji pola w wiadomości. Całość implementacji jest
 przy pomocy pisania własnych implicit conversions, zostaną przytoczone w Listingu \ref{lst:visibilityChecks} najciekawsze fragmenty metody odpowiedzialnej
 za sprawdzenie czy typ danego pola jest ,,w zasięgu''.
 
-\begin{lstlisting}
+\begin{lstlisting}[caption={Ważniejsze fragmenty implementacji sprawdzania widoczności typu}, label={lst:visibilityChecks}]
   // by using the find method on List
   val fullyQualifiedMatch = allParsed.find(_.fullName == typeName)
   if(fullyQualifiedMatch.isDefined) {
@@ -974,9 +971,7 @@ za sprawdzenie czy typ danego pola jest ,,w zasięgu''.
     field resolveTypeTo(resolvedType)      
     return NoErrorsEncountered
   }
-    
   // ... 
-
   // unable to resolve, report error
   error("the field: ["+field.fieldName+"] was unresolvable at this point...")
   return UndefinedTypeVerificationError(field.fieldName, "Unable to resolve type ["+typeName+"] from ["+fromContext+"] context.") :: Nil
@@ -994,7 +989,7 @@ jednak są ,,podejrzane'' stąd warto wskazać je programiście podczas poszukiw
 Weryfikacje te były bardzo proste w implementacji dzięki zaprojektowanemu modelowi danych. Jako przykład może posłużyć sprawdzenie czy typ jest pusty, 
 przedstawione w całości w Listingu \ref{lst:checkIfEmpty}.
 
-\begin{lstlisting}
+\begin{lstlisting}[caption={Implementacja ostrzeżenia czy enumeracja jest pusta}, label={lst:checkIfEmpty}]
 def checkIfEmpty(enumType: ProtoEnumType) {
   if(enumType.values.isEmpty)
     warn("""|The enum "+enumType.fullName+" has no values.
@@ -1024,7 +1019,7 @@ Przykład przekazania informacji o typie dla strony o typie enumeracji można zo
 zwraca wygenerowaną stronę jako String, pozostaje jedynie ją zapisać na dysk.
 
 \newpage
-\begin{lstlisting}[caption={Przykład zastosowania Scalate (z silnikiem renderowania szablonów Mustache)}label={lst:using_scalate}]
+\begin{lstlisting}[caption={Przykład zastosowania Scalate (z silnikiem renderowania szablonów Mustache)}, label={lst:using_scalate}]
 def renderEnumPage(enum: ProtoEnumType) = {
   import enum._
 
@@ -1154,7 +1149,7 @@ przez mavena odpowiednie ustawienia z sekcji \verb|<configuration/>| pluginu.
 %------------------------------------------------------------------------------
 \section{Efekt działania ProtoDoc wraz z Maven}
 Efektem zastosowania powyższego pluginu w projekcie mavenowym, jest automatyczne wygenerowanie się dokumentacji.
-Aby unaocznić bardziej strukturę plików oraz proces korzystania z Apache Maven, poniżej przedstawiam krótką sekwencję komend
+Aby unaocznić bardziej strukturę plików oraz proces korzystania z Apache Maven \cite{Maven}, poniżej przedstawiam krótką sekwencję komend
 wydaną w zgognej z POSIX linii poleceń, obrazującej działanie mavena oraz samego pluginu.
 
 \begin{verbatim}
@@ -1185,8 +1180,6 @@ $ tree
     |   +-- pl.project13.CommonMessage.html
     |   +-- pl.project13.MessageWithInner.html
     |   +-- pl.project13.MessageWithInner.InnerMessage.html
-    |   ...
-    ...
 \end{verbatim}
 
 Powyższy listing ładnie obrazuje jaką strukturę katalogów generuje ProtoDoc w efekcie działania.
@@ -1338,18 +1331,6 @@ Parsing of an real message, with outer enum
   + And it's tag should be equal 3 
   + And it's resolved type should be the outer enumeration 
   + And the outer enum should be parsed and named properly 
-
-MultipleMessagesInOneFileTest:
-Parser 
-- should deal with multiple messages defined in the root level of one file
-  + Given a proto file with two root devel messages 
-  + When the messages are parsed and verified 
-  + Then the result should contain two messages 
-- should deal with multiple enums and messages defined in root scope, in one file
-  + Given a proto file with two root devel messages 
-  + When the messages and enum are parsed and verified 
-  + Then the result should contain two messages and one enum 
-
 ...
 \end{verbatim}
 

@@ -18,7 +18,7 @@ Jako konkretnych ,,rodziców'' można by wskazać:
 
 O języku Scala można myśleć jako połączeniu tych nurtów. Dostępne są klasyczne elementy języków funcyjnych,
 takie jak pattern matching czy nacisk na immutability wszystkich tworzonych obiektów. Jest to zwłaszczw widoczne w domyślnych implementacjach
-kolekcji, których nie można modyfikować - a tworzy się za każdym razem nową listę, współdzieląc między nimi elementy które są niezmienne.
+kolekcji, których nie można modyfikować - a tworzy się za każdym razem nową kolekcją, współdzieląc między różnymi kolekcjami elementy które są niezmienne.
 
 %---------------------------------------------------------------------------
 \section{Podstawy}
@@ -394,7 +394,8 @@ który w efekcie działania oblicza b. proste wyrażenia matematyczne. Parser te
 jednak obrazuje on bardzo dobrze jak wykorzystywane są operacje \verb|^^| celem wpasowania parsowanego drzewa do własnego modelu -- analogicznie
 jak miało to miejsce podczas implementowania parsera ProtoDoc.
 
-\begin{lstlisting}
+\newpage
+\begin{lstlisting}[caption={Przykładowy parser obliczający podczas parsowania proste zadania arytmetyczne}, label={mathsimple}]
 object MathParser extends RegexParsers with ImplicitConversions {
   def number: Parser[Long] = "[0-9]+".r ^^ { _.toLong }
   def num: Parser[Long] = lp ~> number <~ rp
