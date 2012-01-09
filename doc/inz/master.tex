@@ -100,6 +100,12 @@
 \chapter{Wprowadzenie}
 \label{cha:wprowadzenie}
 
+Poniższy rozdział ma za cel przedstawienie czytelnikowi dziedziny oraz problemu jaki rozwiązuje zaimplementowany 
+w ramach tej pracy inżynierskiej program - \textit{ProtoDoc}. Następnie zostaną przedstawione rozdziały pracy oraz jakie 
+tematy dany rozdział porusza.
+
+\section{Przedstawienie dziedziny zagadnienia}
+
 Google Protocol Buffers są zespołem narzędzi i binarnego protokołu służącymi do transportu danych w możliwie najefektywniejszy sposób.
 Można o nich myśleć w kategorii następcy takich formatów danych jak XML lub ostatnio popularny JSON. Główną przyczyną dlaczego Protocol Buffers, 
 dalej zwanymi ProtoBuf, zaczynają powoli wypierać zastosowanie wcześniej wspomnianych formatów reprezentacji danych jest fakt wynikający bezpośrednio
@@ -108,7 +114,7 @@ rekonstruowane. W przypadku systemów ,,High Velocity'' gdzie opóźnienia rzęd
 dla uznawanych dotychczas przez branżę standardów komunikacji, takich jak na przykład SOAP, parsowanie którego wiadomości z racji formatu danych, zwyczajnie
 nie jest w stanie sprostać wymaganiom wydajnościowym tych systemów. Jednym z przykładów największych instalacji ProtoBuf jest oczywiście samo Google, 
 stosujące je w ramach komunikacji między większością swoich aplikacji. Protocol Buffers nie są same w ruchu wielkich firm ku binarnym protokołom - 
-jako przykład może posłużyć \href{http://thrift.apache.org/}{Apache Thrift} \footnote{Apache Thrift -- Strona domowa projektu}, będący odpowiednikiem ProtoBuf,
+jako przykład może posłużyć \href{http://thrift.apache.org/}{Apache Thrift} \cite{Thrift}, będący odpowiednikiem ProtoBuf,
 uwolnionego jako open source spod skrzydła Facebook. 
 
 Zasada działania tych protokołów jest prosta, oraz w pewien sposób zbliżona do tego co świat enterprise zna od lat, pod formą WSDL, to znaczy ,,kontraktów''
@@ -121,15 +127,11 @@ Miejscem w którym \textit{ProtoDoc}, aplikacja powstała w ramach tej pracy in�
 Niestety okazuje się, iż dokumentacja wiadomości Protocol Buffers staje się dużym problemem w korporacjach gdzie mamy do czynienia setkami wiadomości, które
 zostały pierwotnie stworzone wiele lat temu. Niestety nie istnieją obecnie narzędzia generujące dokumentację na podstawie kodu ProtoBuf. Pomogłoby
 to rozproszonym dużym zespołom uniknąć nieporozumień dotyczących poprawnego wykorzystywania wiadomości. Narzędziem które może ten stan rzeczy zmienić,
-jest ProtoDoc.
-
-% Celem \textit{ProtoDoc} jest rozwiązanie problemów dokumentacji wiadomości, w analogiczny sposób jak uczynił to JavaDoc dla Javy,
-% poprzez automatyczne generowanie stron www, zawierających pełen zestaw informacji na temat danego typu, wraz z odnośnikamu do nowżych lub bardziej zalecanych wersji wiadomości.
-% Tym sposobem nawet programiści spoza zespołu, mogliby mieć dostęp do tej dokumentacji i uniknięte zostałyby liczne nieporozumienia związane z brakiem dokumentacji Protocol Buffers.
+jest \textit{ProtoDoc}.
 
 
 %---------------------------------------------------------------------------
-\chapter{Cel pracy}
+\section{Cel pracy}
 \label{sec:celePracy}
 
 Celem projektu jest implementacja narzędzia generującego dokumentację na podstawie plików 
@@ -143,49 +145,79 @@ możliwe byłoby wówczas przesłanie sobie między programistami linku do wła�
 wskazana wiadomość nie jest przestarzała - zawierałaby wówczas odnośnik do wiadomości którą obecnie powinno się stosować.
 
 
-Proces generowania dokumentacji jest analogiczny do znanego z świata Javy narzędzia JavaDoc 
-\footnote[1]{JavaDoc - Strona domowa projektu: \href{http://bit.ly/javadochome}{http://bit.ly/javadochome}} - stąd zainspirowana JavaDociem nazwa tego projektu. 
-Sam proces generowania dokumentacji polega na dostarczeniu narzędziu plikół *.proto, które następnie są parsowane oraz na podstawie tego procesu, 
+Proces generowania dokumentacji jest analogiczny do znanego z świata Javy narzędzia JavaDoc \cite{JavaDoc} - stąd zainspirowana JavaDociem nazwa tego projektu. 
+Sam proces generowania dokumentacji polega na dostarczeniu narzędziu plików *.proto, które następnie są parsowane oraz na podstawie tego procesu, 
 generowana jest strona www zawierające wszystkie zebrane informacje, włącznie z komentarzami oraz dodatkowymi informacjami 
 typu ,,\textit{deprecated}'' (ang. przestarzałe). Jako dodatkowy krok wygenerowana strona mogłaby automatycznie zostać opublikowana w firmowym intranecie.
 
 Cały proces możliwe jest w pełni zintegrować z narzędziami stosowanymi do budowania projektów np. Javowych. W przypadku projektów Javowych, obecnym \textit{de facto}
-standardem w wielu firmach stał się Apache Maven \footnote[2]{Apache Maven - Strona domowa projektu: \href{http://maven.apache.org}{http://maven.apache.org}}.
+standardem w wielu firmach stał się Apache Maven \cite{Maven}.
 ProtoDoc może zostać użyty razem z Maven aby automatycznie, podczas budowania projektu generować
 dokumentację. Możliwe jest uruchomienie tego zadania samodzielnie, lub jako jeden z etapów budowy projektu - dzięki czemu nie konieczne jest pamiętanie oraz ręczne
 aktualizowanie dokumentacji - byłaby automatycznie generowana podczas buildu, na przykład na serwerze ciągłej integracji.
 
-\newpage
+\section{Zawartość pracy}
+W rozdziale \ref{sec:dostepneNarzedzia} (\textit{Analiza obecnie dostępnych rozwiązań}) zostaną przedstawione obecnie istniejące implementacje parserów Protocol Buffers.
+Poddane rozważaniom zostanie opłacalność skorzystania ze wspomnianych rozwiązań open source jako bazy tego projektu.
+Ostatecznie jednak przedstawione zostanie ostatecznie wybrane rozwiązanie implementacji parsera zastosowane w tym projekcie - kombinatory parserów języka Scala.
+
+W rozdziale \ref{cha:projekt_systemu} (\textit{Projekt systemu}) omówiona zostanie ogólna architektura aplikacji oraz jej podział na funkcjonalnie niezależne moduły.
+Następnie zostaną opisane odpowiedzialności każdego z modułów oraz czytelnik zostanie przeprowadzony przez proces tworzenia hierarchii typów
+służącej w całym projekcie to wiernego oraz praktycznego oddania typów oraz pól mogących pojawić się w opisie wiadomości Protocol Buffers.
+
+W kolejnym Rozdziale \ref{sec:zastosowanePodejscie} (\textit{Szczegóły implementacyjne}) zostaną omówione najważniejsze szczegóły implementacyjne każdego z wprowadzonych w poprzednim rozdziale komponentów.
+Szczególny nacisk zostanie położony na właściwości języka Scala oraz wybory dokonane w związku z zakresem oraz ewentualną kontunuacj projektu.
+
+Następnie w rozdziale \ref{maven} (\textit{Przykład zastosowania ProtoDoc w realnym projekcie}) przedstawione zostanie jak w praktyce
+powinno się korzystać z zaimplementowanego w ramach tego projektu narzędzia. Przedstawiony zostanie również plugin do narzędzia Maven \cite{Maven}
+dzięki któremu pełna automatyzacja oraz włączenie ProtoDoc w proces budowania projektu jest bardzo proste.
+
+W przedostatnim rozdziale, tj. \ref{chapter:tdd} (\textit{Rola testów w procesie tworzenia aplikacji}) przedstawiona zostanie metodyka Test Driven Development
+(ang. ,,Prowadzenie Projektu Testami'' - tłumaczenie własne), dzięki której każda funkcjonalność przedstawiania w poniższej aplikacji pokryta została 
+również automatycznym testem, mogącym potwierdzić poprawne funkcjonowanie aplikacji.
+
+Ostatni rozdział \ref{cha:podsumowanie} (\textit{Podsumowanie}) podsumowuje pracę oraz przedstawiane są w nim możliwości dalszego rozwoju aplikacji.
+
+~\\\*
+
+Jako załączniki do pracy zostały dołączone dwa dodatki:
+\begin{itemize}
+ \item w Dodatku \ref{cha:appendixA} omawiane są Protocol Buffers -- skąd i dlaczego powstały oraz przedstawia 
+       podstawowe zastosowanie ich w praktyce, 
+ \item w Dodatku \ref{cha:appendixB} natomiast przedstawiany jest język Scala oraz Parser Combinators. Przedstawiony w tym dodatku zakres informacji o Scali
+       powinien być wystarczający aby swobodnie czytać przykłady umieszczone w części implementacyjnej tej pracy.
+\end{itemize}
 
 %---------------------------------------------------------------------------
 \chapter{Analiza obecnie dostępnych rozwiązań}
 \label{sec:dostepneNarzedzia}
 
 
-\begin{center}
-  \begin{tabular}{ | p{\textwidth} |}
-    \hline
-      Celem ułatwienia zrozumienia poniższego, oraz kolejnych rozdziałów w przypadku gdy czytelnik nie miał 
-      jeszcze styczności z Google Protocol Buffers zalecane jest wpierw
-      zapoznanie się z \textit{Dodatkiem \ref{cha:appendixA}}, gdzie wyjaśniane jest dokładnie jak oraz dlaczego działa ProtoBuf\footnote[1]{ProtoBuf - oficjalna skrótowa nazwa na ,,Protocol Buffers''}. \\ \hline
-  \end{tabular}
-\end{center}
-
-
 Niestety na chwilę obecną nie są dostępne narzędzia pozwalające na generowanie dokumentacji z plików Protocol Buffers.
 \textit{Analiza obecnych rozwiązań zatem organiczy się do rozważenia opłacalności wykorzystania jakiegoś projektu open source jako bazy dla ProtoDoc.}
-
-~\\\*
 
 Jak się okaże, najopłóacalniejsza z perspektywy programisty jak i użytkownika końcowego gotowej aplikacji ProtoDoc, będzie implementacja parsera,
 przy wykorzystaniu języka Scala, a nie wykorzystanie istniejących rozwiązań - które na przykład posiadają bardzo duże zewnętrzne zależności, lub
 ich dopasowanie do potrzeb tego projektu byłby zbyt dużym przedsięwzięciem.
 
+~\\\*
+
+\begin{center}
+  \begin{tabular}{ | p{\textwidth} |}
+    \hline
+      Celem ułatwienia zrozumienia poniższego, oraz kolejnych rozdziałów w przypadku gdy czytelnik nie miał 
+      jeszcze styczności z Google Protocol Buffers zalecane jest wpierw
+      zapoznanie się z \textit{Dodatkiem \ref{cha:appendixA}}, gdzie wyjaśniane jest dokładnie jak oraz dlaczego działają Protocol Buffers.\\ \hline
+  \end{tabular}
+\end{center}
+
+~\\\*
+
 \section{Google Protoc}
 
 Protoc jest ,,oryginalnym'' kompilatorem plików *.proto. Zawiera ręcznie zaimplenentowany przez inżynierów google skaner oraz parser,
 potrafiący obsłużyć 100\% specyfikacji ProtoBuf. Jego źródła są dostępne na stronie Google Code: \href{http://code.google.com/p/protobuf/source/browse/}{http://code.google.com/p/protobuf/source/browse/}
-Projekt objęty jest licencją \textit{New BSD License\footnote{New BSD License, znana również jako 2-clause BSD license - \href{http://www.opensource.org/licenses/bsd-license.php}{http://www.opensource.org/licenses/bsd-license.php}}}.
+Projekt objęty jest licencją \textit{New BSD License}\cite{BDSLicense}.
 
 Warto również uwypuklić pewien problem z udostępnianym przez Google kompilatorem Protocol Buffers IDL - \textit{protoc}.
 Otóź nawet jeżeli źródłowy plik *.proto posiada komentarze, kompilator \textit{protoc} nie przeniesie je do wynikowych plików, np. *.java.
@@ -199,10 +231,10 @@ Po wstępnej analizie kodu parsera dostarczanego przez Google doszedłem do wnio
 
 Innym projektem open source zzawierającym zaimplementowany parser ProtoBuf jest plugin do ,,IntelliJ IDEA'', popularnego w świecie programistów JVM 
 IDE programistycznego. Źródła znajdują się na Google Code pod adresem: \href{http://code.google.com/p/idea-plugin-protobuf/source/browse}{http://code.google.com/p/idea-plugin-protobuf/source/browse}
-Projekt udostępniany jest na warunkach \textit{Apache 2.0 License}\footnote{Apache 2.0 License - \href{http://www.apache.org/licenses/LICENSE-2.0}{http://www.apache.org/licenses/LICENSE-2.0}}.
+Projekt udostępniany jest na warunkach \textit{Apache 2.0 License} \cite{ApacheLicense}.
 
 Z perspektywy ProtoDoc, interesującymi fragmentami tego projektu jest skaner oraz parser. 
-Skaner jest generowany przy pomocy \textit{JFlex} \footnote{JFlex (Fast Lexical Analyzer for Java)- Strona domowa projektu: \href{http://jflex.de/}{http://jflex.de/}},
+Skaner jest generowany przy pomocy \textit{JFlex} \footnote{JFlex (Fast Lexical Analyzer for Java)},
 , odpowiednika narzędzia GNU Flex, dla języka Java. Skaner teoretycznie nadawałby się do ponownego wykorzystania - obsługiwane są tutaj również komentarze.
 
 Niestety druga z interesujących nas części aplikacji, parser, jest \textit{ściśle związany ze środowiskiem IntelliJ IDEA}, dla którego to powstał ten projekt.
@@ -223,10 +255,10 @@ zostanie przedstawiona w kolejnej sekcji.
 \section{Decyzja: własnoręczna implementacji Parsera przy pomocy \textit{Scala Parser Combinators}}
 \label{sec:wybor_parsera}
 
-Podsumowując, istnieją implementacje parserów Protocol Buffers na wolnych (jak wolność) licencjach, jednak rozbudowa ich o pożądane funkcjonalności,
-albo byłaby zbyt czasochłonna by nazwać ją opłacalnym (zmiany manualnie implementowanego parsera \textit{protoc}) lub wymagałyby 
-przepisania parsera w całości, w powodu korzystania przez nie z zewnętrznych zależności których nie da się w prosty sposób dostarczyć.
-%TODO ref nie dziala!!!
+Podsumowując, istnieją implementacje parserów Protocol Buffers na wolnych (jak wolność) licencjach, jednak rozbudowa ich o pożądane funkcjonalności 
+albo byłaby zbyt czasochłonna by nazwać ją opłacalną (zmiany manualnie implementowanego parsera \textit{protoc}), albo wymagałyby 
+przepisania parsera w całości, z powodu korzystania przez nie z zewnętrznych zależności których nie da się w prosty sposób dostarczyć.
+
 Tabela \ref{tab:parers} przedstawia małe podsumowanie zastosowanych technik implementacji parserów w omawianych projektach.
 
 \begin{table}[ch]
@@ -240,15 +272,15 @@ Tabela \ref{tab:parers} przedstawia małe podsumowanie zastosowanych technik imp
       Idea-Plugin-Proto & JFlex, Java & dostarczany z IntelliJ, Java\\
       \hline
     \end{tabular}
-    \caption{Zestawienie sposobów implementacji parserów w rozważanych projektach open source}
   \end{center}
+  \caption{Zestawienie sposobów implementacji parserów w rozważanych projektach open source}
   \label{tab:parers}
 \end{table}
 
 Po przeanalizowaniu powyższych projektów i porzuceniu pomysłu rozwinięci istniejącej już implementacji o potrzebne elementy, rozpocząłem
 wybór generatora parserów / skanerów który chciałbym zastosować podczas tego projektu. 
 
-Pierwotnym kandydatem do zastosowania jako generator parsera był powszechnie znany \textit{GNU~Bison} \footnote{GNU Bison - Strona domowa projektu: \href{http://www.gnu.org/software/bison}{http://www.gnu.org/software/bison}},
+Pierwotnym kandydatem do zastosowania jako generator parsera był powszechnie znany \textit{GNU~Bison} \cite{Bison},
 który w połączeniu z Flexem pozwolił na wygenerowanie parsera w ,,znajomy'' sposób. Oba te narzędzia są dobrze znane oraz sprawdzone od wielu lat oraz posiadają dobrą dokumentację.
 W ramach poszukiwań innych rozwiązań natknąłem się jednak na tak zwane ,,kombinatory parserów'', a następnie na fakt iż istnieje ich implementacja wewnątrz
 biblioteki standardowej języka Scala.
@@ -269,7 +301,7 @@ Pojęcie ,,parsowania przy pomocy kombinatorów parserów'' najłatwiej jest wyt
 \end{quotation}
 
 Będziemy mieli zatem w efekcie do czynienia a parserem ,,rekursywnie zstępującym'' (\textit{LL(k)}). Przedstawicielem generatorów tworzących tego typu parsery jest na przykład
-ANTLR \footnote{ANTLR - Strona domowa projektu: \href{http://www.antlr.org/}{http://www.antlr.org/}}, opublikowany po raz pierwszy w roku 1992 jako następca \textit{Purdue Compiler Construction Tool Set} który powstał jeszcze w roku 1989 (sic).
+ANTLR \cite{Antlr}, opublikowany po raz pierwszy w roku 1992 jako następca \textit{Purdue Compiler Construction Tool Set} który powstał jeszcze w roku 1989 (sic).
 Ten typ parserów dodaje do znanej klasy LL(k) funkcjonalność ,,wycofania się'', z dowolnej głębokości look-ahead (parser może pracować z dowolnie dużym \textit{k},
 i zawsze będzie w stanie wykonać nawrot oraz wypróbować inną ścieżkę). Korzystanie z nawrotów przez parser oczywiście niesie z sobą zmniejszenie jego wydajności,
 jednakw wielu przypadkach (jak choćby Protocol Buffers, które mają stosunkowo prostą gramatykę), obawa przed spadniem wydajności nie odzwierciedla się zbytnio w 
@@ -326,21 +358,23 @@ tego podejścia.
       \multicolumn{2}{|c|}{Parser Combinators, Scala} \\
       \hline
     \end{tabular}
-    \caption{Przedstawienie jednolitości rozwiązania z zastosowaniem \textit{Scala Parser Combinators}}
   \end{center}
+  \caption{Przedstawienie jednolitości rozwiązania z zastosowaniem \textit{Scala Parser Combinators}}
   \label{tab:scala_parsers_table}
 \end{table}
 
-Gdyby umieścić Parser Combinators (tak jak przedstawiono w Tabeli \ref{tab:scala_parsers_table}) na przedstawionej powyżej tabeli, z zestawieniem jak implementowana jest która część parsera,
-okazałoby się że jesteśmy wyjątkowo spójni - wszystkie części implementowane są w jednym miejscu / języku / narzędziem.
+W Tabeli \ref{tab:scala_parsers_table}) zostało przedstawione jak można umieścić \textit{Parser Combinators} 
+w poprzednio przedstawianych kategoriach. Oczywistą zaletą jest tutaj korzystanie w obu cześciach implementacji 
+- zarówno skanerze jak i parserze - z tego samego języka oraz biblioteki, dzięki czemu możemy się skupić na implementacji,
+a nie nauce kolejnej składni.
 
 Reasumując poniższe zalety są przyczyną wyboru tego podejścia do generowania parsera ponad klasyczne narzędzia typu Flex/Bison:
 \begin{itemize}
- \item Brak konieczności dodatkowego kroku generowania kodu źródłowego
-  \subitem dla skanera (brak osobnego pliku ze spisem tokenów)
-  \subitem dla parsera (brak osobnego języka, dedykowanego definiowaniu
- \item Wykonywany kod jest bezpośrednio związany z pisaną przez nas definicją parsera, co pozwala na łatwe poszukiwanie błędów
- \item Minimalizacja miejsc w których konieczne jest wprowadzanie zmian, cała implementacja znajduje się w 1 miejscu
+ \item Brak konieczności dodatkowego kroku generowania kodu źródłowego: 
+  \subitem dla skanera (brak osobnego pliku ze spisem tokenów), 
+  \subitem dla parsera (brak osobnego języka, dedykowanego definiowaniu.
+ \item Wykonywany kod jest bezpośrednio związany z pisaną przez nas definicją parsera, co pozwala na łatwe poszukiwanie błędów,
+ \item Minimalizacja miejsc w których konieczne jest wprowadzanie zmian, cała implementacja znajduje się w 1 miejscu.
 \end{itemize}
 
 Opis działania \textit{Parser Combinators} znajduje się w kolejnej sekcji, oraz w \textit{Dodatku \ref{cha:appendixB}}, gdzie wytłumaczone zostały wszystkie zasady
@@ -391,15 +425,15 @@ poniższe klasy (konkretniej, klasy typu \textbf{object} - omówionych dokładni
 \newpage 
 
 W kolejnych sekcjach tego rozdziału zostaną przedstawione w formalny sposób interakcje oraz relacje między komponentami systemu.
-Proszone zostaną również typy którymi zamodelowano w języku Scala odpowiednie typy pól mogące pojawić się w wiadomości ProtoBuf.
+Poruszone zostaną również typy którymi zamodelowano w języku Scala odpowiednie typy pól mogące pojawić się w wiadomości ProtoBuf.
 Wpierw zostanie jednak pokazany w sposób bardziej wizualny niż formalny, jak komponenty się ze sobą komunikują - służy temu Rysunek \ref{simple_visualization}.
 
 \begin{figure}[ch!]
 \begin{center}
  \includegraphics[scale=0.85]{main_classes.png}
 \end{center}
-\label{simple_visualization}
 \caption{Nieformalna wizualizacja interakcji pomiędzy komponentami}
+\label{simple_visualization}
 \end{figure}
 
 Dzięki nie formalnej wizualizacji interakcji między komponentami na Rysunku \ref{simple_visualization} można łatwo zobrazować sobie
@@ -418,15 +452,15 @@ W tej sekcji przedstawione zostaną diagramy sekwencji opisujące interakcje mi�
 
 
 
-Na diagramie sekwencji  \ref{sequence_diagram_parsing} zostało przedstawione szczegółowo do jakich interakcji między wcześniej opisywanymi (nie formalnie)
+Na diagramie sekwencji \ref{fig:sequence_diagram_parsing} zostało przedstawione szczegółowo do jakich interakcji między wcześniej opisywanymi (nie formalnie)
 komponentami dochodzi podczas procesu parsowania. 
 
 \begin{figure}[ch]
 \begin{center}
  \includegraphics[width=\textwidth]{compile_sequence}
- \label{fig:sequence_diagram_parsing}
 \end{center}
 \caption{Diagram sekwencji parsowania oraz weryfikowania wiadomości}
+\label{fig:sequence_diagram_parsing}
 \end{figure}
 
 Punktem wejściowym aplikacji jest klasa \verb|ProtoDocMain|, po sparsowaniu argumentów wejściowych specjalnym Domain Specific Language (innym niż
@@ -466,9 +500,9 @@ przedstawione na poprzednim diagramie (\ref{fig:sequence_diagram_parsing}).
 \begin{figure}[ch]
 \begin{center}
  \includegraphics[scale=0.75]{generate_html_seq}
-\label{fig:generate_html_seq}
 \end{center}
 \caption{Diagram sekwencji generowania stron HTML dokumentacji}
+\label{fig:generate_html_seq}
 \end{figure}
 
 
@@ -496,9 +530,9 @@ enum MyEnumeration { VALUE = 1; }
 
 Okazuje się, że enumeracja i wiadomość dzielą wiele wspólnych cech, oba typy:
 \begin{itemize}
- \item mogą znajdywać się w \textit{package}
- \item mają nazwę
- \item mają ,,w pełni kwalifikowaną nazwę'', składającą się z połączenia nazwy typu
+ \item mogą znajdywać się w \textit{package},
+ \item mają nazwę,
+ \item mają ,,w pełni kwalifikowaną nazwę'', składającą się z połączenia nazwy typu,
  \item zawierają pola. Mimo, że w przypadku enumeracji pole wygląda nieco inaczej, można przyjąć pewne uogólnienie i traktować je tak samo jak pozostałe pola.
 \end{itemize}
 
@@ -521,6 +555,7 @@ nie ważne czy ów komentowalny element jest polem czy nowym typem, zatem zmniej
 \begin{center}
 \begin{tabular}{|p{\textwidth}|}
 \hline
+\hline
 W przypadku języka Scala, mowa tutaj nie o interfejsach a \textit{Trait}ach (rozpoznawalnych na załączonych diagramach po zielonej ikonie \textbf{T}), 
 jednak jako że celem tego rozdziału pracy nie przedstawienie implementacji a generalnego design projektu można przyjąć że Trait może być rozumiany
 jako ,,interfejs''. Szczegółowy opis czym są \textit{Trait}y oraz jak wpływają na design projektu, można przeczytać w Sekcji \ref{sec:traits}, w Dodatku \ref{cha:appendixB}.
@@ -532,8 +567,8 @@ jako ,,interfejs''. Szczegółowy opis czym są \textit{Trait}y oraz jak wpływa
 \begin{center}
  \includegraphics[width=\textwidth]{proto_types}
 \end{center}
-\label{fig:types_diagram}
 \caption{Zastosowany model typów definiowanlnych przez użytkownika typów}
+\label{fig:types_diagram}
 \end{figure}
 
 Rysunek \ref{fig:types_diagram} przedstawia zastosowaną w projekcie strukturę typów. Warto zauważyć dodatkowy Trait o nazwie \verb|Deprecatable|, 
@@ -576,10 +611,10 @@ Mimo wszystko, ponownie jesteśmy w stanie znaleźć pewne wspólne elementy pom
 Przy okazji, pamiętajmy iż każde  z tych pól może być \textit{Deprecated} oraz może zostać okomentowane komentarzem ProtoDoc.
 
 \begin{itemize}
- \item pole posiada nazwę
- \item pole posiada przypisany mu \textit{tag} (liczba umieszczona po znaku równości, po szczegółowe wyjaśnienie czym tag jest, odsyłam do Dodatku \ref{cha:appendixA})
- \item pole może posiadać komentarz
- \item pole może być ozaczone jako przestarzałe (\textit{Deprecated})
+ \item pole posiada nazwę,
+ \item pole posiada przypisany mu \textit{tag} (liczba umieszczona po znaku równości, po szczegółowe wyjaśnienie czym tag jest, odsyłam do Dodatku \ref{cha:appendixA}),
+ \item pole może posiadać komentarz,
+ \item pole może być ozaczone jako przestarzałe (\textit{Deprecated}).
 \end{itemize}
 
 Powyższa lista elementów wspólnych w sposób oczywisty doprowadziła do powstania klasy \verb|ProtoField| będącej podstawą ku wszystkim pozostałym typom.
@@ -596,8 +631,8 @@ abyśmy mogli podczas generowania dokumentacji przywołać jaki dane pole miało
 \begin{center}
  \includegraphics[width=\textwidth]{fields_types}
 \end{center}
-\label{types_diagram}
 \caption{Zastosowany model typów pól mogących wystąpić w ProtoBuf IDL}
+\label{types_diagram}
 \end{figure}
 
 W ramach ciekawostki, chciałbym w tym miejscu przedstawić implementację dwóch przykładowych z omawianych klas.
@@ -626,7 +661,7 @@ Warto zwrócić uwagę, że mimo iż klasy przedstawiona na Listingach \ref{lst:
 zdefiniowanego ciała, dzięki pewnym konwencjom oraz mechanizmom udostępniamym przez Scala, takie definicja są 
 wszystkim co jest potrzebne do zdefiniowania w pełni funkcjonalnych klas, włącznie z polami, akcesorami dla atrybutów etc.
 
-Czytelnika zainteresowanego mechanizmami kryjącymi się za zastosowanymi tutaj ,,\verb|case class|ami'' zachęcam do przeczytania sekcji \ref{sec:case_classs},
+Czytelnika zainteresowanego mechanizmami kryjącymi się za zastosowanymi tutaj ,,\verb|case class|ami'' zachęcam do przeczytania sekcji \ref{sec:caseclass},
 dotyczącej tego działu języka Scala, z Dodatku \ref{cha:appendixB}.
 
 \begin{table}
@@ -655,8 +690,8 @@ user defined message type & ProtoMessageField(type) \\ \hline \hline
 enum value & ProtoEnumValue \\ \hline
  \end{tabular}
  \end{center}
-\label{tab:field_types}
 \caption{Typy pól oraz odpowiadające im typy Scala \small{(bazując na reprezentacji typów przez protoc na JVM)}}
+\label{tab:field_types}
 \end{table}
 
 
@@ -672,12 +707,9 @@ Omówione zostaną zarówno ogólne założenia przyjęte podczas projektowania 
 modelowania struktury typów Protocol Buffers. Następnie przedstawione zostaną poszczególne komponenty aplikacji, z naciskiem na uzasadnienie
 wybranych rozwiązań oraz rozważenia ich zalet, wad oraz potencjalnych możliwości usunięcia zauważonych wad. 
 
-Przedstawione zostaną również elementy kodów źródłowych, skrócone do postaci wystarczającej na cel omówienia danego tematu 
+Na zakończenie rozdziału przedstawione zostaną elementy kodów źródłowych, skrócone do postaci wystarczającej na cel omówienia danego tematu 
 - w przypadku chęci zapoznania się ze całością implementacji np. komponentu parsera, zachęcam do zapoznania się 
 z załączonymi do pracy plikami źródłowymi projektu.
-
-W ostatniej sekcji (\ref{sec:prepare_env}) zostanie przedstawione jak należy przygotować środowisko pracy celem kompilowania oraz budowania projektu
-ze źródeł.
 
 \begin{center}
 \begin{tabular}{ | p{\textwidth} | }
@@ -689,7 +721,6 @@ dodatkami \ref{cha:appendixA} (Protocol Buffers) oraz \ref{cha:appendixB} (Podst
 
 
 %---------------------------------------------------------------------------
-\newpage
 \section{ProtoBufParser}
 \label{sec:protoBufParser}
 Parser został zaimplementowany przy pomoy wspominanych wielokrotnie już kombinatorów parserów, 
@@ -697,6 +728,7 @@ dostarczanych wraz z biblioteką standardową Scali. Jako wiadomość referencyj
 będziemy posługiwać się w tym rozdziale bardzo prostą wiadomością, obejmującą jednak podstawowe funckojalności definiowania typów
 w Protocol Buffers, przedstawioną na Listingu \ref{lst:my_sample_simple_message}.
 
+\newpage 
 \begin{lstlisting}[caption={Przykład wiadomości, służący łatwiejszej wizualizacji działania parsera}, label={lst:my_sample_simple_message}]
 message MyMessage {
   required FullName name = 1;
@@ -739,7 +771,7 @@ tak jak to przedstawiono na Listingu \ref{lst:simplest_parser_possible_23}
 val ID = """[a-zA-Z_]([a-zA-Z0-9_]*|_[a-zA-Z0-9]*)*""".r
 \end{lstlisting}
 
-Następnie zdefiniujemy mały parser wykorzystując powyższy (Listing \ref{lst:messageTypeName}:
+Następnie zdefiniujemy mały parser wykorzystując powyższy (Listing \ref{lst:messageTypeName}):
 
 \begin{lstlisting}[caption={Definicja parsera identyfikatora wiadomości}, label={lst:messageTypeName}]
 def messageTypeName /*: Parser[String]*/ = "message" ~> ID
@@ -765,18 +797,19 @@ który niebawem zostanie użyty wspólnie z parserem nazwy wiadomości celem bud
 
 W ramach przypomnienia zanim spojrzymy na kod parsera ciała wiadomości przypomnijmy sobie jakie elementy może ono zawierać:
 \begin{itemize}
- \item definicję pola wiadomości
- \item definicję zagnieżdżonej wiadomości
- \item definicję zagnieżdżonej enumeracji
+ \item definicję pola wiadomości,
+ \item definicję zagnieżdżonej wiadomości,
+ \item definicję zagnieżdżonej enumeracji.
 \end{itemize}
 
-Po przełożeniu tych wymagań na
+Powyższe trzy typy mogących wystąpić w ciele wiadomości deklaracji bardzo łatwo jest przetłumaczyć na parser,
+przedstawiony na Listingu \ref{lst:parsowanie_pola_znaczy_ciala}.
 
 
 \begin{lstlisting}[caption={Parser ciała wiadomości}, label={lst:parsowanie_pola_znaczy_ciala}]
 def messageBody = "{" ~> 
-                        rep(enumTypeDef | instanceField | messageTypeDef) 
-                      <~ "}"
+                        rep(instanceField | enumTypeDef | messageTypeDef) 
+                    <~ "}"
 \end{lstlisting}
 
 Listing \ref{lst:parsowanie_pola_znaczy_ciala} poza znanym nam już kombinatorem \verb|~>| wykorzystuje jeszcze kombinator \verb|rep()|,
@@ -834,6 +867,7 @@ na przykład wartości domyślnej w przypadku znanego przez parser już typu ora
 
 %---------------------------------------------------------------------------
 \section{ProtoBufVerifier}
+\label{sec:verifier}
 Klasa \verb|ProtoBufVerifier| pojawiła się z konieczności przeprowadzania rozwiązania typów (ang. \textit{rype resolution}),
 w przypadku gdy mamy do czynienia z odwołaniem się do typu zdefiniowanego albo ,,poniżej'' typu zawierającego to odwołanie,
 lub na przykład w innym pliku. Parser niestety nie jest wówczas w stanie rozstrzygnąć samodzielnie czy dany typ, na przykład zastosowany na polu wewnąrz wiadomości,
@@ -886,7 +920,7 @@ byłyby bardzo długą serią instrukcji warunkowych oraz rzutowań typów. Meto
 jednak tym razem już do specjalizowanych metod odpowiadających za sprawdzanie poprawności typu. Przykładem implementacji checków jest 
 \verb|checkMessageType| umieszczony na listingu \ref{lst:checkMessageType}.
 
-\begin{lstlisting}
+\begin{lstlisting}[caption={Metoda checkMessageType, sprawdzająca poprawność wiadomości}, label={lst:checkMessageType}]
 def checkMessageType(msgType: ProtoMessageType, protoTypes: List[ProtoType]) = {
   info("Running verifications on "+b(msgType)+" message")
 
@@ -911,14 +945,14 @@ def checkMessageType(msgType: ProtoMessageType, protoTypes: List[ProtoType]) = {
 jest w stanie zrozumieć):
 
 \begin{itemize}
- \item poprawność \textbf{tag}ów
-  \subitem czy tag zawiera się w specyfikowanym przez Protocol Buffers zakresie dozwolonych liczb
-  \subitem czy tag jest niepowtarzalny w zasięgu bloku danej wiadomości lub enumeracji
- \item czy typ definiowany przez użytkownika posiada niepowtarzalną w pełni kwalifikowaną nazwę
- \item czy wartość domyślna pola w wiadomości posiada typ zgodny z typem tego pola (np. liczbę całkowitą dla pól int32)
+ \item poprawność \textbf{tag}ów: 
+  \subitem czy tag zawiera się w specyfikowanym przez Protocol Buffers zakresie dozwolonych liczb, 
+  \subitem czy tag jest niepowtarzalny w zasięgu bloku danej wiadomości lub enumeracji.
+ \item czy typ definiowany przez użytkownika posiada niepowtarzalną w pełni kwalifikowaną nazwę, 
+ \item czy wartość domyślna pola w wiadomości posiada typ zgodny z typem tego pola (np. liczbę całkowitą dla pól int32), 
  \item czy w przypadku korzystania z definiowanego przez użytkownika typu, wykorzystanego podczas deklaracji pola, typ ten jest ,,widoczny'' 
-       z wewnąrz kontekstu tego pola.
- \item czy wiadomość lub enumeracja nie posiada zduplikowanych nazw pól
+       z wewnąrz kontekstu tego pola, 
+ \item czy wiadomość lub enumeracja nie posiada zduplikowanych nazw pól.
 \end{itemize}
 
 Najciekawszą z wspomnianych weryfikacji jest definitywnie sprawdzanie widoczności typu, z racji wielu możliwości odwołania się do niego,
@@ -950,11 +984,11 @@ za sprawdzenie czy typ danego pola jest ,,w zasięgu''.
 
 
 Dodatkowo zostały zaimplementowane ostrzeżenia, które nie są błędne w kontekście Protocol Buffers,
-jednak są ,,podejrzane'' stąd warto wytknąć je programiście podczas poszukiwania problemów w kodzie:
+jednak są ,,podejrzane'' stąd warto wskazać je programiście podczas poszukiwania problemów w kodzie:
 
 \begin{itemize}
- \item czy enumeracja nie jest pusta (nie posiada żadnych wartości)
- \item czy wiadomość nie jest pusta (nie posiada żadnych pól)
+ \item czy enumeracja nie jest pusta (nie posiada żadnych wartości),
+ \item czy wiadomość nie jest pusta (nie posiada żadnych pól).
 \end{itemize}
 
 Weryfikacje te były bardzo proste w implementacji dzięki zaprojektowanemu modelowi danych. Jako przykład może posłużyć sprawdzenie czy typ jest pusty, 
@@ -981,7 +1015,7 @@ Ostatim komponentem składającym się na ProtoDoc jest generator kodu, w naszym
 Jego rola jest bardzo prosta, jecyne co musi zrobić to dla każdego otrzymanego typu, wygenerować stronę HTML, z przygotowanego wcześniej szablonu.
 Dodatkowym krokiem jest wygenerowanie strony z indeksem wszystkich typów, aby użytkownik mógł wygodnie wyszukiwać.
 
-Strony generowane są przy wykorzystaniu biblioteki \textit{Scalate} \footnote{Scalate - strona domowa projektu: \href{http://scalate.fusesource.org/}{http://scalate.fusesource.org/}}
+Strony generowane są przy wykorzystaniu biblioteki \textit{Scalate} \cite{Scalate}
 oraz silnika \textbf{Mustache} dostarczanego przez nią. Mustache jest prostym językiem definiowania szablonowym (ang. \textit{template}), który umieszcza 
 się np. w HTMLu. Silnik mustache następnie jest w stanie iterować np. po dostarczonej mu liście pól danej wiadomomości oraz wyświetlać fragment szablonu dla każgego z nich.
 
@@ -1005,7 +1039,7 @@ def renderEnumPage(enum: ProtoEnumType) = {
 
 \subsection{Język szablonów - Mustache}
 \label{sec:mustache}
-Celem krótkiego przedstawienia języka Mustache, oraz uzasadnienia wybrania takiego silnika renderującego szablony chciałbym przedstawić kilka elementów Mustache.
+Celem krótkiego przedstawienia języka Mustache \cite{Mustache}, oraz uzasadnienia wybrania takiego silnika renderującego szablony chciałbym przedstawić kilka elementów Mustache.
 Posłużymy się jedynie kilkuliniowymi przykładami, aby nie zaciemniać obrazu HTMLem który aż tak interesujący z naszej perspektywy nie jest.
 
 Nazwa silnika \textit{Mustache} pochodzi od angielskiego słowa oznaczającego wąsy. Może się to wydawać dziwne, lecz po pierwszym spojrzeniu na 
@@ -1022,8 +1056,7 @@ Identyczną składnią (\verb|{{#fields}}|) można iterować po wartościach zaw
 tabeli z informacjami wszystkich pól danego typu.
 
 Mustache udostępnia odrobinę więcej funkcjonalności niż omówione powyżej, jednak w przypadku generowania prostych szablonów, 
-z jakimi mamy do czynienia w ProtoDoc, nie były one konieczne do zastosowania. W razie chęci zapoznania się z tym silnikiem dokładniej,
-odsyłam na stronę domową projektu - \href{http://mustache.github.com/mustache.5.html}{http://mustache.github.com/mustache.5.html}.
+z jakimi mamy do czynienia w ProtoDoc, nie były one konieczne do zastosowania.
 
 
 %---------------------------------------------------------------------------
@@ -1038,9 +1071,17 @@ odsyłam na stronę domową projektu - \href{http://mustache.github.com/mustache
 
 
 %===========================================================================
-\chapter{Zastosowanie ProtoDoc do automatyzacji dokumentacji projektów}
+\chapter{Przykład zastosowania ProtoDoc w realnym projekcie}
 \label{maven}
 
+W poniższym rozdziale zostanie przedstawione zastosowanie narzędzia ProtoDoc, w parze z Apache Maven \cite{Maven}, obecnym
+de facto standardem zarządzania dużymi projektami w świecie aplikacji klasy enterprise.
+
+W tym celu został zaimplementowany dodatkowy ,,\textit{plugin}'' (ang. wtyczka) do Maven, pozwalający na automatyczne 
+wykonanie ProtoDoc podczas procesu budowy projektu. Zostanie również przedstawiony sposób w jaki ten plugin można skonfigurować,
+z poziomu pliku konfiguracyjnego Mavena.
+
+\section{Przykład połączenia ProtoDoc z Maven, celem automatycznego generowania dokumentacji}
 Ponieważ takie narzędzie jak \textit{ProtoDoc} powinno być stosowane w sposób w pełni automatyczny, logicznym krokiem w rozpowszechnieniu
 jego użycia była integracja z najpopularniejszym (de facto ,,standardowym'') narzędziem zarządzania cyklem życia projektu, jakim w świecie Javy jest \textbf{Maven}.
 
@@ -1062,6 +1103,8 @@ Wszystkie zależności jak i pluginy deklaruje się w mavenie w pliku \textbf{po
 	      <goal>package</goal>
 	    </goals>
 	  </execution>
+\end{lstlisting}
+\begin{lstlisting}[caption={Kontunuacja listingu \ref{last:use_the_maven_plugin}}]
 	</executions>
   <!-- Optional overrides of default properties:
 	<configuration>
@@ -1074,7 +1117,7 @@ Wszystkie zależności jak i pluginy deklaruje się w mavenie w pliku \textbf{po
 
 Jest to wystarczające aby ProtoDoc mógł \textbf{automatycznie}, podczas budowania projektu generować dokumentację
 dla wszystkich plików proto umieszczonych wewnątrz domyślnego folderu - \textbf{src/main/proto}. Ścieżka ta jest zgodna z konwencjami przyjętymi
-w Maven, jednak w razie potrzeby istnieje możliwość nadpisania tego ustawienia poprzed dodanie elementu configuration, tak jak to przedstawiono na Listingu \ref{last:use_the_maven_plugin}
+w Maven, jednak w razie potrzeby istnieje możliwość nadpisania tego ustawienia poprzed dodanie elementu configuration, tak jak to przedstawiono na Listingu \ref{last:use_the_maven_plugin}.
 
 %------------------------------------------------------------------------------
 \section{Szczegóły implementacyjne}
@@ -1090,13 +1133,10 @@ tutaj umieszczał z racji jego rozmiaru (~150 linii), jednak okazuje się że ca
 
 \begin{lstlisting}[caption={Pełna implementacja pluginu mavenowego korzystającego z ProtoDoc}]
 public class ProtoDocMojo extends AbstractMojo {
-
   /** @parameter default-value="${project.basedir}/src/main/proto" */
   private String protoDir;
-
   /** @parameter default-value="${project.basedir}/target/protodoc" */
   private String outDir;
-
   /** @parameter default-value="false" */
   private boolean verbose;
 
@@ -1108,7 +1148,7 @@ public class ProtoDocMojo extends AbstractMojo {
 
 Ciekawostką jest że pierwotne wersje Maven2, były tak stare, iż nie były jeszcze dostępne adnotacje w Javie. 
 Stąd uciekano się do \textit{meta-programowania} w komentarzach, poprzez tak zwane docklety --- adnotacje (słowa poprzedzane znakiem \verb|@|)
-umieszczone nad zmiennymi prywatnymi powyższego Mojo faktyczą są znaczące (sic!) oraz deklarują iż w te zmienne powinny zostać wstrzyknięte
+umieszczone nad zmiennymi prywatnymi powyższego Mojo faktycznie \textbf{są znaczące} oraz deklarują iż w te zmienne powinny zostać wstrzyknięte
 przez mavena odpowiednie ustawienia z sekcji \verb|<configuration/>| pluginu.
 
 %------------------------------------------------------------------------------
@@ -1147,11 +1187,20 @@ $ tree
     |   +-- pl.project13.MessageWithInner.InnerMessage.html
     |   ...
     ...
-$ chromium-browser target/index.html
 \end{verbatim}
 
-Wykonanie ostatniej komenty (chromium-browser) uruchomi przeglądarkę Google Chromium, ukazując nam wykenerowaną stronę www dokumentacji.
-Przykłady wyglądu takich stron są umieszczone w Rozdziale \ref{sec:screenshots}.
+Powyższy listing ładnie obrazuje jaką strukturę katalogów generuje ProtoDoc w efekcie działania.
+Folder \verb|target| jest w projektach mavenowych dedykowany wszystkim produktom danego procesu budowania projektu.
+ProtoDoc umieszcza swoje pliki analogicznie jak uczyniłby to JavaDoc plugin (generujący dokumentację dla kodu zapisanego w języku Java),
+wewnątrz folderu \verb|target/| z własnym sub katalogiem o nazwie \verb|protodoc|.
+
+Aby zobaczyć jak wygenerowana dokumentacja wyląda na żywo, można uruchomić na przykład poniższą komendę, uruchamiającą przeglądarkę Google Chromium:
+
+\begin{lstlisting}
+$ chromium-browser target/index.html
+\end{lstlisting}
+
+Przykładowe zrzuty ekranu z działającej aplikacji przedstawione zostały w na następnej stronie, w seksji \ref{sec:screenshots}.
 
 %---------------------------------------------------------------------------
 \newpage
@@ -1161,14 +1210,23 @@ W tej sekcji zostały umieszczone zrzuty ekranu z przykładowych wygenerowanych 
 
 \begin{figure}[hc]
  \begin{center}
-  \includegraphics[width=\textwidth]{../protodoc_main.png}
+  \includegraphics[scale=0.5]{../protodoc_main.png}
   % protodoc_main.png: 949x970 pixel, 93dpi, 25.92x26.50 cm, bb=0 0 735 751
  \end{center}
  \caption{Widok wygenerowanej strony dla typu \textbf{message}}
  \label{msg_page}
 \end{figure}
 
-Na Rysunku \ref{msg_page} przedstawiona została strona wygenerowana na podstawie 
+Na Rysunku \ref{msg_page} przedstawiona została strona wygenerowana na podstawie prostej wiadomości.
+Widok wiadomości składa się na jego nazwę, wyróżnioną jako nagłówek strony, dokumentację umieszoną na jego typie,
+informacji o pakiecie w którym została ona zdefiniowana oraz liście pól oraz wewnętrznych enumeracji oraz wiadomości zdefiniowanych w niej.
+Każde z pól dokumentowane jest swoją nazwą, odpowiednim typem na platformie JVM (co w przypadku typów definiowanych przez użytkownika może być praktyczne),
+oraz oczywiście właściwą dokumentacją umieszczoną na danym polu.
+
+Widoczna jest również po lewej stronie lista wszystkich wiadomości oraz enumeracji przeparsowanych podczas generowania dokumentacji
+dla tego projektu. Dodatkowo możliwe jest wyszukiwanie po wspomnianych elementach poprzez umieszone nad nimi pole temu służące.
+Wyszukiwarka ta jest praktyczna ponieważ filtruje ona listę wiadomości po dowolnym podciągu znaków, dzięki czemu łatwo jest znaleźć
+wszystkie wiadomości mające na przykład w nazwie ,,Person''.
 
 \begin{figure}[hc]
  \begin{center}
@@ -1179,11 +1237,28 @@ Na Rysunku \ref{msg_page} przedstawiona została strona wygenerowana na podstawi
  \label{enum_page}
 \end{figure}
 
+Na Rysunku \ref{enum_page} przedstawiona jest strona enumeracji. Celem pokazania całej tej strony,
+a nie ,,całości'' widoku jak miało to miejsce na Rysunku \ref{msg_page} została tutaj pominięta lewa ramka (spis typów).
+Z racji, iż mamy do czynienia z enumeracją, kolor strony jest zmieniony oraz ikonka \textbf{M} została zmieniona na \textbf{E}.
+Dalsze części strony są zbudowane analogicznie - wpierd dokumentaja umieszczona na typie enumeracji a następnie lista jej pól,
+które w przypadku enumeracji należy rozumieć jako wartości. Każda wartość może mieć przypisaną dokumentację, umieszczoną w 
+prostokącie poniżej jej nazwy, oraz wartość taga.
 
 %---------------------------------------------------------------------------
-\newpage
-\chapter{Rola Testów oraz TDD w procesie tworzenia aplikacji}
+\chapter{Rola testów w procesie tworzenia aplikacji}
 \label{chapter:tdd}
+
+Rozdział ten ma za cel przybliżyć czytelnikowi jak istotną rolę w rozwoju \textit{ProtoDoc} miały testy jednostkowe
+(oraz w pewnym sensie również integracyjne). Dzięki zastosowaniu poniżej opisanej metodyki, możliwe było otrzymanie
+kodu którego większość funckojalności jest pokryta testami a API jest na tyle stabilne, iż wprowadzanie zmian w jednym miejscu
+nie ma znaczącego wpływu na pozostałe komponenty.
+
+W pierwszej sekcji przedstawiona zostanie metodyka \textit{Test Driven Development}, w skrócie TDD,
+oraz jak należy ją stosować.
+
+W drugiej sekcji zostanie przedstawione wyjście jakie ujrzy się w momencie uruchomienia testów w ProtoDoc.
+Zaskakujące może się wydać jak czytelne są wiadomości logowane przez framework testowy ScalaTest \cite{ScalaTest}.
+
 \section{Metodyka TDD i jej pozytywny wpływ na projekt}
 
 Projekt prowadzony był zgodnie z zasadami Test Drivem Development (zwanego dalej \textit{TDD}),
@@ -1195,7 +1270,7 @@ Metodykę \textit{TDD} możnaby opisać jako cylk składający się z trzech faz
  \item napisanie najpierw \small{(sic!)} testu, sprawdzającego automatycznie czy stawiane przed nami oczekiwanie zostało spełnione
  \subitem pewną sub-fazą jest upewnienie się że test faktycznie na stan obecny aplikacji nie przechodzi. Najlepiej aby wiadomość niepowodzenia
           jasno wskazywała na to co jest przyczyną problemu. Jest to istotne nie tyle teraz, podczas implementacji, jednak podczas dalszego rozwoju aplikacji,
-          kiedy to być może sprawimy, że ten test przestanie przechodzić - wówczas, \textit{,,kilka tygodni później''}, pomocny komunikat o przyczynie problemu 
+          kiedy to być może sprawimy, że warunek sprawdzany ten test przestanie być prawdziwy - wówczas, \textit{,,kilka tygodni później''}, pomocny komunikat o przyczynie problemu 
           znacznie przyśpieszy zlokalizowanie oraz naprawienie problemu.
  \item implementacji funkcjonalności, tak aby warunki w teście zostały spełnione.
   \subitem należy pamiętać aby była to implementacja minimalna - nie wolno wychodzić ,,do przodu'' z implementacją, nawet jeżeli uważa się,
@@ -1209,13 +1284,13 @@ Fazy te w literaturze znane są jako ,,Red - Green - Refactor'', i obrazuje się
  \begin{center}
   \includegraphics[scale=0.8]{tdd_cycle}
  \end{center}
- \label{tdd_cycle}
  \caption{Schemat obrazujący fazy pracy w metodyce \textit{TDD} \small{(źródło: własne)}}
+ \label{tdd_cycle}
 \end{figure}
 
 
 Przedstawiony powyżej cykl zazwyczaj trwa pomiędzy kilkoma a trzydziestoma minutami. Technika ta jest ściśle związana z samo-dyscypliną programisty
-i stosunkowo trudna do zastosowania w przypadku nie stosowania jej na codzień - jednak resultaty, pod postacią wzrostu jakości kodu oraz zmniejszeniu 
+i stosunkowo trudna do zastosowania w przypadku nie stosowania jej na codzień - jednak rezultaty, pod postacią wzrostu jakości kodu oraz zmniejszeniu 
 czasu traconego na poszukiwania błędów są znaczne.
 
 Oprócz pisania testu zanim powstanie jakakolwiek implementacja, bardzo ważnym elementem fazy implementacji jest jest aby jej celem 
@@ -1278,24 +1353,50 @@ Parser
 ...
 \end{verbatim}
 
+Jak widać, informacje drukowane podczas uruchamiania testów mogą wręcz stanowić swego rodzaju dokumentację jego zachowania.
+Są czytelne oraz zachowują wspólną formę dzięki czemu łatwo jest znaleźć przy jakich warunkach początkowych, można oczekiwać 
+jakiego rezultatu działania aplikacji.
+
 %---------------------------------------------------------------------------
 \chapter{Podsumowanie}
-Projekt udało się zakończyć w ramach planowanego zakresu funkcjonalności. 
+\label{cha:podsumowanie}
+Celem powstania aplikacji ProtoDoc było udostępnienie programistom, pracującym z Google Protocol Buffers na codzień, narzędzia 
+automatycznie dokumentującego tworzone przez nich wiadomości. Cel został osiągnięty poprzez implementację parsera 
+oraz generatora kodu, działającego na zasadach podobnych do JavaDoc, znanego i popularnego narzędzia generującego dokumentację
+dla klas zapisanych w języku Java. Przy okazji implementacji tych dwóch komponentów okazało się, że dodanie trzeciego - weryfikatora,
+nie dość że byłoby bardzo proste, to również zwiększyłoby znacznie przydatność ProtoDoc. 
 
-Miłym akcentem jest również plugin do narzędzia zarządzania cyklem życia projektu - Maven,
-dzięki czemu ProtoDoc faktycznie zyskał na sensie, z perspektywy użytkownika końcowego.
+W finalnej wersji aplikacji, weryfikator został zaimplementowany oraz posiada kilka podstawowych weryfikacji, takich jak sprawdzanie poprawności
+przypisanych wartości domyślnych, wartości tagów czy też raportowania napotkanych pól Deprecated (ang. ,,przestarzałych''). 
+Weryfikacje stanowią największe potencjalne pole do rozwoju narzędzia, ponieważ można by zaimplementować liczne dodatkowe heurystyki 
+sprawdzające poprawność tworzonej wiadomości pod kątem utrzymywalności w przyszłości.
+
+Wszystkie funkcjonalności aplikacji, włączając w to parsowanie ,,nietypowych sytuacji'' oraz wszystkie weryfikacje, sprawdzane na różnych przypadkach
+zostały pokryte testami automatycznymi. W momencie pisania projekt zawierał 49 testów, zawierających łącznie ponad 200 asercji, z których wszystkie podczas
+uruchamiania testów są spełniane. Dzięki rygotystycznie stosowanej podczas implementacji tego projektu metodyce Test Driven Development, udało się utrzymać kod na 
+wysokim poziomie czystości oraz komponeny nie posiadające dużych zależności, co dobrze świadczy o przyjętym projekcie systemu.
+Kod oczywiście dzięki temu był i jest również prosty do testowania o czym świadczyć może wspomniana już duża liczba testów automatycznych, 
+dających pewność, że zaimplementowane funkcjonalności faktycznie działają.
+
+W ramach umożliwienia faktycznego stosowania ProtoDoc w rzeczywistości został również zaimplementowany plugin do systemu zarządzania cyklem życia projektu - 
+Apache Maven \cite{Maven} - dzięki któremu dołączenie ProtoDoc do istniejących projektów jest bardzo proste -- ogranicza się do konfiguracji pluginu w pliku konfiguracyjnym docelowego projektu.
+Wspomniany plugin został również dołączony do niniejszej pracy, jako jej naturalne rozszerzenie.
+
+Podsumowując projekt zakończył się sukcesem -- wszystkie wymagania dotyczące generowania dokumentacji oraz automatyzacji tego procesu zostały spełnione.
+Zakres projektu został nawet nieco poszerzony z racji dołączenia komponentu weryfikującego kod. Aplikacja posiada duży potencjał na dalszy rozwój
+w kierunku stania się używanym ,,w rzeczywistości'' narzędziem, a punkty w których można by kontunuować ów rozwój zostały wymienione w kolejnej, ostatniej już, sekcji też pracy.
 
 \section{Plany rozwoju aplikacji}
 Aplikacja w przyszłości może zostać rozszerzona aby wspierać jeszcze większą część standardu 
 Protocol Buffers, w szczególności, można wyróźnić niektóre interesujące zadania do wykonania:
 
 \begin{itemize}
- \item zaimplementować rozpoznawanie słowa kluczowego \textbf{option}, służącego przekazywaniu pewnych meta danych do kompilatora \textit{protoc}
+ \item zaimplementować rozpoznawanie słowa kluczowego \textbf{option}, służącego przekazywaniu pewnych meta danych do kompilatora \textit{protoc},
  \item zaimplementować bardziej dokładne rozwiązywanie widoczności, biorące pod uwagę różne notacje z kropką w nazwie wiadomości
-       w przypadku stosowania słowa kluczowego \textit{import}
- \item dobudować dodatkowy moduł, który dokumentowałby elementy \textbf{service}, które nie zostały pokryte w tej pracy
+       w przypadku stosowania słowa kluczowego \textit{import},
+ \item dobudować dodatkowy moduł, który dokumentowałby elementy \textbf{service}, które nie zostały pokryte w tej pracy,
  \item zaimplementować więcej, oraz bardziej wnikliwych weryfikacji, służących nie tylko jako sprawdzenie poprawności, ale jako rady oraz utrzymanie dobrego stylu
-       implementowanych wiadomości
+       implementowanych wiadomości,
  \item zaimplementować \textit{ProtoDoc} jako plugin do innych systemów zarządzania cyklem życia projektu. Zadanie to jest stosunkowo proste, 
        jak już przedstawiono na przykładzie Maven, a mogłoby znacznie pomóc społeczności użytkowników języków takich jak Groovy bądź Scala, gdzie Maven 
        jest rzadziej wykorzystywany niż w projektach ,,czysto Javowych''.

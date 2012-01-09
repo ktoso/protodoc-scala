@@ -8,7 +8,7 @@ Celem tego dodatku jest przybliżenie czytelnikowi języka ,,Scala'' aby w wysta
 Język Scala (,,Scalable Language'') najłatwiej jest przedstawić jako hybrydę dwóch znanych nurtów programowania: programowania obiektowego oraz funkcyjnego, wraz z 
 powiązanymi z nimi językami programowania. Twórca języka Scala, Martin Oderski \footnote{Martin Odersky - Strona domowa: \href{http://lamp.epfl.ch/~odersky/}{http://lamp.epfl.ch/~odersky/}}
 był ściśle związany z językiem Java - był głównym projektantem generyków w Javie (\textit{Java Generics}) oraz głównym autorem utrzymywanej po dziś dzień
-serii kompilatorów \textbf{javac} \footnote{Wywiad z Martinem Odersky na temat korzeni języka Scala - \href{http://www.artima.com/scalazine/articles/origins_of_scala.html}{www.artima.com/.../origins\_of\_scala}}.
+serii kompilatorów \textbf{javac} \cite{OderskyWywiad}.
 
 Jako konkretnych ,,rodziców'' można by wskazać: 
 \begin{itemize}
@@ -29,17 +29,18 @@ jasnego przedstawienia minimum wiedzy na temat języka aby móc swobodnie go ,,c
 
 \textit{Scala} jest językiem statycznie typowanym posiadającym lokalne ,,Type Inferrence''. Pozwala to kompilatorowi 
 \textit{scalac} na ,,odnajdywanie'' typów wszystkich zmiennych oraz typów zwracanych przez metody podczas kompilacji,
-bez potrzeby definiowania ich wprost. System ten
+bez potrzeby definiowania ich wprost (poza konkretnymi wyjątkami np. funkcji wprost rekurencyjnych).
 
 Użycie nawiasów \verb|()|, średnika \verb|;| oraz kropki \verb|.| jest analogiczne jak w przypadku Javy, 
 jednak w wielu przypadkach opcjonalne gdyż kompilator jest w stanie wydedukować gdzie powinny się znaleźć.
+
 \begin{lstlisting}
- val value = Option(42);
- val other = value.orElse(0);
+ val value: Int = Option(42);
+ val other: Int  = value.orElse(0);
 
  // moze zostac zastąpione
  val value = Option(42)
- val other = value orElse 0
+ val other = value orElse 0 // "infix notation"
 \end{lstlisting}
 
 Jednym z ciekawych przykładów stosowania notacji bez nawiasów i kropek jest \textit{ScalaTest}\footnote{ScalaTest - framework do testowania - http://www.scalatest.org}
@@ -61,7 +62,7 @@ w efekcie (na poziomie bytecode), wszystkie przekładane są na wywołania metod
        zostanie zapisana w cache oraz będzie konsekwentnie zwracana podczas ponownych wywołań tej metody.
 \end{itemize}
 
-Modyfikator lazy pozwala na eleganckie budowy konstrukcji stosowanych w Parser Combinators, omówionych poniżej.
+Modyfikator lazy pozwala na budowę eleganckich konstrukcji z jakimi mamy do czynienia w przypadku na przykład Parser Combinators, omówionych szczegółowo w kolejnych sekcjach.
 
 
 %---------------------------------------------------------------------------
@@ -84,7 +85,7 @@ trait A {
 
 class Test extends A { } // wmieszanie A
 
-new Test().test // skompiluje i wykona sie poprawnie
+(new Test).test // skompiluje i wykona sie poprawnie
 \end{lstlisting}
 
 Co ciekawe, nie zauważamy różnicy w przypadku składni odnoszącej się do dziedziczenia dwóch klas konkretnych, oraz wmieszania traita.
@@ -203,7 +204,7 @@ Technika ta została zastosowana w bardzo wielu miejscach aplikacji, włącznie 
 %---------------------------------------------------------------------------
 \section{Implicit Conversions - konwersje ,,domniemane''}
 \label{sec:implicit}
-Scala pomimo że jest językiem silnie statycznie typowanym pozwala na pewne zabiegi aby ułatwić pracę w tak rygorystycznym type systemie.
+Scala pomimo że jest językiem silnie statycznie typowanym pozwala na pewne zabiegi aby ułatwić pracę w tak rygorystycznym systemie typów.
 Jednym z tych rozwiązań są tak zwane ,,Implicit Conversions'', będące typem metod, które kompilator może próbować zastosować podczas gdy 
 potrzebna jest automatyczna konwersja z typu A na B. Najłatwiej będzie omówić to na prostym przykładzie (Listing \ref{lst:simple_implicit_example},
 także spójrzmy na poniższe przypisanie liczby typu \verb|scala.Int| do zmiennej typu \verb|java.lang.String|:
@@ -271,6 +272,8 @@ przeprasowanego elementu, oraz pozostałej części napisu. W szczególności Pa
 \end{tabular}
 \end{center}
 
+~\\\*
+
 Mając tak zdefiniowany parser, możemy przedstawić definicję kombinatora parserów:
 
 \begin{center}
@@ -287,25 +290,7 @@ która przyjmuje jako argumenty funkcje parsujące, oraz zwraca nową funkcję u
 
 W przypadku Scali, kombinatory implementowane są poprzez metody wypisane w Tabeli \ref{combinators_table}, zdefiniowane w typie \verb|Parser|.
 
-\begin{table}
-\begin{center}
-\begin{tabular}{|l|l|p{7cm}|}
-\hline
-Metoda & Nazwa & Przykład \\ \hline
-\verb|~| & sekwencja & \verb|"a" ~ "b"| parsuje ciąg ,,ab'', oraz zwraca ,,ab''\\
-\verb|~>| & sekwencja, odrzucając lewą stronę & \verb|,,a'' ~> ,,b''| parsuje ciąg ,,ab'', oraz zwraca ,,b''\\
-\verb|<~| & sekwencja, odrzucając prawą stronę & \verb|,,a'' <~ ,,b''| parsuje ciąg ,,ab'', oraz zwraca ,,a''\\
-\verb\|\ & alternatywa & ,,a'' | ,,b'' parsuje ciąg ,,a'' lub ,,b'', oraz zwraca ,,a'' lub ,,b''\\
-\verb\^^\ & transformacja & \verb|,,a'' ^^ () => Any| parsuje ciąg ,,a'', oraz zwraca do, co zwróci funkcja przekazana jako argument tego kombinatora. Zostanie opisany szczegółowo poniżej. \\
-\verb|opt()| & sekwencja & opt(,,b'') parsuje ciąg ,,'' lub ,,b'', oraz zwraca Option[String], mogące zawierać ,,b'' lub nic\\
-\verb|rep()| & powtórzenie & rep(,,b'') parsuje ciąg składający się z powtórzeń ciągu ,,b'', oraz zwraca List(,,b'', ,,b'', ,,b'', ...)]\\
-\verb|repsep()| & powtórzenie, z separatorami & repsep(,,b'', ,,,'') parsuje ciąg składający się z powtórzeń ciągu ,,b'' oddzielonych znakiem ,,,'', oraz zwraca List(,,b'', ,,b'', ,,b'', ...)]\\
-\verb|rep()| & powtórzenie & rep(,,b'') parsuje ciąg składający się z powtórzeń ciągu ,,b'', oraz zwraca List(,,b'', ,,b'', ,,b'', ...)]\\ \hline
-\end{tabular}
-\end{center}
-\caption{Dostępne podstawowe kombinatory parserów}
-\label{combinators_table}
-\end{table}
+% /////////////////// tabelka tu byla
 
 Warto tutaj przytoczyć implementację dwóch kombinatorów, ponieważ pokazują jak olbrzymią elastyczność w definiowaniu ich uzyskać
 poprzez wykorzystywanie bardzo prostych kombinatorów (wewnętrznie zdefiniowanych \verb\|||\ oraz \verb|&&&|, z których jako programista korzystający
@@ -328,11 +313,6 @@ który zgłosi błąd jeżeli dana kombinacja nie jest możliwa do rozwiązania 
 Powinno się stosować ten operator jeżeli tylko możliwe, aby zagwarantować sobie wczesne ostrzeżenie o nie optymalnej formie gramatyki.
 Wówczas można przeprowadzić faktoryzację lewostronną, celem wyciągnięcia wspólnego symbolu dla dwóch lub więcej produkcji ,,przed nawias'', zmniejszając klasę parsera.
 
-Ostatnim elementem koniecznym do wprowadzenia zanim przejdziemy do przykładów pełnych implementacji prostych parserów, jest kombinator \verb|^^|,
-oznaczający ,,\textit{transformację}''. Kombinator ten służyć nam będzie do produkowania typów które chcemy produkować z danego sparsowanego elementu,
-nie natomiast prymitówów takich jak listy i typy podstawowe, które zostałyby zwrócone przez parser bez zastosowania tego kombinatora.
-Prostym przykładem jest parser przedstawiony na Listingu \ref{so_simple}, który transformuje napis ,,true'' na wartość typu \verb|Boolean|.
-
 \begin{lstlisting}[caption={Zastosowanie kombinatora transformującego}, label={so_simple}]
 def TRUE: Parser[Boolean] = "true" ^^ { b => true }
 
@@ -340,6 +320,32 @@ def TRUE: Parser[Boolean] = "true" ^^ { b => true }
 // def TRUE: Parser[String] = "true" // value is String!
 
 \end{lstlisting}
+
+Ostatnim elementem koniecznym do wprowadzenia zanim przejdziemy do przykładów pełnych implementacji prostych parserów, jest kombinator \verb|^^|,
+oznaczający ,,\textit{transformację}''. Kombinator ten służyć nam będzie do produkowania typów które chcemy produkować z danego sparsowanego elementu,
+nie natomiast prymitówów takich jak listy i typy podstawowe, które zostałyby zwrócone przez parser bez zastosowania tego kombinatora.
+Prostym przykładem jest parser przedstawiony na Listingu \ref{so_simple}, który transformuje napis ,,true'' na wartość typu \verb|Boolean|.
+
+
+\begin{table}[ch]
+\begin{center}
+\begin{tabular}{|l|l|p{7cm}|}
+\hline
+Metoda & Nazwa & Przykład \\ \hline
+\verb|~| & sekwencja & \verb|"a" ~ "b"| parsuje ciąg ,,ab'', oraz zwraca ,,ab''\\
+\verb|~>| & sekwencja, odrzucając lewą stronę & \verb|,,a'' ~> ,,b''| parsuje ciąg ,,ab'', oraz zwraca ,,b''\\
+\verb|<~| & sekwencja, odrzucając prawą stronę & \verb|,,a'' <~ ,,b''| parsuje ciąg ,,ab'', oraz zwraca ,,a''\\
+\verb\|\ & alternatywa & ,,a'' | ,,b'' parsuje ciąg ,,a'' lub ,,b'', oraz zwraca ,,a'' lub ,,b''\\
+\verb\^^\ & transformacja & \verb|,,a'' ^^ () => Any| parsuje ciąg ,,a'', oraz zwraca do, co zwróci funkcja przekazana jako argument tego kombinatora. Zostanie opisany szczegółowo poniżej. \\
+\verb|opt()| & sekwencja & opt(,,b'') parsuje ciąg ,,'' lub ,,b'', oraz zwraca Option[String], mogące zawierać ,,b'' lub nic\\
+\verb|rep()| & powtórzenie & rep(,,b'') parsuje ciąg składający się z powtórzeń ciągu ,,b'', oraz zwraca List(,,b'', ,,b'', ,,b'', ...)]\\
+\verb|repsep()| & powtórzenie, z separatorami & repsep(,,b'', ,,,'') parsuje ciąg składający się z powtórzeń ciągu ,,b'' oddzielonych znakiem ,,,'', oraz zwraca List(,,b'', ,,b'', ,,b'', ...)]\\
+\verb|rep()| & powtórzenie & rep(,,b'') parsuje ciąg składający się z powtórzeń ciągu ,,b'', oraz zwraca List(,,b'', ,,b'', ,,b'', ...)]\\ \hline
+\end{tabular}
+\end{center}
+\caption{Dostępne podstawowe kombinatory parserów}
+\label{combinators_table}
+\end{table}
 
 \subsection{Przykłady parserów}
 Przedstawione zostaną dwa proste przykłady parserów, mieszczące się na 1 stronie A4, oraz realizujące przydatne operacje, 

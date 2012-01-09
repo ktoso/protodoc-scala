@@ -10,50 +10,59 @@ XML bądź JSON, na rzecz Protocol Buffers lub mu podobnym binarnym protokołom 
 
 Protocol Buffers powstało pierwotnie jako wewnętrzny projekt Google, mające na celu zmniejszenie ilości ruchu
 na łączach oraz zwiększenia szybkości z jaką wiadomości wysyłane między serwerami są serializowane oraz deserializowane.
-W momencie pisania wewnątrz Google znajduje się 48,162 typów wiadomości, rozproszonych w 12,183 plikach -- są to imponujące liczby,
-obrazujące jak ważnym elementem infrastruktury Google stał się ProtoBuf. \cite{protobuf}
+W momencie pisania niniejszej pracy wewnątrz Google znajduje się 48,162 typów wiadomości, umieszczonych w 12,183 plikach *.proto -- 
+są to imponujące liczby, obrazujące jak ważnym elementem infrastruktury Google stał się ProtoBuf. \cite{protobuf}
 
 Protocol Buffers, dalej zwane ProtoBuf, opierają się w dużej mierze o język definicji interfejsu (\textit{IDL}) o tej samej nazwie.
 Przy jego pomocy definiuje się tak zwane wiadomości, które mogą zawierać pola lub zagnieżdżone wiadomości i/lub enumeracje.
-Tak przygotowany opis wiadomości, zapisany w tak zwanym proto-pliku (,,\textit{proto-file}'') następnie poddawany jest kompilacji,
-przy pomocy narzędzia \textit{protoc} (\textit{Proto}col Buffers \textit{C}ompiler) czego wynikiem są klasy (o ile taka abstrakcja jest dostępna
-w wybranym języku docelowym) które udostępniają bezpieczne (co do typów) API do manipulacji tymi wiadomościami oraz, co ważniejsze, 
-,,potrafią się same przeczytać z strumienia bajtów''. Pod tym zwrotem kryje się zwyczajna implementacja fabryki, potrafiąca dekodować 
-strumień bajtów zakodowany dla pewnej wiadomości, do postaci obiektu danej klasy.
+Tak przygotowany opis wiadomości, zapisywane jest tak zwanym proto-pliku (,,\textit{proto-file}''), z rozszerzeniem \verb|*.proto|.
+Następnie plik taki poddawany jest ,,kompilacji'', przy pomocy narzędzia \textit{protoc} (\textit{Proto}col Buffers \textit{C}ompiler) 
+czego wynikiem są pliki źródłowe klas (o ile takie pojęcie istnieje w docelowym języku) które udostępniają bezpieczne (co do typów) API 
+do manipulacji tymi wiadomościami. Najważniejszą funkcją wygenerowanych klas jest jednak to iż korzystając z nich, możemy otrzymawszy strumień bajtów,
+o którym wiemy że zawiera wiadomości tego typu, łatwo zdeserializować ów bajty to postaci obiektu tej klasy. Udostępniana jest równocześnie automatyczna
+metoda konwersji w drugą stronę, z obiektu do strumienia bajtów.
 
 \newpage
-Jako przykład możemy spojrzeć na poniższą deklarację wiadomości (Listing \ref{proto_simple_sam}):
+Jako przykład możemy spojrzeć na poniższą deklarację wiadomości (Listing \ref{proto_simple_sam}),
+zaczerpniętą z \cite{protobuf}. Zawiera ona podstatowe typy pól, oraz wiadomość wewnątrzną. 
+
 \begin{lstlisting}[label={proto_simple_sam}]
 message Person {
   required string name = 1;
   optional string email = 3;
+  repeated PhoneNumber phone = 4;
+
   message PhoneNumber {
     required string number = 1;
     optional PhoneType type = 2 [default = HOME];
   }
-  repeated PhoneNumber phone = 4;
 }
 \end{lstlisting}
 
-Który po skompilowaniu do języka \textit{C++}, wygenerowałby klasę potrafiącą obsłużyć następujące operacje:
+Po wygenerowaniu z powyższego pliku *.proto kodu w języku C++ uzyskamy klasę którą można wykorzystać a następujący sposób:
 
-\begin{lstlisting}[caption={Przykład klasy ProtoBuf w C++, pisanej na plik}]
+\begin{lstlisting}[caption={Przykład klasy ProtoBuf w C++, serializowanej do pliku}]
 Person person;
 person.set_name("John Doe");
 person.set_id(1234);
 person.set_email("jdoe@example.com");
-fstream output("myfile", ios::out | ios::binary);
+
+fstream output("myfile.data", ios::out | ios::binary);
 person.SerializeToOstream(&output);
 \end{lstlisting}
 
-A następnie możliwe byłoby dokonanie opisywanej wcześniej deserializacji z utworzonej właśnie tablicy bajtów:
+A następnie możliwe byłoby dokonanie opisywanej wcześniej deserializacji z utworzonej właśnie tablicy bajtów.
+Ten przykład przedstawimy w języku Java, w ramach przypomnienia iż ProtoBuf jest niezależny od języka ani platformy:
 
 \begin{lstlisting}[caption={Przykład klasy ProtoBuf w C++, odczytującej ,,się'' z zapisanego wcześniej binarnego pliku}]
-fstream input("myfile", ios::in | ios::binary);
-Person person;
-person.ParseFromIstream(&input);
-cout << "Name: " << person.name() << endl;
-cout << "E-mail: " << person.email() << endl;
+FileInputStream is = new FileInputStream("myfile.data");
+
+Person person = Person.parseFrom(is);
+assert person.getName().equals("John Doe");
+assert person.getId().equals(1234);
+assert person.getEmail().equals("jdoe@example.com");
+
+is.close();
 \end{lstlisting}
 
 Analogicznie wynegerowane klasy można otrzymać w praktycznie dowolnym języku programowania, 
@@ -102,8 +111,8 @@ fixed32 & bool & int32 & int64 \\
 sfixed32 & sfixed64 & fixed64 &  \\
 \end{tabular}
 \end{center}
-\label{protoTupes_all}
 \caption{Predefiniowane typy w ProtoBuf}
+\label{protoTupes_all}
 \end{table}
 
 Poza wspomnianymi predefiniowanymi typami, pola mogą oczywiście mieć typ innej wiadomości. Tym sposobem można modelować nawet skomplikowane modele domenowe
@@ -128,8 +137,10 @@ Jak widać, możliwe jest również podanie nazwy \verb|LARGE| jako wartości do
 \section{Zestawienie wydajności mechanizmów serializacji na JVM}
 \label{sec:serialization_speed}
 
-Poniewać w efekcie, ProtoBuf służy efektywnej serializacji i deserializacji obiektów, bardzo ważna jest jego wydajność na realnych obiektach.
-Testy takie przeprowadzono w ramach projektu umieszczonego na githubie pod adresem: \href{https://github.com/eishay/jvm-serializers/wiki/}{https://github.com/eishay/jvm-serializers/wiki/}.
+Poniewać w efekcie, ProtoBuf służy efektywnej serializacji i deserializacji obiektów, bardzo ważna jest jego wydajność pracy 
+w rzeczywistych warunkach, oraz porównanie go z innymi dostępnymi rozwiązaniami. Benchmark taki został przeprowadzony przez Pana
+w ramach projektu \textbf{jvm-serializers} \cite{JVMSerializers}
+Testy takie przeprowadzono w ramach projektu umieszczonego na githubie pod adresem.
 Benchmark \cite{proto_benchmark} ten został wykonany w roku 2011, oraz uwzględnia najważniejsze metody serializacji danych na JVMie, takie jak
 natywna serializacja Java, serializacja danych do JSON przy pomocy różnych bibliotek oraz oczywiście ProtoBuf oraz jego konkurencji - Thrift.
 
@@ -137,8 +148,8 @@ natywna serializacja Java, serializacja danych do JSON przy pomocy różnych bib
 Czas spędzony na serializacji oraz deserializacji tego samego obiektu:
 
 \begin{figure}[ch!]
-\includegraphics[width=\textwidth]{proto_1}
-% \includegraphics[width=\textwidth]{proto_2} TODO TODO TODO
+ \includegraphics[scale=0.8]{proto_1}
+ \includegraphics[scale=1]{proto_2} 
 \end{figure}
 
 ProtoStuff, alternatywna implementacja protokołu ProtoBuf wiedzie prym w tym benchmarku, jednak protobuf nadal jest stanowczno wiadącą implementacją.
@@ -151,8 +162,8 @@ z czasem osiągniętym przez ProtoBuf, równym \textbf{6132ns} jasno wyraża prz
 Rozmiar liczony w bajtach wiadomości po zserializowaniu:
 
 \begin{figure}[ch!]
-\includegraphics[width=\textwidth]{serialized_size_1}
-% \includegraphics[width=\textwidth]{proto_2} TODO TODO TODO
+ \includegraphics[scale=0.8]{serialized_size_1}
+ \includegraphics[scale=1]{serialized_size_2} 
 \end{figure}
 
 Przy porównywaniu rozmiaru zserializowanego obiektu ponownie protokoły binarne, z ProtoBuf na czele wiodą prym... 
@@ -168,7 +179,7 @@ w postaci reprezentowania liczb jako tekst, oraz dużej ilości nadmiarowych zna
 \label{sec:proto_file_examples}
 
 Poniżej zostanie przedstawione kilka przykładowych definicji wiadomości, celem zapoznania czytelnika z formatem i składnią protobuf w
-sposób bardziej praktyczny (wizualny).
+sposób bardziej praktyczny (wizualny). Przykłady te modelują pytanie oraz odpowiedź, jakie mogłyby być używane podczas używania wyszukiwarki Google.
 
 \begin{lstlisting}[caption={Definicja wiadomości zawierająca enum oraz wartości domyślne}]
 message SearchRequest {
@@ -204,8 +215,6 @@ message Result {
 
 \newpage
 \begin{lstlisting}[caption={Definicja wiadomości korzystającej z wewnętrznej wiadomości}]
-package pl.project13.protodoc;
-
 message SearchResponse {
   message Result {
     required string url = 1;
@@ -217,4 +226,3 @@ message SearchResponse {
 \end{lstlisting}
 
 Więcej przykładów można zobaczyć na stronie domowej Protocol Buffers - \href{http://code.google.com/intl/pl-PL/apis/protocolbuffers/docs/proto.html}{http://code.google.com/intl/pl-PL/apis/protocolbuffers/docs/proto.html}.
-Niestety podczas realizacji projektu nie udało się pokryć pełnego formatu protocol buffers, jest to jednak logiczny kierunek dalszego rozwoju aplikacji.
